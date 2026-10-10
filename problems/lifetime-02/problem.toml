@@ -1,0 +1,12 @@
+id = "lifetime-02"
+title = { en = "A borrowing tokenizer", ja = "借りっぱなしのトークナイザ" }
+par = 3
+concepts = ["lifetimes", "structs holding references"]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

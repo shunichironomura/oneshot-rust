@@ -1,0 +1,12 @@
+id = "borrow-01"
+title = { en = "Double the positives", ja = "正の数を倍にして追加" }
+par = 2
+concepts = ["borrowing", "mutable references", "iterators"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

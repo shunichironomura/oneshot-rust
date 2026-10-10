@@ -1,0 +1,9 @@
+[global]
+# Same as the author's user-level config: prose is not hard-wrapped.
+disable = ["MD013"]
+# .local/ holds personal notes that are not part of the repository.
+exclude = [".local/**", "**/node_modules/**"]
+
+[per-file-ignores]
+# Problem statements are fragments; the title comes from problem.toml.
+"problems/*/statement*.md" = ["MD041"]

@@ -1,0 +1,22 @@
+// Cloudflare Workers static-assets deployment, built and deployed by Workers Builds
+// (Cloudflare's Git integration; nothing is configured on the GitHub side).
+// Build settings in the Cloudflare dashboard (see README.md):
+//   Root directory:  web
+//   Build command:   pnpm run build:deploy
+//   Deploy / preview commands: the defaults (production branch: main; other
+//                    branches and pull requests get preview URLs)
+//   Build secret:    GITHUB_TOKEN, with read access to this repository's contents,
+//                    used to fetch the prebuilt toolchain from its GitHub Release.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "oneshot-rust",
+  "compatibility_date": "2026-10-10",
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": "./dist",
+  },
+  // Required by `wrangler preview` (the Workers Builds preview command); the site
+  // needs no preview-specific settings.
+  "previews": {},
+}

@@ -1,0 +1,12 @@
+id = "signature-01"
+title = { en = "The largest one", ja = "いちばん大きいもの" }
+par = 2
+concepts = ["generics", "trait bounds", "lifetime elision"]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

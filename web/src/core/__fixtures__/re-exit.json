@@ -1,0 +1,18 @@
+{
+  "problemId": "lifetime-01",
+  "caseIds": [
+    "sample-1",
+    "sample-2",
+    "hidden-1",
+    "hidden-2",
+    "hidden-3"
+  ],
+  "nonce": "aa324a0a6c365868",
+  "output": {
+    "stdout": "\u0001J:aa324a0a6c365868:START\n\u0001J:aa324a0a6c365868:CASE:sample-1:FAIL:expected \"ccc\", got \"a bb ccc\"\n\u0001J:aa324a0a6c365868:CASE:sample-2:FAIL:expected \"xx\", got \"xx yy\"\n",
+    "stderr": "",
+    "exitCode": 3,
+    "timedOut": false,
+    "outputLimitExceeded": false
+  }
+}

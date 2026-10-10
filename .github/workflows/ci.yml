@@ -1,0 +1,47 @@
+# Checks every pull request and push to main. Deployment is done by Cloudflare
+# Workers Builds (see web/wrangler.jsonc), not by this workflow.
+#
+# The toolchain (miri.wasm and its sysroot) is not built here: building it takes
+# 20-30 minutes on a 16-core machine and ~30 GB of disk. It is built locally with
+# toolchain/build.nu, published as a GitHub Release with toolchain/publish.nu and
+# pinned in toolchain/RELEASE, which web/scripts/fetch-toolchain.ts downloads.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check, test and verify problems
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: voidzero-dev/setup-vp@v1.21.1
+        with:
+          node-version: "24"
+          cache: true
+          working-directory: web
+
+      - name: Fetch the prebuilt toolchain
+        run: vp run fetch-toolchain
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - run: vp check
+      - run: vp test
+      - name: Verify problems with miri.wasm
+        run: node scripts/verify-problems.ts
+      - name: Build
+        run: vp run build
+      - name: Check Cloudflare limits
+        run: vp run check-dist

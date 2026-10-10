@@ -1,0 +1,19 @@
+{
+  "problemId": "lifetime-01",
+  "caseIds": [
+    "sample-1",
+    "sample-2",
+    "hidden-1",
+    "hidden-2",
+    "hidden-3"
+  ],
+  "nonce": "5dbfcfe49ff3fefc",
+  "output": {
+    "stdout": "",
+    "stderr": "{\"$message_type\":\"diagnostic\",\"message\":\"cannot return value referencing local variable `words`\",\"code\":{\"code\":\"E0515\",\"explanation\":\"A reference to a local variable was returned.\\n\\nErroneous code example:\\n\\n```compile_fail,E0515\\nfn get_dangling_reference() -> &'static i32 {\\n    let x = 0;\\n    &x\\n}\\n```\\n\\n```compile_fail,E0515\\nuse std::slice::Iter;\\nfn get_dangling_iterator<'a>() -> Iter<'a, i32> {\\n    let v = vec![1, 2, 3];\\n    v.iter()\\n}\\n```\\n\\nLocal variables, function parameters and temporaries are all dropped before\\nthe end of the function body. A returned reference (or struct containing a\\nreference) to such a dropped value would immediately be invalid. Therefore\\nit is not allowed to return such a reference.\\n\\nConsider returning a value that takes ownership of local data instead of\\nreferencing it:\\n\\n```\\nuse std::vec::IntoIter;\\n\\nfn get_integer() -> i32 {\\n    let x = 0;\\n    x\\n}\\n\\nfn get_owned_iterator() -> IntoIter<i32> {\\n    let v = vec![1, 2, 3];\\n    v.into_iter()\\n}\\n```\\n\"},\"level\":\"error\",\"spans\":[{\"file_name\":\"/src/user.rs\",\"byte_start\":189,\"byte_end\":194,\"line_start\":4,\"line_end\":4,\"column_start\":5,\"column_end\":10,\"is_primary\":true,\"text\":[{\"text\":\"    &best\",\"highlight_start\":5,\"highlight_end\":10}],\"label\":\"returns a value referencing data owned by the current function\",\"suggested_replacement\":null,\"suggestion_applicability\":null,\"expansion\":null},{\"file_name\":\"/src/user.rs\",\"byte_start\":138,\"byte_end\":143,\"line_start\":3,\"line_end\":3,\"column_start\":16,\"column_end\":21,\"is_primary\":false,\"text\":[{\"text\":\"    let best = words.iter().max_by_key(|w| w.len()).unwrap();\",\"highlight_start\":16,\"highlight_end\":21}],\"label\":\"`words` is borrowed here\",\"suggested_replacement\":null,\"suggestion_applicability\":null,\"expansion\":null}],\"children\":[],\"rendered\":\"error[E0515]: cannot return value referencing local variable `words`\\n --> /src/user.rs:4:5\\n  |\\n3 |     let best = words.iter().max_by_key(|w| w.len()).unwrap();\\n  |                ----- `words` is borrowed here\\n4 |     &best\\n  |     ^^^^^ returns a value referencing data owned by the current function\\n\\n\"}\n",
+    "exitCode": null,
+    "timedOut": false,
+    "outputLimitExceeded": false,
+    "crash": "RuntimeError: unreachable"
+  }
+}

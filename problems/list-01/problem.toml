@@ -1,0 +1,12 @@
+id = "list-01"
+title = { en = "Reverse a linked list", ja = "連結リストの反転" }
+par = 3
+concepts = ["Box", "Option", "ownership", "take"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

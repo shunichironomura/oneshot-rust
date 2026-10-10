@@ -1,0 +1,43 @@
+# bootstrap.toml for building Miri as a wasm32-wasip1 binary.
+#
+# Rendered into the rust checkout by `toolchain/build.nu`, which substitutes
+# `@BUILD_TRIPLE@`, `@WASI_SDK@` (the extracted wasi-sdk) and `@TOOLCHAIN_DIR@`
+# (this directory).
+
+profile = "compiler"
+change-id = "ignore"
+
+[llvm]
+download-ci-llvm = true
+
+[rust]
+# The native (build) compiler uses LLVM. The wasm host gets no real codegen
+# backend: Miri never reaches codegen, and the built-in `dummy` backend provides
+# the ABI-required target features.
+codegen-backends = ["llvm"]
+deny-warnings = false
+llvm-tools = false
+llvm-bitcode-linker = false
+debug = false
+debuginfo-level = 0
+
+[build]
+docs = false
+extended = false
+tools = ["miri", "cargo-miri"]
+host = ["@BUILD_TRIPLE@", "wasm32-wasip1"]
+target = ["@BUILD_TRIPLE@", "wasm32-wasip1"]
+
+[target.wasm32-wasip1]
+wasi-root = "@WASI_SDK@/share/wasi-sysroot"
+# Link with wasi-sdk's clang (through a wrapper, see wasm-linker.sh) instead of the
+# self-contained rust-lld, which would require building LLD for the wasm host too.
+linker = "@TOOLCHAIN_DIR@/wasm-linker.sh"
+rustflags = [
+  "-Clink-self-contained=no",
+  # The wrapper's name does not tell rustc that it is a C compiler driver.
+  "-Clinker-flavor=wasm-lld-cc",
+  # rustc recurses deeply; the default 1 MiB shadow stack is not enough.
+  "-Clink-arg=-Wl,-z,stack-size=8388608",
+]
+codegen-backends = ["dummy"]
