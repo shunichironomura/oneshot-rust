@@ -57,6 +57,7 @@ export interface Messages {
   challengeCardContinue: string;
   demoAccepted: (n: number) => string;
   demoSubmitHint: string;
+  madeBy: string;
 
   // Problem list
   problemsHeading: string;
@@ -218,6 +219,7 @@ const en: Messages = {
   challengeCardContinue: "Continue challenge",
   demoAccepted: (n) => `Accepted · ${n}/${n} tests passed`,
   demoSubmitHint: "Submit",
+  madeBy: "Made by",
 
   problemsHeading: "Problems",
   columnProblem: "Problem",
@@ -415,6 +417,7 @@ const ja: Messages = {
   challengeCardContinue: "チャレンジの続きへ",
   demoAccepted: (n) => `正解 · ${n}/${n} テスト通過`,
   demoSubmitHint: "提出",
+  madeBy: "作者：",
 
   problemsHeading: "問題一覧",
   columnProblem: "問題",
