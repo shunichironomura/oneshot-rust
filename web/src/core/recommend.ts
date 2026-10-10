@@ -6,7 +6,7 @@ export type Recommendation =
 
 /**
  * Prefers a problem with a run in progress, then the first unsolved problem in
- * the given order (problems are ordered by difficulty).
+ * the given order (problems are ordered by par).
  */
 export function recommend(
   problemIds: readonly string[],

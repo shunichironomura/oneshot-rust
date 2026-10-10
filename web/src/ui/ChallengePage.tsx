@@ -48,7 +48,7 @@ function Summary({ challenge, onNew }: { challenge: Challenge; onNew: () => void
 }
 
 function Start({ past, onStart }: { past: Challenge[]; onStart: () => void }) {
-  const { settings, locale, t } = useApp();
+  const { settings, locale, t, openSettings } = useApp();
   const dateFormat = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
   return (
     <section class="challenge">
@@ -61,7 +61,10 @@ function Start({ past, onStart }: { past: Challenge[]; onStart: () => void }) {
           t.modes[settings.mode],
           settings.lives === null ? t.livesUnlimited : String(settings.lives),
         )}{" "}
-        · <a href={routeHref({ page: "settings" })}>{t.navSettings}</a>
+        ·{" "}
+        <button type="button" class="link-button" onClick={openSettings}>
+          {t.navSettings}
+        </button>
       </p>
       <button type="button" class="primary large" onClick={onStart}>
         <Play size={18} aria-hidden="true" /> {t.challengeStart}
@@ -84,7 +87,7 @@ function Start({ past, onStart }: { past: Challenge[]; onStart: () => void }) {
   );
 }
 
-export function ChallengePage() {
+export function ChallengePage({ startRequested }: { startRequested: boolean }) {
   const { content, storage, settings, t } = useApp();
   const [challenges, setChallenges] = useState<Challenge[]>();
   const [active, setActive] = useState<Challenge>();
@@ -95,12 +98,32 @@ export function ChallengePage() {
    */
   const [lingering, setLingering] = useState(false);
 
+  const createChallenge = useCallback(
+    () =>
+      newChallenge({
+        id: crypto.randomUUID(),
+        mode: settings.mode,
+        lives: settings.lives,
+        problemIds: pickProblems(
+          content.problems.map((p) => p.id),
+          CHALLENGE_LENGTH,
+          Math.random,
+        ),
+        now: Date.now(),
+      }),
+    [content, settings],
+  );
+
   useEffect(() => {
     void storage.challenges().then((all) => {
       setChallenges(all);
       const unfinished = all.find((c) => c.finishedAt === undefined);
       if (unfinished !== undefined) setActive(unfinished);
+      else if (startRequested) setActive(createChallenge());
+      // Drop "/new" so that a reload does not start yet another challenge.
+      if (startRequested) window.history.replaceState(null, "", routeHref({ page: "challenge" }));
     });
+    // Runs once per visit; `startRequested` and `createChallenge` are read at load time.
   }, [storage]);
 
   useEffect(() => {
@@ -108,18 +131,9 @@ export function ChallengePage() {
   }, [active, storage]);
 
   const start = useCallback(() => {
-    const ids = content.problems.map((p) => p.id);
-    setActive(
-      newChallenge({
-        id: crypto.randomUUID(),
-        mode: settings.mode,
-        lives: settings.lives,
-        problemIds: pickProblems(ids, CHALLENGE_LENGTH, Math.random),
-        now: Date.now(),
-      }),
-    );
+    setActive(createChallenge());
     setLingering(false);
-  }, [content, settings]);
+  }, [createChallenge]);
 
   const onRunFinished = useCallback((run: Run) => {
     setActive((c) => (c === undefined ? c : recordRun(c, run)));

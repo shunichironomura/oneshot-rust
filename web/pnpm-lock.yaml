@@ -205,6 +205,9 @@ importers:
       '@lezer/highlight':
         specifier: ^1.2.5
         version: 1.2.5
+      '@lezer/rust':
+        specifier: ^1.0.3
+        version: 1.0.3
       diff:
         specifier: ^9.0.0
         version: 9.0.0

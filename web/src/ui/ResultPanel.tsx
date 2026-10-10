@@ -58,6 +58,16 @@ interface Props {
 export function ResultPanel({ phase, last, presentation }: Props) {
   const { t } = useApp();
   if (phase.kind === "running") return <Running phase={phase} />;
+  if (phase.kind === "waiting") {
+    return (
+      <div class="result running">
+        <div class="verdict-line">
+          <span class="spinner" aria-hidden="true" />
+          {t.toolchainStarting}
+        </div>
+      </div>
+    );
+  }
   if (last === null) return <div class="result empty">{t.resultEmpty}</div>;
   if (last.kind === "rejected") {
     return (

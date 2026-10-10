@@ -152,7 +152,6 @@ export function parseProblem(files: ProblemFiles): ProblemWithSolution {
   const problem: Problem = {
     id,
     title: r.localized("title"),
-    difficulty: r.int("difficulty", 1, 5),
     par: r.int("par", 1, 20),
     concepts: r.stringArray("concepts"),
     kind: r.oneOf("kind", KINDS),
@@ -168,7 +167,7 @@ export function parseProblem(files: ProblemFiles): ProblemWithSolution {
   return { problem, solution: files.solutionRs };
 }
 
-/** Problems are ordered by difficulty, then by id. */
+/** Problems are ordered by par (the expected number of submissions), then by id. */
 export function compareProblems(a: Problem, b: Problem): number {
-  return a.difficulty - b.difficulty || a.id.localeCompare(b.id);
+  return a.par - b.par || a.id.localeCompare(b.id);
 }

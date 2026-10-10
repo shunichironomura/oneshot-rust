@@ -1,6 +1,5 @@
 id = "struct-01"
 title = { en = "A generic stack", ja = "ジェネリックなスタック" }
-difficulty = 2
 par = 2
 concepts = ["generics", "structs", "Option"]
 kind = "implement"

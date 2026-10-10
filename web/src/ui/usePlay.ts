@@ -11,6 +11,8 @@ import { draftKey, type Storage } from "../storage/db.ts";
 
 export type SubmitPhase =
   | { kind: "idle" }
+  /** Submitted before the compiler finished loading. */
+  | { kind: "waiting" }
   | { kind: "running"; progress: RunProgress; output: string };
 
 /** What the result panel shows: the latest judgement, or a rejected pre-check. */
@@ -42,7 +44,7 @@ interface Params {
   judgeSources: JudgeSources;
   storage: Storage;
   rules: RunRules;
-  pool: RunnerPool | undefined;
+  pool: Promise<RunnerPool>;
   /** Runs inside a 連続チャレンジ are kept apart from free play. */
   challengeId?: string;
   onRunFinished?: (run: Run) => void;
@@ -122,7 +124,7 @@ export function usePlay({
   );
 
   const submit = useCallback(async () => {
-    if (pool === undefined || state.phase.kind === "running" || !state.loaded) return;
+    if (state.phase.kind !== "idle" || !state.loaded) return;
     const code = state.code;
     const forbiddenMacro = precheck(code);
     if (forbiddenMacro !== null) {
@@ -155,10 +157,12 @@ export function usePlay({
           progress: runProgress(stdout, nonce, problem.caseIds.length),
         },
       }));
-    update();
+    setState((s) => ({ ...s, finished: null, phase: { kind: "waiting" } }));
 
     try {
-      const out = await pool.run(submission, {
+      const runner = await pool;
+      update();
+      const out = await runner.run(submission, {
         onStdout: (chunk) => {
           stdout += chunk;
           update();

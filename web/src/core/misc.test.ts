@@ -4,13 +4,14 @@ import { parseRoute, routeHref } from "./route.ts";
 import { DEFAULT_SETTINGS, normalizeSettings, notepadEditor } from "./settings.ts";
 
 test.each([
-  ["", { page: "list" }],
-  ["#/", { page: "list" }],
+  ["", { page: "home" }],
+  ["#/", { page: "home" }],
+  ["#/problems", { page: "problems" }],
   ["#/p/lifetime-01", { page: "play", problemId: "lifetime-01" }],
   ["#/p/lifetime-01/history", { page: "history", problemId: "lifetime-01" }],
-  ["#/settings", { page: "settings" }],
   ["#/challenge", { page: "challenge" }],
-  ["#/unknown", { page: "list" }],
+  ["#/challenge/new", { page: "challenge", start: true }],
+  ["#/unknown", { page: "home" }],
 ] as const)("parseRoute(%j)", (hash, route) => {
   expect(parseRoute(hash)).toEqual(route);
   expect(parseRoute(routeHref(route))).toEqual(route);

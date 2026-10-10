@@ -1,6 +1,5 @@
 id = "unsafe-01"
 title = { en = "The vanishing pointer", ja = "消えたポインタ" }
-difficulty = 3
 par = 2
 concepts = ["unsafe", "raw pointers", "undefined behavior", "Vec reallocation"]
 kind = "implement"

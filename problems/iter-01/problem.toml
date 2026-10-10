@@ -1,6 +1,5 @@
 id = "iter-01"
 title = { en = "Sum of even squares", ja = "偶数の二乗和" }
-difficulty = 1
 par = 1
 concepts = ["iterators", "slices"]
 kind = "implement"

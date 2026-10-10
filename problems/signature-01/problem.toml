@@ -1,6 +1,5 @@
 id = "signature-01"
 title = { en = "The largest one", ja = "いちばん大きいもの" }
-difficulty = 3
 par = 2
 concepts = ["generics", "trait bounds", "lifetime elision"]
 kind = "signature"

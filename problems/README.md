@@ -17,8 +17,7 @@ problems/<id>/
 ```toml
 id = "lifetime-01"             # ディレクトリ名と同じにする
 title = { en = "Longest word", ja = "最長の単語" }   # en は必須
-difficulty = 2                 # 1〜5
-par = 2                        # 想定提出回数（ゴルフのパー）
+par = 2                        # 想定提出回数（ゴルフのパー）。難易度の指標を兼ね、一覧はこの順に並ぶ
 concepts = ["lifetimes", "iterators"]
 kind = "implement"             # implement | repair | signature
 

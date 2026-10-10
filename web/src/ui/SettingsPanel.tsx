@@ -7,17 +7,25 @@ import {
   LIVES_OPTIONS,
   notepadEditor,
 } from "../core/settings.ts";
+import { X } from "lucide-preact";
 import { useApp } from "./context.ts";
+import { Dialog } from "./Dialog.tsx";
 
-export function SettingsPage() {
+/** Settings as a drawer over the current page. Changes apply immediately. */
+export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { settings, updateSettings, t } = useApp();
   const editor = settings.editor;
   const setEditor = (patch: Partial<EditorSettings>) =>
     updateSettings({ ...settings, editor: { ...editor, ...patch } });
 
   return (
-    <section class="settings">
-      <h1>{t.settingsTitle}</h1>
+    <Dialog open={open} onClose={onClose} class="drawer settings">
+      <div class="drawer-head">
+        <h2>{t.settingsTitle}</h2>
+        <button type="button" class="icon-button icon-only" aria-label={t.close} onClick={onClose}>
+          <X size={18} aria-hidden="true" />
+        </button>
+      </div>
 
       <fieldset>
         <legend>{t.language}</legend>
@@ -147,6 +155,6 @@ export function SettingsPage() {
       >
         {t.resetSettings}
       </button>
-    </section>
+    </Dialog>
   );
 }

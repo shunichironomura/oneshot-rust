@@ -39,27 +39,34 @@ export interface Messages {
   toolchainMissing: string;
   toolchainError: (message: string) => string;
 
-  // Landing page and problem list
+  // Landing page
   heroTitle: string;
-  heroLead: string;
-  howToPlay: readonly string[];
-  nextProblem: string;
-  continueProblem: string;
-  allSolved: (mode: string) => string;
-  tryChallenge: string;
+  heroTagline: string;
+  playCardTitle: string;
+  playCardStart: (title: string) => string;
+  playCardContinue: (title: string) => string;
+  playCardAllSolved: (mode: string) => string;
+  start: string;
+  continue: string;
+  browseProblems: (n: number) => string;
+  challengeCardDescription: string;
+  challengeCardStart: string;
+  challengeCardContinue: string;
+  demoAccepted: (n: number) => string;
+  demoSubmitHint: string;
+
+  // Problem list
   problemsHeading: string;
   columnProblem: string;
-  columnDifficulty: string;
   columnBest: (mode: string) => string;
-  difficulty: (n: number) => string;
   bestTooltip: (ceCount: number) => string;
+  parTooltip: (par: number) => string;
+  meterTooltip: (par: number, tries: number) => string;
   modes: Record<Mode, string>;
   modeDescriptions: Record<Mode, string>;
   kinds: Record<ProblemKind, string>;
 
   // Play screen
-  par: (n: number) => string;
-  tries: (n: number) => string;
   lives: (n: number) => string;
   modeChip: (mode: string) => string;
   submit: string;
@@ -170,24 +177,27 @@ const en: Messages = {
   toolchainMissing: "The toolchain is missing. Build it with toolchain/build.nu.",
   toolchainError: (m) => `Could not load the compiler: ${m}`,
 
-  heroTitle: "Write Rust that compiles in one shot.",
-  heroLead:
-    "No autocomplete, no language server. Solve each problem in as few submissions as possible — every compile counts.",
-  howToPlay: [
-    "Read the problem and write your Rust in the editor.",
-    "Submit with Ctrl+Enter. The real Rust compiler checks it and runs the tests in Miri, so even undefined behavior is caught.",
-    "Every submission counts. Aim for par — or a hole in one.",
-  ],
-  nextProblem: "Start",
-  continueProblem: "Continue",
-  allSolved: (mode) => `You have solved every problem in ${mode} mode.`,
-  tryChallenge: "5-problem challenge",
+  heroTitle: "Rust in one shot.",
+  heroTagline: "No autocomplete. No IDE. Just you and the compiler — every compile counts.",
+  playCardTitle: "Solve a problem",
+  playCardStart: (title) => `Opens “${title}” in the editor.`,
+  playCardContinue: (title) => `Pick up “${title}” where you left off.`,
+  playCardAllSolved: (mode) => `All problems solved in ${mode} mode. Try to beat your records.`,
+  start: "Start",
+  continue: "Continue",
+  browseProblems: (n) => `All ${n} problems`,
+  challengeCardDescription: "5 random problems back to back. Lowest total wins.",
+  challengeCardStart: "Start challenge",
+  challengeCardContinue: "Continue challenge",
+  demoAccepted: (n) => `Accepted · ${n}/${n} tests passed`,
+  demoSubmitHint: "Submit",
+
   problemsHeading: "Problems",
   columnProblem: "Problem",
-  columnDifficulty: "Difficulty",
   columnBest: (mode) => `Best (${mode})`,
-  difficulty: (n) => `Difficulty ${n} of 5`,
   bestTooltip: (ce) => `${ce} compile error${ce === 1 ? "" : "s"}`,
+  parTooltip: (par) => `Par ${par}: aim to solve it in ${par} submission${par === 1 ? "" : "s"}`,
+  meterTooltip: (par, tries) => `Par ${par} · ${tries} ${tries === 1 ? "try" : "tries"} so far`,
   modes: { beginner: "Beginner", standard: "Standard", advanced: "Hard", oni: "Extreme" },
   modeDescriptions: {
     beginner:
@@ -198,8 +208,6 @@ const en: Messages = {
   },
   kinds: { implement: "Implement", repair: "Repair", signature: "Signature" },
 
-  par: (n) => `Par ${n}`,
-  tries: (n) => `${n} ${n === 1 ? "try" : "tries"}`,
   lives: (n) => `${n} ${n === 1 ? "life" : "lives"} left`,
   modeChip: (mode) => mode,
   submit: "Submit",
@@ -338,23 +346,28 @@ const ja: Messages = {
   toolchainMissing: "ツールチェーンが見つかりません。toolchain/build.nu でビルドしてください。",
   toolchainError: (m) => `コンパイラを読み込めませんでした: ${m}`,
 
-  heroTitle: "一発でコンパイルを通す Rust を書こう。",
-  heroLead: "補完も LSP もなし。できるだけ少ない提出回数で、すべてのテストを通してください。",
-  howToPlay: [
-    "問題を読み、エディタに Rust のコードを書きます。",
-    "Ctrl+Enter で提出。本物の Rust コンパイラが検査し、Miri でテストを実行します（未定義動作も検出されます）。",
-    "提出はすべてカウントされます。パー、できればホールインワンを狙いましょう。",
-  ],
-  nextProblem: "はじめる",
-  continueProblem: "続きから",
-  allSolved: (mode) => `${mode}モードの問題をすべて解きました。`,
-  tryChallenge: "連続チャレンジ（5 問）",
-  problemsHeading: "問題",
+  heroTitle: "Rust を、一発で。",
+  heroTagline:
+    "補完なし、IDE なし。あなたとコンパイラだけ。コンパイルは 1 回ごとにカウントされます。",
+  playCardTitle: "問題を解く",
+  playCardStart: (title) => `「${title}」をエディタで開きます。`,
+  playCardContinue: (title) => `「${title}」の続きから再開します。`,
+  playCardAllSolved: (mode) => `${mode}モードの問題はすべて解きました。記録更新を狙いましょう。`,
+  start: "はじめる",
+  continue: "続きから",
+  browseProblems: (n) => `全 ${n} 問の一覧`,
+  challengeCardDescription: "ランダムな 5 問を連続で解き、合計の提出回数を競います。",
+  challengeCardStart: "チャレンジ開始",
+  challengeCardContinue: "チャレンジの続きへ",
+  demoAccepted: (n) => `正解 · ${n}/${n} テスト通過`,
+  demoSubmitHint: "提出",
+
+  problemsHeading: "問題一覧",
   columnProblem: "問題",
-  columnDifficulty: "難易度",
   columnBest: (mode) => `ベスト（${mode}）`,
-  difficulty: (n) => `難易度 ${n} / 5`,
   bestTooltip: (ce) => `うち CE ${ce} 回`,
+  parTooltip: (par) => `Par ${par}：${par} 回の提出で解くのが目標`,
+  meterTooltip: (par, tries) => `Par ${par} ・ 現在 ${tries} 回`,
   modes: { beginner: "入門", standard: "標準", advanced: "上級", oni: "鬼" },
   modeDescriptions: {
     beginner: "rustc の出力をすべて表示（help・修正提案つき）。エディタにエラー行マーカーを表示",
@@ -364,8 +377,6 @@ const ja: Messages = {
   },
   kinds: { implement: "実装", repair: "修理", signature: "シグネチャ" },
 
-  par: (n) => `Par ${n}`,
-  tries: (n) => `提出 ${n} 回`,
   lives: (n) => `残機 ${n}`,
   modeChip: (mode) => `${mode}モード`,
   submit: "提出",

@@ -18,14 +18,3 @@ export function KindBadge({ kind }: { kind: ProblemKind }) {
     </span>
   );
 }
-
-export function Difficulty({ n }: { n: number }) {
-  const { t } = useApp();
-  return (
-    <span class="difficulty" title={t.difficulty(n)} aria-label={t.difficulty(n)}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} class={i <= n ? "dot on" : "dot"} />
-      ))}
-    </span>
-  );
-}

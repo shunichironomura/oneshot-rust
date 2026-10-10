@@ -14,7 +14,6 @@ export interface JudgeConfig {
 export interface Problem {
   id: string;
   title: Localized;
-  difficulty: number;
   par: number;
   concepts: string[];
   kind: ProblemKind;

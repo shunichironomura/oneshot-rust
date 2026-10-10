@@ -4,13 +4,14 @@ import { localize } from "../core/i18n.ts";
 import { type EditorMarker, present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
-import { remainingLives, type Run } from "../core/run.ts";
+import { remainingLives, type Run, verdictsOf } from "../core/run.ts";
 import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
 import { Editor } from "./Editor.tsx";
 import { FinishedDialog } from "./FinishedDialog.tsx";
 import { IconButton } from "./IconButton.tsx";
 import { KindBadge } from "./KindBadge.tsx";
+import { ParChip } from "./ParMeter.tsx";
 import { ResultPanel } from "./ResultPanel.tsx";
 import { type RunRules, usePlay } from "./usePlay.ts";
 
@@ -110,8 +111,11 @@ export function PlayView({
   problem: Problem;
   challenge?: ChallengeContext;
 }) {
-  const { content, storage, settings, toolchain, locale, t } = useApp();
-  const pool = toolchain.status === "ready" ? toolchain.pool : undefined;
+  const { content, storage, settings, toolchain, locale, t, openSettings } = useApp();
+  // A submission made while the compiler is still loading waits for it; the time
+  // limit only starts once a Worker has picked the submission up.
+  const toolchainFailed =
+    toolchain.state.status === "missing" || toolchain.state.status === "error";
   const freeRules = useMemo(
     () => ({ mode: settings.mode, lives: settings.lives }),
     [settings.mode, settings.lives],
@@ -122,14 +126,14 @@ export function PlayView({
     judgeSources: content.judge,
     storage,
     rules,
-    pool,
+    pool: toolchain.pool,
     challengeId: challenge?.id,
     onRunFinished: challenge?.onRunFinished,
   });
   const [confirming, setConfirming] = useState<"submit" | "restart" | null>(null);
 
-  const running = state.phase.kind === "running";
-  const canSubmit = pool !== undefined && !running && state.loaded;
+  const running = state.phase.kind !== "idle";
+  const canSubmit = !toolchainFailed && !running && state.loaded;
   const requestSubmit = () => {
     if (!canSubmit) return;
     if (settings.confirmSubmit) setConfirming("submit");
@@ -163,18 +167,27 @@ export function PlayView({
           <IconButton
             icon={ArrowLeft}
             label={t.backToProblems}
-            href={routeHref({ page: "list" })}
+            href={routeHref({ page: "problems" })}
           />
         ) : (
           <span class="chip accent">{t.challengeChip(challenge.position)}</span>
         )}
         <h1>{localize(problem.title, locale)}</h1>
         <KindBadge kind={problem.kind} />
-        <span class="chip" title={t.modeHeading}>
+        <button
+          type="button"
+          class="chip"
+          title={t.modeHeading}
+          onClick={challenge === undefined ? openSettings : undefined}
+          disabled={challenge !== undefined}
+        >
           {t.modeChip(t.modes[runMode])}
-        </span>
-        <span class="chip">{t.par(problem.par)}</span>
-        <span class="chip strong">{t.tries(tries)}</span>
+        </button>
+        <ParChip
+          par={problem.par}
+          shots={run === null ? [] : verdictsOf(run)}
+          label={t.meterTooltip(problem.par, tries)}
+        />
         {lives !== null && (
           <span class="chip" title={t.lives(lives)}>
             <Heart size={14} aria-hidden="true" /> {lives}
@@ -212,7 +225,7 @@ export function PlayView({
               disabled={!canSubmit}
               class="primary"
             >
-              {running ? t.judging : pool === undefined ? t.toolchainStarting : t.submit}
+              {running ? t.judging : t.submit}
               <kbd>{SUBMIT_SHORTCUT}</kbd>
             </IconButton>
           </>
@@ -296,7 +309,7 @@ export function PlayPage({ problemId }: { problemId: string }) {
     return (
       <section>
         <p>{t.problemNotFound(problemId)}</p>
-        <a href={routeHref({ page: "list" })}>{t.backToProblems}</a>
+        <a href={routeHref({ page: "problems" })}>{t.backToProblems}</a>
       </section>
     );
   }

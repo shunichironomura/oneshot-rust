@@ -2,29 +2,55 @@
 // editor follows the light/dark color scheme of the page.
 import { HighlightStyle } from "@codemirror/language";
 import { EditorView } from "@codemirror/view";
-import { tags as t } from "@lezer/highlight";
+import { type Tag, tagHighlighter, tags as t } from "@lezer/highlight";
 
-export const highlightStyle = HighlightStyle.define([
+/** Syntax token kinds; each has a `--syn-<kind>` color in styles.css. */
+type Token =
+  | "keyword"
+  | "function"
+  | "macro"
+  | "type"
+  | "string"
+  | "number"
+  | "comment"
+  | "lifetime"
+  | "property"
+  | "meta";
+
+const RULES: { tag: Tag | Tag[]; token: Token }[] = [
   {
-    tag: [t.keyword, t.definitionKeyword, t.moduleKeyword, t.controlKeyword],
-    color: "var(--syn-keyword)",
+    tag: [t.keyword, t.definitionKeyword, t.moduleKeyword, t.controlKeyword, t.modifier],
+    token: "keyword",
   },
-  { tag: [t.modifier, t.operatorKeyword, t.self], color: "var(--syn-keyword)" },
+  { tag: [t.operatorKeyword, t.self], token: "keyword" },
   {
     tag: [t.function(t.variableName), t.function(t.definition(t.variableName))],
-    color: "var(--syn-function)",
+    token: "function",
   },
-  { tag: t.function(t.propertyName), color: "var(--syn-function)" },
-  { tag: t.macroName, color: "var(--syn-macro)" },
-  { tag: [t.typeName, t.namespace], color: "var(--syn-type)" },
-  { tag: [t.string, t.special(t.string), t.character], color: "var(--syn-string)" },
-  { tag: [t.integer, t.float, t.bool], color: "var(--syn-number)" },
-  { tag: [t.lineComment, t.blockComment], color: "var(--syn-comment)", fontStyle: "italic" },
-  { tag: t.special(t.variableName), color: "var(--syn-lifetime)" },
-  { tag: t.labelName, color: "var(--syn-lifetime)" },
-  { tag: t.propertyName, color: "var(--syn-property)" },
-  { tag: t.meta, color: "var(--syn-meta)" },
-]);
+  { tag: t.function(t.propertyName), token: "function" },
+  { tag: t.macroName, token: "macro" },
+  { tag: [t.typeName, t.namespace], token: "type" },
+  { tag: [t.string, t.special(t.string), t.character], token: "string" },
+  { tag: [t.integer, t.float, t.bool], token: "number" },
+  { tag: [t.lineComment, t.blockComment], token: "comment" },
+  { tag: [t.special(t.variableName), t.labelName], token: "lifetime" },
+  { tag: t.propertyName, token: "property" },
+  { tag: t.meta, token: "meta" },
+];
+
+/** For the CodeMirror editor. */
+export const highlightStyle = HighlightStyle.define(
+  RULES.map(({ tag, token }) => ({
+    tag,
+    color: `var(--syn-${token})`,
+    fontStyle: token === "comment" ? "italic" : undefined,
+  })),
+);
+
+/** For static code outside the editor: assigns `syn-<kind>` classes (see styles.css). */
+export const staticHighlighter = tagHighlighter(
+  RULES.map(({ tag, token }) => ({ tag, class: `syn-${token}` })),
+);
 
 export const baseTheme = EditorView.theme({
   "&": {
