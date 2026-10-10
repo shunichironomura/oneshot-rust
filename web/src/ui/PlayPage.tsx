@@ -1,9 +1,20 @@
-import { ArrowLeft, Flag, Heart, History, Lock, Play, RotateCcw, SkipForward } from "lucide-preact";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Flag,
+  Heart,
+  History,
+  Lock,
+  Play,
+  RotateCcw,
+  SkipForward,
+} from "lucide-preact";
 import type { ComponentChildren } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import { type EditorMarker, present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
+import { nextProblem } from "../core/recommend.ts";
 import { routeHref } from "../core/route.ts";
 import { remainingLives, type Run, verdictsOf } from "../core/run.ts";
 import { type SolutionAccess, solutionAccess } from "../core/solution.ts";
@@ -191,6 +202,15 @@ export function PlayView({
   // A finished run keeps showing its count; the next submission starts a new run.
   const tries = run?.attempts.length ?? 0;
   const finishedInChallenge = challenge !== undefined && run !== null && !playing;
+  const nextId =
+    challenge === undefined
+      ? nextProblem(
+          content.problems.map((p) => p.id),
+          problem.id,
+        )
+      : undefined;
+  const nextProblemHref =
+    nextId === undefined ? undefined : routeHref({ page: "play", problemId: nextId });
   // Seeing the solution turns the current and all later runs into practice.
   const practice = playing ? run.assisted === true : state.revealed;
 
@@ -239,6 +259,11 @@ export function PlayView({
             label={t.history}
             href={routeHref({ page: "history", problemId: problem.id })}
           />
+        )}
+        {nextProblemHref !== undefined && run?.status === "solved" && (
+          <IconButton icon={ArrowRight} label={t.nextProblem} href={nextProblemHref}>
+            {t.nextProblem}
+          </IconButton>
         )}
         {finishedInChallenge ? (
           <IconButton
@@ -344,6 +369,7 @@ export function PlayView({
       <FinishedDialog
         problem={problem}
         finished={state.finished}
+        nextProblemHref={nextProblemHref}
         onClose={dismissFinished}
         onShowSolution={
           solution === "hidden"

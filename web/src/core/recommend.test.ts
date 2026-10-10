@@ -1,5 +1,5 @@
 import { expect, test } from "vite-plus/test";
-import { recommend } from "./recommend.ts";
+import { nextProblem, recommend } from "./recommend.ts";
 
 const ids = ["a", "b", "c"];
 
@@ -17,4 +17,13 @@ test("prefers a problem in progress", () => {
 
 test("all solved", () => {
   expect(recommend(ids, new Set(ids), new Set())).toEqual({ kind: "all-solved" });
+});
+
+test.each([
+  ["a", "b"],
+  ["b", "c"],
+  ["c", undefined],
+  ["unknown", undefined],
+])("the problem after %s is %s", (current, next) => {
+  expect(nextProblem(ids, current)).toBe(next);
 });

@@ -18,3 +18,9 @@ export function recommend(
   const next = problemIds.find((id) => !solved.has(id));
   return next === undefined ? { kind: "all-solved" } : { kind: "start", problemId: next };
 }
+
+/** The problem after `current` in the given order, or `undefined` after the last one. */
+export function nextProblem(problemIds: readonly string[], current: string): string | undefined {
+  const i = problemIds.indexOf(current);
+  return i === -1 ? undefined : problemIds[i + 1];
+}

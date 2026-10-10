@@ -1,4 +1,4 @@
-import { BookOpen, Copy, History, X } from "lucide-preact";
+import { ArrowRight, BookOpen, Copy, History, X } from "lucide-preact";
 import { useState } from "preact/hooks";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
@@ -15,9 +15,18 @@ interface Props {
   onShowSolution?: () => void;
   /** The main follow-up action (try again, or move on in a challenge). */
   next: { label: string; action: () => void };
+  /** Link to the next problem in the list (free play only). */
+  nextProblemHref?: string;
 }
 
-export function FinishedDialog({ problem, finished, onClose, onShowSolution, next }: Props) {
+export function FinishedDialog({
+  problem,
+  finished,
+  onClose,
+  onShowSolution,
+  next,
+  nextProblemHref,
+}: Props) {
   const { t } = useApp();
   const [copied, setCopied] = useState(false);
   if (finished === null) return null;
@@ -59,7 +68,17 @@ export function FinishedDialog({ problem, finished, onClose, onShowSolution, nex
         <dd>{t.modes[run.mode]}</dd>
       </dl>
       <div class="actions">
-        <button type="button" class="primary" onClick={next.action}>
+        {nextProblemHref !== undefined && solved && (
+          <a class="button primary icon-button" href={nextProblemHref}>
+            {t.nextProblem}
+            <ArrowRight size={16} aria-hidden="true" />
+          </a>
+        )}
+        <button
+          type="button"
+          class={nextProblemHref !== undefined && solved ? undefined : "primary"}
+          onClick={next.action}
+        >
           {next.label}
         </button>
         <button type="button" class="icon-button" onClick={() => void copy()}>
@@ -76,6 +95,12 @@ export function FinishedDialog({ problem, finished, onClose, onShowSolution, nex
           <History size={16} aria-hidden="true" />
           {t.reviewSubmissions}
         </a>
+        {nextProblemHref !== undefined && !solved && (
+          <a class="button icon-button" href={nextProblemHref}>
+            {t.nextProblem}
+            <ArrowRight size={16} aria-hidden="true" />
+          </a>
+        )}
       </div>
     </Dialog>
   );
