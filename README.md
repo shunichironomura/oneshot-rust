@@ -64,7 +64,9 @@ GitHub Release として公開し、`toolchain/RELEASE` に記録した版をダ
    - Build command：`pnpm run build:deploy`（ツールチェーンの取得 → ビルド → サイズの確認）
    - Deploy command：既定（`npx wrangler deploy`）のまま
    - 本番以外のブランチのビルドを有効にする（プレビュー URL を出すため）
-   - Build variables and secrets：手順 2 のトークンを、シークレット `GITHUB_TOKEN` として登録する
+   - Build variables and secrets：手順 2 のトークンを、シークレット `GITHUB_TOKEN` として登録する。
+     **Production と Previews の両方に登録すること**（Production だけだと、PR のプレビュービルドで取得に失敗する）
+   - プレビュー URL（Settings → Domains & Routes の Preview / Version URLs）を有効にする
 4. 独自ドメイン（oneshotrust.dev）を使う場合は、Worker の **Settings → Domains & Routes** で追加します。
 
 pnpm のバージョンは `package.json` の `packageManager` で固定しています。Node.js はビルド環境の既定（24 系）を使います。
