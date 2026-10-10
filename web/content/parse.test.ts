@@ -29,7 +29,7 @@ test("parseProblem applies judge defaults and renders the statement", () => {
   expect(problem.title).toEqual({ en: "T" });
   expect(problem.statementHtml).toEqual({ en: "<h1>hi</h1>\n" });
   expect(problem.caseIds).toEqual(["sample-1"]);
-  expect(solution).toBe("pub fn f() {}");
+  expect(solution).toEqual({ code: "pub fn f() {}" });
 });
 
 test.each([
@@ -67,4 +67,22 @@ test("extractCaseIds", () => {
     "sample-1",
     "hidden-1",
   ]);
+});
+
+test("parseProblem renders the optional editorial", () => {
+  const { solution } = parseProblem({
+    ...files(MINIMAL),
+    editorialMd: "Use `iter`.",
+    editorialJaMd: "`iter` を使う。",
+  });
+  expect(solution.editorialHtml).toEqual({
+    en: "<p>Use <code>iter</code>.</p>\n",
+    ja: "<p><code>iter</code> を使う。</p>\n",
+  });
+});
+
+test("parseProblem rejects a Japanese editorial without an English one", () => {
+  expect(() => parseProblem({ ...files(MINIMAL), editorialJaMd: "x" })).toThrow(
+    /editorial\.ja\.md requires editorial\.md/,
+  );
 });

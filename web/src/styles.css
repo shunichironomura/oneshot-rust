@@ -1381,3 +1381,38 @@ dialog.drawer {
     grid-template-columns: 1fr;
   }
 }
+
+/* Model solution tab */
+.statement .tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.solution {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  padding-top: 0.8em;
+}
+
+.solution-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6em;
+  padding: 1em;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.solution-gate p {
+  margin: 0;
+}
+
+.solution-note,
+.practice-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9em;
+}

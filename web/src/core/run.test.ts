@@ -71,6 +71,17 @@ describe("improvedBest", () => {
     runId: "old",
   });
 
+  test("an assisted run is never a best", () => {
+    const assisted = ["AC"]
+      .map((k) => attempt(k as Verdict["kind"], 10))
+      .reduce(
+        recordAttempt,
+        newRun({ id: "r", problemId: "p", mode: "standard", lives: null, now: 0, assisted: true }),
+      );
+    expect(assisted.status).toBe("solved");
+    expect(improvedBest(undefined, assisted)).toBeUndefined();
+  });
+
   test("first solve is a best", () => {
     expect(improvedBest(undefined, solvedIn(["AC"]))).toMatchObject({
       submissions: 1,

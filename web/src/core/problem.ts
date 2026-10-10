@@ -26,6 +26,13 @@ export interface Problem {
   judge: JudgeConfig;
 }
 
+/** The model solution, loaded on demand (see `virtual:oneshot-solutions`). */
+export interface ModelSolution {
+  code: string;
+  /** Optional commentary, rendered from Markdown at build time. */
+  editorialHtml?: Localized;
+}
+
 /** Sources of the fixed judge harness (`judge/` in the repository). */
 export interface JudgeSources {
   main: string;

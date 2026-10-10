@@ -1,7 +1,13 @@
 import { marked } from "marked";
 import { parse as parseToml } from "smol-toml";
 import type { Localized } from "../src/core/i18n.ts";
-import type { JudgeConfig, MiriChecks, Problem, ProblemKind } from "../src/core/problem.ts";
+import type {
+  JudgeConfig,
+  MiriChecks,
+  ModelSolution,
+  Problem,
+  ProblemKind,
+} from "../src/core/problem.ts";
 
 /** Raw files of one problem directory (`problems/<id>/`). */
 export interface ProblemFiles {
@@ -13,12 +19,15 @@ export interface ProblemFiles {
   templateRs: string;
   testsRs: string;
   solutionRs: string;
+  /** Optional commentary on the solution (`editorial.md`, `editorial.ja.md`). */
+  editorialMd?: string;
+  editorialJaMd?: string;
 }
 
-/** A problem plus the data that is used for verification only and never shipped. */
+/** A problem plus its model solution, which is shipped separately and loaded on demand. */
 export interface ProblemWithSolution {
   problem: Problem;
-  solution: string;
+  solution: ModelSolution;
 }
 
 export class ProblemFormatError extends Error {
@@ -122,10 +131,21 @@ function parseJudge(dirName: string, value: unknown): JudgeConfig {
   };
 }
 
-function renderStatements(files: ProblemFiles): Localized {
+function renderMarkdown(enMd: string, jaMd: string | undefined): Localized {
   const render = (md: string) => marked.parse(md, { async: false });
-  const en = render(files.statementMd);
-  return files.statementJaMd === undefined ? { en } : { en, ja: render(files.statementJaMd) };
+  const en = render(enMd);
+  return jaMd === undefined ? { en } : { en, ja: render(jaMd) };
+}
+
+function parseSolution(files: ProblemFiles): ModelSolution {
+  const { solutionRs: code, editorialMd, editorialJaMd } = files;
+  if (editorialMd === undefined) {
+    if (editorialJaMd !== undefined) {
+      throw new ProblemFormatError(files.dirName, "editorial.ja.md requires editorial.md");
+    }
+    return { code };
+  }
+  return { code, editorialHtml: renderMarkdown(editorialMd, editorialJaMd) };
 }
 
 export function parseProblem(files: ProblemFiles): ProblemWithSolution {
@@ -155,7 +175,7 @@ export function parseProblem(files: ProblemFiles): ProblemWithSolution {
     par: r.int("par", 1, 20),
     concepts: r.stringArray("concepts"),
     kind: r.oneOf("kind", KINDS),
-    statementHtml: renderStatements(files),
+    statementHtml: renderMarkdown(files.statementMd, files.statementJaMd),
     template: files.templateRs,
     tests: files.testsRs,
     caseIds,
@@ -164,7 +184,7 @@ export function parseProblem(files: ProblemFiles): ProblemWithSolution {
   if (problem.kind === "signature" && !problem.judge.harnessVisible) {
     throw new ProblemFormatError(dirName, "signature problems require harness_visible = true");
   }
-  return { problem, solution: files.solutionRs };
+  return { problem, solution: parseSolution(files) };
 }
 
 /** Problems are ordered by par (the expected number of submissions), then by id. */

@@ -46,7 +46,7 @@ for (const [name, problemId, code] of CASES) {
   const entry = problems.find((p) => p.problem.id === problemId);
   if (entry === undefined) throw new Error(`unknown problem ${problemId}`);
   const source =
-    code === "solution" ? entry.solution : code === "template" ? entry.problem.template : code;
+    code === "solution" ? entry.solution.code : code === "template" ? entry.problem.template : code;
   const { output, nonce, judgement } = await judge(toolchain, entry.problem, judgeSources, source);
   const fixture = { problemId, caseIds: entry.problem.caseIds, nonce, output };
   await writeFile(path.join(FIXTURES_DIR, `${name}.json`), `${JSON.stringify(fixture, null, 2)}\n`);

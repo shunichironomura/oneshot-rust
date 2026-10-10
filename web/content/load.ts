@@ -8,22 +8,32 @@ export const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
 export const PROBLEMS_DIR = path.join(REPO_ROOT, "problems");
 export const JUDGE_DIR = path.join(REPO_ROOT, "judge");
 
-async function readProblemDir(dirName: string): Promise<ProblemWithSolution> {
+export async function readProblemDir(dirName: string): Promise<ProblemWithSolution> {
   const read = (file: string) => readFile(path.join(PROBLEMS_DIR, dirName, file), "utf8");
   const readOptional = (file: string) =>
     read(file).catch((e: unknown) => {
       if (e instanceof Error && "code" in e && e.code === "ENOENT") return undefined;
       throw e;
     });
-  const [problemToml, statementMd, statementJaMd, templateRs, testsRs, solutionRs] =
-    await Promise.all([
-      read("problem.toml"),
-      read("statement.md"),
-      readOptional("statement.ja.md"),
-      read("template.rs"),
-      read("tests.rs"),
-      read("solution.rs"),
-    ]);
+  const [
+    problemToml,
+    statementMd,
+    statementJaMd,
+    templateRs,
+    testsRs,
+    solutionRs,
+    editorialMd,
+    editorialJaMd,
+  ] = await Promise.all([
+    read("problem.toml"),
+    read("statement.md"),
+    readOptional("statement.ja.md"),
+    read("template.rs"),
+    read("tests.rs"),
+    read("solution.rs"),
+    readOptional("editorial.md"),
+    readOptional("editorial.ja.md"),
+  ]);
   return parseProblem({
     dirName,
     problemToml,
@@ -32,6 +42,8 @@ async function readProblemDir(dirName: string): Promise<ProblemWithSolution> {
     templateRs,
     testsRs,
     solutionRs,
+    editorialMd,
+    editorialJaMd,
   });
 }
 
