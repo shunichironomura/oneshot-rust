@@ -91,6 +91,12 @@ export class Storage {
     await this.db.put("runs", run);
   }
 
+  /** The runs with the given ids that still exist, keyed by id. */
+  async runsById(ids: readonly string[]): Promise<Map<string, Run>> {
+    const runs = await Promise.all(ids.map((id) => this.db.get("runs", id)));
+    return new Map(runs.filter((r) => r !== undefined).map((r) => [r.id, r]));
+  }
+
   /** Runs of a problem, newest first. */
   async runsOf(problemId: string): Promise<Run[]> {
     const runs = await this.db.getAllFromIndex("runs", "byProblem", problemId);

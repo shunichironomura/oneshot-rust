@@ -2,7 +2,7 @@ import { CircleCheck, CircleDot } from "lucide-preact";
 import { useEffect, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import { routeHref } from "../core/route.ts";
-import type { Best } from "../core/run.ts";
+import { type Best, bestVerdicts, type Run } from "../core/run.ts";
 import { titleFor } from "../core/scoring.ts";
 import { useApp } from "./context.ts";
 import { KindBadge } from "./KindBadge.tsx";
@@ -11,10 +11,14 @@ import { ParMeter } from "./ParMeter.tsx";
 export function ProblemsPage() {
   const { content, storage, settings, locale, t, openSettings } = useApp();
   const [bests, setBests] = useState<Best[]>([]);
+  const [bestRuns, setBestRuns] = useState<Map<string, Run>>(new Map());
   const [inProgress, setInProgress] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    void storage.allBests().then(setBests);
+    void storage.allBests().then(async (all) => {
+      setBests(all);
+      setBestRuns(await storage.runsById(all.map((b) => b.runId)));
+    });
     void storage.problemsInProgress().then(setInProgress);
   }, [storage]);
 
@@ -68,7 +72,10 @@ export function ProblemsPage() {
                     <span class="best-record" title={t.bestTooltip(best.ceCount)}>
                       <ParMeter
                         par={p.par}
-                        shots={Array.from({ length: best.submissions }, () => "done" as const)}
+                        shots={
+                          bestVerdicts(best, bestRuns.get(best.runId)) ??
+                          Array.from({ length: best.submissions }, () => "done" as const)
+                        }
                         label={`${best.submissions}`}
                       />
                       {titleFor(best.submissions, p.par)}
