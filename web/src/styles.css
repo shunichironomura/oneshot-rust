@@ -256,16 +256,6 @@ button.chip:hover:not(:disabled) {
   white-space: nowrap;
 }
 
-.tag {
-  display: inline-block;
-  margin: 0 0.3em 0.3em 0;
-  padding: 0 0.5em;
-  border-radius: 4px;
-  font-size: 0.78em;
-  background: var(--code-bg);
-  color: var(--muted);
-}
-
 .dim {
   color: var(--muted);
   opacity: 0.6;
@@ -822,10 +812,6 @@ main > section.home {
 .statement .tabs button[aria-selected="true"] {
   border-color: var(--accent);
   color: var(--accent);
-}
-
-.concepts {
-  margin-top: 1.2em;
 }
 
 .markdown code {

@@ -20,7 +20,7 @@ problems/<id>/
 id = "lifetime-01"             # ディレクトリ名と同じにする
 title = { en = "Longest word", ja = "最長の単語" }   # en は必須
 par = 2                        # 想定提出回数（ゴルフのパー）。難易度の指標を兼ね、一覧はこの順に並ぶ
-concepts = ["lifetimes", "iterators"]
+concepts = ["lifetimes", "iterators"]  # 作者向けのメモ。ネタバレになるのでプレイヤーには表示しない
 kind = "implement"             # implement | repair | signature
 
 [judge]                        # 省略した項目は以下の既定値になる
