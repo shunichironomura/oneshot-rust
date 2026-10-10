@@ -72,6 +72,13 @@ async function main() {
   }
 
   const token = await githubToken();
+  if (token === undefined) {
+    // Names only (never values), to diagnose misconfigured CI/build environments.
+    const names = Object.keys(process.env).filter((n) => /TOKEN|GITHUB/i.test(n));
+    console.warn(
+      `No GitHub token found. Environment variables named like TOKEN/GITHUB: ${names.join(", ") || "none"}`,
+    );
+  }
   const release = (await (
     await github(
       `${API_URL}/repos/${REPOSITORY}/releases/tags/${tag}`,
