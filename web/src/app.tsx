@@ -49,14 +49,20 @@ export function App() {
   const [storage, setStorage] = useState<Storage>();
   const [settings, setSettings] = useState<Settings>();
   const [storageError, setStorageError] = useState<string>();
+  /** The database upgrade waits for other tabs, or another tab needs this one to close. */
+  const [storageWait, setStorageWait] = useState<"blocked" | "outdated">();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const openSettings = useCallback(() => setSettingsOpen(true), []);
 
   useEffect(() => {
-    Storage.open()
+    Storage.open({
+      onBlocked: () => setStorageWait("blocked"),
+      onBlocking: () => setStorageWait("outdated"),
+    })
       .then(async (s) => {
         setSettings(await s.loadSettings());
         setStorage(s);
+        setStorageWait((w) => (w === "blocked" ? undefined : w));
       })
       .catch((e: unknown) => setStorageError(String(e)));
   }, []);
@@ -76,6 +82,19 @@ export function App() {
   );
 
   if (storageError !== undefined) return <p class="fatal">{t.storageError(storageError)}</p>;
+  if (storageWait === "outdated") {
+    return (
+      <div class="fatal">
+        <p>{t.storageOutdated}</p>
+        <button type="button" class="primary" onClick={() => window.location.reload()}>
+          {t.reload}
+        </button>
+      </div>
+    );
+  }
+  if (storageWait === "blocked" && storage === undefined) {
+    return <p class="fatal">{t.storageBlocked}</p>;
+  }
   if (storage === undefined || settings === undefined) return null;
 
   const other = OTHER_LOCALE[locale];

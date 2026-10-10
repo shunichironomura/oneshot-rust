@@ -1,6 +1,5 @@
 import { ArrowLeft } from "lucide-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
-import { lineDiff } from "../core/diff.ts";
 import { localize, type Messages } from "../core/i18n.ts";
 import { present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
@@ -8,6 +7,7 @@ import { routeHref } from "../core/route.ts";
 import { type Run, verdictsOf } from "../core/run.ts";
 import { titleFor, verdictEmoji } from "../core/scoring.ts";
 import { useApp } from "./context.ts";
+import { DiffView } from "./DiffView.tsx";
 import { IconButton } from "./IconButton.tsx";
 
 function runStatus(run: Run, problem: Problem, t: Messages): string {
@@ -19,20 +19,6 @@ function runStatus(run: Run, problem: Problem, t: Messages): string {
     case "playing":
       return t.runPlaying;
   }
-}
-
-function DiffView({ before, after }: { before: string; after: string }) {
-  const lines = useMemo(() => lineDiff(before, after), [before, after]);
-  return (
-    <pre class="diff">
-      {lines.map((l, i) => (
-        <div key={i} class={`diff-line ${l.kind}`}>
-          {l.kind === "added" ? "+ " : l.kind === "removed" ? "- " : "  "}
-          {l.text}
-        </div>
-      ))}
-    </pre>
-  );
 }
 
 function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
@@ -116,6 +102,7 @@ export function HistoryPage({ problemId }: { problemId: string }) {
             <span class="chip">{t.modes[run.mode]}</span>
             <span>{verdictsOf(run).map(verdictEmoji).join("")}</span>
             <span>{runStatus(run, problem, t)}</span>
+            {run.assisted === true && <span class="chip">{t.runPractice}</span>}
           </summary>
           {run.id === openRun && <RunDetail run={run} problem={problem} />}
         </details>

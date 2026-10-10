@@ -22,6 +22,8 @@ export interface Run {
   finishedAt?: number;
   /** Set when the run is part of a 連続チャレンジ. */
   challengeId?: string;
+  /** Set when the model solution was seen before or during the run: it cannot set a best record. */
+  assisted?: boolean;
 }
 
 export interface Best {
@@ -40,6 +42,7 @@ export function newRun(params: {
   lives: number | null;
   now: number;
   challengeId?: string;
+  assisted?: boolean;
 }): Run {
   return {
     id: params.id,
@@ -50,6 +53,7 @@ export function newRun(params: {
     attempts: [],
     status: "playing",
     challengeId: params.challengeId,
+    ...(params.assisted === true && { assisted: true }),
   };
 }
 
@@ -83,9 +87,11 @@ export function recordAttempt(run: Run, attempt: Attempt): Run {
   };
 }
 
-/** Returns the new best record if `run` improves on `prev`. */
+/** Returns the new best record if `run` improves on `prev`. Assisted runs never do. */
 export function improvedBest(prev: Best | undefined, run: Run): Best | undefined {
-  if (run.status !== "solved" || run.finishedAt === undefined) return undefined;
+  if (run.status !== "solved" || run.finishedAt === undefined || run.assisted === true) {
+    return undefined;
+  }
   const candidate: Best = {
     problemId: run.problemId,
     mode: run.mode,

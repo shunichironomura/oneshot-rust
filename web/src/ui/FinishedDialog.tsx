@@ -1,4 +1,4 @@
-import { Copy, History, X } from "lucide-preact";
+import { BookOpen, Copy, History, X } from "lucide-preact";
 import { useState } from "preact/hooks";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
@@ -11,11 +11,13 @@ interface Props {
   problem: Problem;
   finished: { run: Run; newBest: Best | undefined } | null;
   onClose: () => void;
+  /** Opens the model solution tab (not offered inside a challenge). */
+  onShowSolution?: () => void;
   /** The main follow-up action (try again, or move on in a challenge). */
   next: { label: string; action: () => void };
 }
 
-export function FinishedDialog({ problem, finished, onClose, next }: Props) {
+export function FinishedDialog({ problem, finished, onClose, onShowSolution, next }: Props) {
   const { t } = useApp();
   const [copied, setCopied] = useState(false);
   if (finished === null) return null;
@@ -47,6 +49,7 @@ export function FinishedDialog({ problem, finished, onClose, next }: Props) {
       </h2>
       <p class="squares">{verdicts.map(verdictEmoji).join("")}</p>
       {newBest !== undefined && <p class="new-best">{t.newBest}</p>}
+      {run.assisted === true && <p class="practice-note">{t.practiceRun}</p>}
       <dl>
         <dt>{t.submissions}</dt>
         <dd>{t.submissionsValue(n, problem.par)}</dd>
@@ -63,6 +66,12 @@ export function FinishedDialog({ problem, finished, onClose, next }: Props) {
           <Copy size={16} aria-hidden="true" />
           {copied ? t.copied : t.copyResult}
         </button>
+        {onShowSolution !== undefined && (
+          <button type="button" class="icon-button" onClick={onShowSolution}>
+            <BookOpen size={16} aria-hidden="true" />
+            {t.seeSolution}
+          </button>
+        )}
         <a class="button icon-button" href={routeHref({ page: "history", problemId: problem.id })}>
           <History size={16} aria-hidden="true" />
           {t.reviewSubmissions}

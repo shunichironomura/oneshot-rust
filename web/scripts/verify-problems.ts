@@ -40,7 +40,7 @@ async function main() {
   let failures = 0;
 
   for (const { problem, solution } of selected) {
-    const sol = await judge(toolchain, problem, judgeSources, solution);
+    const sol = await judge(toolchain, problem, judgeSources, solution.code);
     const tpl = await judge(toolchain, problem, judgeSources, problem.template);
     const errors: string[] = [];
     if (sol.judgement.verdict.kind !== "AC") {

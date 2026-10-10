@@ -31,6 +31,9 @@ export interface Messages {
   navSettings: string;
   language: string;
   storageError: (message: string) => string;
+  storageBlocked: string;
+  storageOutdated: string;
+  reload: string;
 
   // Toolchain loading
   toolchainDownloading: (loadedMb: string, totalMb: string) => string;
@@ -77,6 +80,9 @@ export interface Messages {
   nextInChallenge: string;
   tabStatement: string;
   tabHarness: string;
+  tabSolution: string;
+  practiceChip: string;
+  practiceTooltip: string;
   runModeNotice: (mode: string) => string;
   confirmSubmit: (n: number) => string;
   confirmSubmitYes: string;
@@ -89,6 +95,20 @@ export interface Messages {
   problemNotFound: (id: string) => string;
   backToProblems: string;
   challengeChip: (position: string) => string;
+
+  // Model solution
+  solutionLocked: string;
+  solutionGiveUpHint: string;
+  solutionGiveUp: string;
+  confirmRevealSolution: string;
+  confirmRevealSolutionYes: string;
+  solutionUnlocked: string;
+  showSolution: string;
+  solutionLoading: string;
+  solutionLoadError: (message: string) => string;
+  solutionCode: string;
+  solutionDiff: string;
+  solutionDiffLegend: string;
 
   // Result panel
   resultEmpty: string;
@@ -120,6 +140,8 @@ export interface Messages {
   copyResult: string;
   copied: string;
   reviewSubmissions: string;
+  seeSolution: string;
+  practiceRun: string;
   tryAgain: string;
   close: string;
   shareTries: (n: number) => string;
@@ -131,6 +153,7 @@ export interface Messages {
   runSolved: (n: number, title: string) => string;
   runFailed: string;
   runPlaying: string;
+  runPractice: string;
   attemptHeading: (i: number, verdict: string) => string;
   changesFromTemplate: string;
   changesFrom: (i: number) => string;
@@ -171,6 +194,10 @@ const en: Messages = {
   navSettings: "Settings",
   language: "Language",
   storageError: (m) => `Could not open browser storage (IndexedDB): ${m}`,
+  storageBlocked:
+    "OneShot Rust has been updated. Close or reload the other tabs where it is open to continue.",
+  storageOutdated: "A newer version of OneShot Rust was opened in another tab. Reload to continue.",
+  reload: "Reload",
 
   toolchainDownloading: (l, t) => `Downloading the compiler (first visit only) — ${l} / ${t} MB`,
   toolchainStarting: "Starting compiler…",
@@ -218,6 +245,9 @@ const en: Messages = {
   nextInChallenge: "Next problem",
   tabStatement: "Problem",
   tabHarness: "tests.rs (read-only)",
+  tabSolution: "Solution",
+  practiceChip: "Practice",
+  practiceTooltip: "You have seen the model solution, so this run does not update your best.",
   runModeNotice: (mode) =>
     `This run started in ${mode} mode. A new mode applies from the next run.`,
   confirmSubmit: (n) => `Submit this code? This will be submission #${n}.`,
@@ -231,6 +261,22 @@ const en: Messages = {
   problemNotFound: (id) => `Problem “${id}” was not found.`,
   backToProblems: "Back to problems",
   challengeChip: (p) => `Challenge ${p}`,
+
+  solutionLocked:
+    "The model solution unlocks once you finish this problem: solve it or run out of lives.",
+  solutionGiveUpHint: "Stuck? You can give up and look at it now.",
+  solutionGiveUp: "Give up and show",
+  confirmRevealSolution:
+    "Show the model solution? You can keep going, but from now on runs on this problem are practice and do not update your best.",
+  confirmRevealSolutionYes: "Show solution",
+  solutionUnlocked:
+    "Compare your code with the model solution. Once you look at it, later runs on this problem are practice and do not update your best.",
+  showSolution: "Show solution",
+  solutionLoading: "Loading…",
+  solutionLoadError: (m) => `Could not load the solution: ${m}`,
+  solutionCode: "Code",
+  solutionDiff: "Diff from your code",
+  solutionDiffLegend: "- your code   + model solution",
 
   resultEmpty: "Press Ctrl+Enter (⌘+Enter) to submit. Make it count.",
   compiling: "Compiling…",
@@ -291,6 +337,8 @@ const en: Messages = {
   copyResult: "Copy result",
   copied: "Copied!",
   reviewSubmissions: "Review submissions",
+  seeSolution: "Model solution",
+  practiceRun: "Practice run (solution seen): your best is not updated.",
   tryAgain: "Try again",
   close: "Close",
   shareTries: (n) => `${n} ${n === 1 ? "try" : "tries"}`,
@@ -300,6 +348,7 @@ const en: Messages = {
   noSubmissions: "No submissions yet.",
   runSolved: (n, title) => `Solved in ${n} (${title})`,
   runFailed: "Ended unsolved",
+  runPractice: "Practice",
   runPlaying: "In progress",
   attemptHeading: (i, v) => `Submission #${i} — ${v}`,
   changesFromTemplate: "Changes from the template",
@@ -340,6 +389,11 @@ const ja: Messages = {
   navSettings: "設定",
   language: "言語",
   storageError: (m) => `保存領域（IndexedDB）を開けませんでした: ${m}`,
+  storageBlocked:
+    "OneShot Rust が更新されました。続けるには、ほかのタブで開いている OneShot Rust を閉じるか再読み込みしてください。",
+  storageOutdated:
+    "別のタブで新しい版の OneShot Rust が開かれました。続けるにはこのページを再読み込みしてください。",
+  reload: "再読み込み",
 
   toolchainDownloading: (l, t) => `コンパイラをダウンロード中（初回のみ）… ${l} / ${t} MB`,
   toolchainStarting: "コンパイラ起動中…",
@@ -387,6 +441,9 @@ const ja: Messages = {
   nextInChallenge: "次の問題へ",
   tabStatement: "問題文",
   tabHarness: "tests.rs（読み取り専用）",
+  tabSolution: "模範解答",
+  practiceChip: "練習",
+  practiceTooltip: "模範解答を見たあとの挑戦なので、自己ベストは更新されません。",
   runModeNotice: (mode) =>
     `このランは「${mode}」モードで開始されています。モードの変更は次のランから反映されます。`,
   confirmSubmit: (n) => `この内容で提出しますか？（${n} 回目の提出）`,
@@ -400,6 +457,22 @@ const ja: Messages = {
   problemNotFound: (id) => `問題「${id}」は見つかりませんでした。`,
   backToProblems: "問題一覧へ",
   challengeChip: (p) => `連続チャレンジ ${p}`,
+
+  solutionLocked:
+    "この問題を終える（正解するか、ライフを使い切る）と、模範解答を見られるようになります。",
+  solutionGiveUpHint: "どうしても解けないときは、ギブアップして今すぐ見ることもできます。",
+  solutionGiveUp: "ギブアップして見る",
+  confirmRevealSolution:
+    "模範解答を表示しますか？ 挑戦はこのまま続けられますが、以降この問題の記録は練習扱いになり、自己ベストは更新されません。",
+  confirmRevealSolutionYes: "表示する",
+  solutionUnlocked:
+    "模範解答と見比べてみましょう。表示すると、以降この問題の記録は練習扱いになり、自己ベストは更新されません。",
+  showSolution: "模範解答を表示",
+  solutionLoading: "読み込み中…",
+  solutionLoadError: (m) => `模範解答を読み込めませんでした: ${m}`,
+  solutionCode: "コード",
+  solutionDiff: "自分のコードとの差分",
+  solutionDiffLegend: "- 自分のコード   + 模範解答",
 
   resultEmpty: "Ctrl+Enter（⌘+Enter）で提出します。一発で通しましょう。",
   compiling: "コンパイル中…",
@@ -460,6 +533,8 @@ const ja: Messages = {
   copyResult: "結果をコピー",
   copied: "コピーしました",
   reviewSubmissions: "振り返る",
+  seeSolution: "模範解答",
+  practiceRun: "練習（模範解答を閲覧済み）のため、自己ベストは更新されません。",
   tryAgain: "もう一度",
   close: "閉じる",
   shareTries: (n) => `${n}回`,
@@ -469,6 +544,7 @@ const ja: Messages = {
   noSubmissions: "まだ提出がありません。",
   runSolved: (n, title) => `${n} 回で正解（${title}）`,
   runFailed: "未解決で終了",
+  runPractice: "練習",
   runPlaying: "挑戦中",
   attemptHeading: (i, v) => `${i} 回目の提出 — ${v}`,
   changesFromTemplate: "テンプレートからの変更",

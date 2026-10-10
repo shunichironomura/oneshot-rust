@@ -1,10 +1,12 @@
-import { ArrowLeft, Flag, Heart, History, Play, RotateCcw, SkipForward } from "lucide-preact";
+import { ArrowLeft, Flag, Heart, History, Lock, Play, RotateCcw, SkipForward } from "lucide-preact";
+import type { ComponentChildren } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import { type EditorMarker, present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
 import { remainingLives, type Run, verdictsOf } from "../core/run.ts";
+import { type SolutionAccess, solutionAccess } from "../core/solution.ts";
 import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
 import { Editor } from "./Editor.tsx";
@@ -13,6 +15,7 @@ import { IconButton } from "./IconButton.tsx";
 import { KindBadge } from "./KindBadge.tsx";
 import { ParChip } from "./ParMeter.tsx";
 import { ResultPanel } from "./ResultPanel.tsx";
+import { SolutionPanel } from "./SolutionPanel.tsx";
 import { type RunRules, usePlay } from "./usePlay.ts";
 
 const NO_MARKERS: EditorMarker[] = [];
@@ -20,32 +23,55 @@ const NO_MARKERS: EditorMarker[] = [];
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 const SUBMIT_SHORTCUT = isMac ? "⌘↵" : "Ctrl+↵";
 
-function Statement({ problem }: { problem: Problem }) {
+type StatementTab = "statement" | "harness" | "solution";
+
+interface StatementProps {
+  problem: Problem;
+  tab: StatementTab;
+  onTab: (tab: StatementTab) => void;
+  solution: SolutionAccess;
+  solutionPanel: ComponentChildren;
+}
+
+function Statement({ problem, tab, onTab, solution, solutionPanel }: StatementProps) {
   const { locale, t } = useApp();
-  const [tab, setTab] = useState<"statement" | "harness">("statement");
+  const tabs: { id: StatementTab; label: ComponentChildren }[] = [
+    { id: "statement", label: t.tabStatement },
+    ...(problem.judge.harnessVisible ? [{ id: "harness" as const, label: t.tabHarness }] : []),
+    ...(solution === "hidden"
+      ? []
+      : [
+          {
+            id: "solution" as const,
+            label: (
+              <>
+                {solution === "locked" && <Lock size={12} aria-hidden="true" />}
+                {t.tabSolution}
+              </>
+            ),
+          },
+        ]),
+  ];
   return (
     <aside class="statement">
-      {problem.judge.harnessVisible && (
+      {tabs.length > 1 && (
         <div class="tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === "statement"}
-            onClick={() => setTab("statement")}
-          >
-            {t.tabStatement}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === "harness"}
-            onClick={() => setTab("harness")}
-          >
-            {t.tabHarness}
-          </button>
+          {tabs.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={tab === id}
+              onClick={() => onTab(id)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       )}
-      {tab === "statement" ? (
+      {tab === "solution" && solution !== "hidden" ? (
+        <div class="solution">{solutionPanel}</div>
+      ) : tab === "statement" || tab === "solution" ? (
         <>
           <div
             class="markdown"
@@ -121,7 +147,7 @@ export function PlayView({
     [settings.mode, settings.lives],
   );
   const rules = challenge?.rules ?? freeRules;
-  const { state, setCode, submit, restart, dismissFinished } = usePlay({
+  const { state, setCode, submit, restart, dismissFinished, revealSolution } = usePlay({
     problem,
     judgeSources: content.judge,
     storage,
@@ -130,7 +156,13 @@ export function PlayView({
     challengeId: challenge?.id,
     onRunFinished: challenge?.onRunFinished,
   });
-  const [confirming, setConfirming] = useState<"submit" | "restart" | null>(null);
+  const [confirming, setConfirming] = useState<"submit" | "restart" | "reveal" | null>(null);
+  const [tab, setTab] = useState<StatementTab>("statement");
+  const solution = solutionAccess({
+    inChallenge: challenge !== undefined,
+    revealed: state.revealed,
+    finished: state.hasFinished,
+  });
 
   const running = state.phase.kind !== "idle";
   const canSubmit = !toolchainFailed && !running && state.loaded;
@@ -159,6 +191,8 @@ export function PlayView({
   // A finished run keeps showing its count; the next submission starts a new run.
   const tries = run?.attempts.length ?? 0;
   const finishedInChallenge = challenge !== undefined && run !== null && !playing;
+  // Seeing the solution turns the current and all later runs into practice.
+  const practice = playing ? run.assisted === true : state.revealed;
 
   return (
     <div class="play">
@@ -188,6 +222,11 @@ export function PlayView({
           shots={run === null ? [] : verdictsOf(run)}
           label={t.meterTooltip(problem.par, tries)}
         />
+        {practice && (
+          <span class="chip" title={t.practiceTooltip}>
+            {t.practiceChip}
+          </span>
+        )}
         {lives !== null && (
           <span class="chip" title={t.lives(lives)}>
             <Heart size={14} aria-hidden="true" /> {lives}
@@ -235,7 +274,23 @@ export function PlayView({
         <p class="notice">{t.runModeNotice(t.modes[run.mode])}</p>
       )}
       <div class="play-body">
-        <Statement problem={problem} />
+        <Statement
+          problem={problem}
+          tab={tab}
+          onTab={setTab}
+          solution={solution}
+          solutionPanel={
+            solution !== "hidden" && (
+              <SolutionPanel
+                problem={problem}
+                access={solution}
+                code={state.code}
+                onReveal={() => void revealSolution()}
+                onGiveUp={() => setConfirming("reveal")}
+              />
+            )
+          }
+        />
         <div class="editor-pane">
           {state.loaded && (
             <Editor
@@ -276,10 +331,28 @@ export function PlayView({
           void restart().then(() => challenge?.onNext());
         }}
       />
+      <Confirm
+        open={confirming === "reveal"}
+        message={t.confirmRevealSolution}
+        confirmLabel={t.confirmRevealSolutionYes}
+        onCancel={() => setConfirming(null)}
+        onConfirm={() => {
+          setConfirming(null);
+          void revealSolution();
+        }}
+      />
       <FinishedDialog
         problem={problem}
         finished={state.finished}
         onClose={dismissFinished}
+        onShowSolution={
+          solution === "hidden"
+            ? undefined
+            : () => {
+                dismissFinished();
+                setTab("solution");
+              }
+        }
         next={
           challenge === undefined
             ? {

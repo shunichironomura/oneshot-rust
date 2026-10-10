@@ -6,6 +6,7 @@ import type { Mode } from "../core/mode.ts";
 import type { JudgeSources, Problem } from "../core/problem.ts";
 import { parseStdout, type RunProgress, runProgress } from "../core/protocol.ts";
 import { type Best, improvedBest, newRun, recordAttempt, type Run } from "../core/run.ts";
+import { hasFinishedRun } from "../core/solution.ts";
 import type { RunnerPool } from "../runner/pool.ts";
 import { draftKey, type Storage } from "../storage/db.ts";
 
@@ -31,6 +32,10 @@ export interface PlayState {
   last: LastResult | null;
   /** Set when the latest submission finished the run (solved or out of lives). */
   finished: { run: Run; newBest: Best | undefined } | null;
+  /** Some run of this problem has ended (which unlocks the model solution). */
+  hasFinished: boolean;
+  /** The model solution has been seen: runs from then on are practice. */
+  revealed: boolean;
 }
 
 /** Rules fixed when a run starts. */
@@ -79,32 +84,38 @@ export function usePlay({
     phase: { kind: "idle" },
     last: null,
     finished: null,
+    hasFinished: false,
+    revealed: false,
   });
   const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Load the draft and resume an unfinished run.
   useEffect(() => {
     let cancelled = false;
-    void Promise.all([storage.loadDraft(draft), storage.runsOf(problem.id)]).then(
-      ([savedCode, runs]) => {
-        if (cancelled) return;
-        const playing =
-          runs.find((r) => r.status === "playing" && r.challengeId === challengeId) ?? null;
-        const lastAttempt = playing?.attempts.at(-1);
-        setState((s) => ({
-          loaded: true,
-          code: savedCode ?? problem.template,
-          codeRevision: s.codeRevision + 1,
-          run: playing,
-          phase: { kind: "idle" },
-          last:
-            playing !== null && lastAttempt !== undefined
-              ? { kind: "judged", judgement: lastAttempt.judgement, mode: playing.mode }
-              : null,
-          finished: null,
-        }));
-      },
-    );
+    void Promise.all([
+      storage.loadDraft(draft),
+      storage.runsOf(problem.id),
+      storage.isRevealed(problem.id),
+    ]).then(([savedCode, runs, revealed]) => {
+      if (cancelled) return;
+      const playing =
+        runs.find((r) => r.status === "playing" && r.challengeId === challengeId) ?? null;
+      const lastAttempt = playing?.attempts.at(-1);
+      setState((s) => ({
+        loaded: true,
+        code: savedCode ?? problem.template,
+        codeRevision: s.codeRevision + 1,
+        run: playing,
+        phase: { kind: "idle" },
+        last:
+          playing !== null && lastAttempt !== undefined
+            ? { kind: "judged", judgement: lastAttempt.judgement, mode: playing.mode }
+            : null,
+        finished: null,
+        hasFinished: hasFinishedRun(runs),
+        revealed,
+      }));
+    });
     return () => {
       cancelled = true;
       clearTimeout(saveTimer.current);
@@ -142,6 +153,7 @@ export function usePlay({
             lives: rules.lives,
             now: Date.now(),
             challengeId,
+            assisted: state.revealed,
           });
     const previousRun = state.run;
     const nonce = randomNonce();
@@ -189,6 +201,7 @@ export function usePlay({
         phase: { kind: "idle" },
         last: { kind: "judged", judgement, mode: run.mode },
         finished: next.status !== "playing" ? { run: next, newBest } : null,
+        hasFinished: s.hasFinished || next.status !== "playing",
       }));
       if (next.status !== "playing") onRunFinished?.(next);
     } catch (e) {
@@ -208,7 +221,14 @@ export function usePlay({
       state.run?.status === "playing"
         ? state.run
         : challengeId !== undefined && state.run === null
-          ? newRun({ id: crypto.randomUUID(), problemId: problem.id, ...rules, now, challengeId })
+          ? newRun({
+              id: crypto.randomUUID(),
+              problemId: problem.id,
+              ...rules,
+              now,
+              challengeId,
+              assisted: state.revealed,
+            })
           : null;
     if (current !== null) {
       const abandoned: Run = { ...current, status: "failed", finishedAt: now };
@@ -224,10 +244,19 @@ export function usePlay({
       run: null,
       last: null,
       finished: null,
+      hasFinished: s.hasFinished || current !== null,
     }));
-  }, [state.run, storage, problem, draft, rules, challengeId, onRunFinished]);
+  }, [state.run, state.revealed, storage, problem, draft, rules, challengeId, onRunFinished]);
+
+  /** Marks the model solution as seen. A run in progress goes on as practice. */
+  const revealSolution = useCallback(async () => {
+    const run = state.run?.status === "playing" ? { ...state.run, assisted: true } : state.run;
+    if (run !== null && run !== state.run) await storage.saveRun(run);
+    await storage.saveReveal(problem.id, Date.now());
+    setState((s) => ({ ...s, run, revealed: true }));
+  }, [state.run, storage, problem]);
 
   const dismissFinished = useCallback(() => setState((s) => ({ ...s, finished: null })), []);
 
-  return { state, setCode, submit, restart, dismissFinished };
+  return { state, setCode, submit, restart, dismissFinished, revealSolution };
 }
