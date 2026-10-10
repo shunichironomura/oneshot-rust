@@ -1,24 +1,11 @@
 import type { VerdictKind } from "../core/classify.ts";
+import { verdictTone } from "../core/scoring.ts";
 
 /** How a used slot is drawn: by verdict, or plainly (e.g. a best record). */
 export type Shot = VerdictKind | "done";
 
 function shotClass(shot: Shot): string {
-  switch (shot) {
-    case "AC":
-      return "ac";
-    case "CE":
-      return "ce";
-    case "done":
-      return "done";
-    case "IE":
-      return "ie";
-    case "WA":
-    case "RE":
-    case "UB":
-    case "TLE":
-      return "miss";
-  }
+  return shot === "done" ? "done" : verdictTone(shot);
 }
 
 interface Props {

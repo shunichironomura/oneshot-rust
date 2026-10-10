@@ -42,6 +42,25 @@ export function verdictEmoji(kind: VerdictKind): string {
   }
 }
 
+/** How a verdict is colored: accepted, compile error, failed at run time, or not counted. */
+export type VerdictTone = "ac" | "ce" | "miss" | "ie";
+
+export function verdictTone(kind: VerdictKind): VerdictTone {
+  switch (kind) {
+    case "AC":
+      return "ac";
+    case "CE":
+      return "ce";
+    case "WA":
+    case "RE":
+    case "UB":
+    case "TLE":
+      return "miss";
+    case "IE":
+      return "ie";
+  }
+}
+
 export interface ShareInput {
   problemId: string;
   mode: Mode;

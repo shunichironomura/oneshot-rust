@@ -1,11 +1,14 @@
-import { ArrowRight, BookOpen, Copy, History, X } from "lucide-preact";
-import { useState } from "preact/hooks";
+import { ArrowRight, BookOpen, Copy, History, Share2, X } from "lucide-preact";
+import { useEffect, useState } from "preact/hooks";
+import { localize } from "../core/i18n.ts";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
 import { type Best, ceCount, type Run, verdictsOf } from "../core/run.ts";
 import { shareText, titleFor, verdictEmoji } from "../core/scoring.ts";
+import { shareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
+import { renderShareImage, type ShareOutcome, shareImage } from "./shareImage.ts";
 
 interface Props {
   problem: Problem;
@@ -27,8 +30,40 @@ export function FinishedDialog({
   next,
   nextProblemHref,
 }: Props) {
-  const { t } = useApp();
+  const { locale, t } = useApp();
   const [copied, setCopied] = useState(false);
+  // Rendered when the dialog opens, so that sharing can start right from the click.
+  const [image, setImage] = useState<File>();
+  const [shared, setShared] = useState<ShareOutcome>();
+
+  useEffect(() => {
+    setImage(undefined);
+    setShared(undefined);
+    if (finished === null) return;
+    const { run } = finished;
+    const card = shareCard(
+      {
+        problemId: problem.id,
+        problemTitle: localize(problem.title, locale),
+        mode: run.mode,
+        par: problem.par,
+        verdicts: verdictsOf(run),
+        solved: run.status === "solved",
+      },
+      t,
+    );
+    let current = true;
+    renderShareImage(card)
+      .then((blob) => {
+        const file = new File([blob], `oneshot-rust-${problem.id}.png`, { type: "image/png" });
+        if (current) setImage(file);
+      })
+      .catch((e: unknown) => console.error("Could not render the share image", e));
+    return () => {
+      current = false;
+    };
+  }, [finished, problem, locale, t]);
+
   if (finished === null) return null;
   const { run, newBest } = finished;
   const n = run.attempts.length;
@@ -41,6 +76,9 @@ export function FinishedDialog({
   const copy = async () => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
+  };
+  const share = async () => {
+    if (image !== undefined) setShared(await shareImage(image, text));
   };
 
   return (
@@ -84,6 +122,15 @@ export function FinishedDialog({
         <button type="button" class="icon-button" onClick={() => void copy()}>
           <Copy size={16} aria-hidden="true" />
           {copied ? t.copied : t.copyResult}
+        </button>
+        <button
+          type="button"
+          class="icon-button"
+          onClick={() => void share()}
+          disabled={image === undefined}
+        >
+          <Share2 size={16} aria-hidden="true" />
+          {shared === "downloaded" ? t.imageSaved : t.shareImage}
         </button>
         {onShowSolution !== undefined && (
           <button type="button" class="icon-button" onClick={onShowSolution}>

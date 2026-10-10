@@ -142,6 +142,8 @@ export interface Messages {
   newBest: string;
   copyResult: string;
   copied: string;
+  shareImage: string;
+  imageSaved: string;
   reviewSubmissions: string;
   seeSolution: string;
   practiceRun: string;
@@ -342,6 +344,8 @@ const en: Messages = {
   newBest: "New personal best!",
   copyResult: "Copy result",
   copied: "Copied!",
+  shareImage: "Share image",
+  imageSaved: "Image saved",
   reviewSubmissions: "Review submissions",
   seeSolution: "Model solution",
   practiceRun: "Practice run (solution seen): your best is not updated.",
@@ -541,6 +545,8 @@ const ja: Messages = {
   newBest: "自己ベスト更新！",
   copyResult: "結果をコピー",
   copied: "コピーしました",
+  shareImage: "画像でシェア",
+  imageSaved: "画像を保存しました",
   reviewSubmissions: "振り返る",
   seeSolution: "模範解答",
   practiceRun: "練習（模範解答を閲覧済み）のため、自己ベストは更新されません。",
