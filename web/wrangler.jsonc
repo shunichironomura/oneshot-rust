@@ -16,4 +16,7 @@
   "assets": {
     "directory": "./dist",
   },
+  // Required by `wrangler preview` (the Workers Builds preview command); the site
+  // needs no preview-specific settings.
+  "previews": {},
 }
