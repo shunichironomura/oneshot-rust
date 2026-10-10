@@ -3,6 +3,7 @@ import type { Judgement, Verdict } from "./classify.ts";
 import {
   type Attempt,
   type Best,
+  bestVerdicts,
   ceCount,
   improvedBest,
   newRun,
@@ -102,5 +103,32 @@ describe("improvedBest", () => {
 
   test("unsolved runs are never a best", () => {
     expect(improvedBest(undefined, fresh())).toBeUndefined();
+  });
+});
+
+describe("bestVerdicts", () => {
+  const solved = [attempt("CE", 1), attempt("WA", 2), attempt("AC", 3)].reduce(
+    recordAttempt,
+    fresh(),
+  );
+  const best: Best = {
+    problemId: "p",
+    mode: "standard",
+    submissions: 3,
+    ceCount: 1,
+    achievedAt: 3,
+    runId: "r",
+  };
+
+  test("returns the verdicts of the best run", () => {
+    expect(bestVerdicts(best, solved)).toEqual(["CE", "WA", "AC"]);
+  });
+
+  test.each([
+    ["the run is missing", best, undefined],
+    ["the run is another one", { ...best, runId: "other" }, solved],
+    ["the run does not match the record", { ...best, submissions: 2 }, solved],
+  ])("is undefined when %s", (_, b, run) => {
+    expect(bestVerdicts(b, run)).toBeUndefined();
   });
 });

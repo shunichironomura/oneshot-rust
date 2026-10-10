@@ -61,6 +61,16 @@ export function verdictsOf(run: Run): VerdictKind[] {
   return run.attempts.map((a) => a.judgement.verdict.kind);
 }
 
+/**
+ * The verdicts of the run that set `best`, or `undefined` when that run is not available
+ * (e.g. it was dropped by a storage upgrade that kept the best records).
+ */
+export function bestVerdicts(best: Best, run: Run | undefined): VerdictKind[] | undefined {
+  if (run === undefined || run.id !== best.runId) return undefined;
+  const verdicts = verdictsOf(run);
+  return verdicts.length === best.submissions ? verdicts : undefined;
+}
+
 export function ceCount(run: Run): number {
   return verdictsOf(run).filter((k) => k === "CE").length;
 }
