@@ -1,0 +1,13 @@
+id = "hashmap-01"
+title = "単語の出現回数"
+difficulty = 2
+par = 2
+concepts = ["HashMap", "String", "sorting"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

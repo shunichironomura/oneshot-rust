@@ -1,0 +1,13 @@
+id = "struct-01"
+title = "ジェネリックなスタック"
+difficulty = 2
+par = 2
+concepts = ["generics", "structs", "Option"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

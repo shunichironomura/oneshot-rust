@@ -1,0 +1,9 @@
+pub fn largest<T: PartialOrd>(items: &[T]) -> &T {
+    let mut best = &items[0];
+    for item in items {
+        if item > best {
+            best = item;
+        }
+    }
+    best
+}

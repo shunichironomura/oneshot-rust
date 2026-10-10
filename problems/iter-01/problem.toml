@@ -1,0 +1,13 @@
+id = "iter-01"
+title = "偶数の二乗和"
+difficulty = 1
+par = 1
+concepts = ["iterators", "slices"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
