@@ -18,6 +18,7 @@ import { nextProblem } from "../core/recommend.ts";
 import { routeHref } from "../core/route.ts";
 import { remainingLives, type Run, verdictsOf } from "../core/run.ts";
 import { type SolutionAccess, solutionAccess } from "../core/solution.ts";
+import { CodeView } from "./CodeView.tsx";
 import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
 import { Editor } from "./Editor.tsx";
@@ -89,7 +90,9 @@ function Statement({ problem, tab, onTab, solution, solutionPanel }: StatementPr
           dangerouslySetInnerHTML={{ __html: localize(problem.statementHtml, locale) }}
         />
       ) : (
-        <pre class="harness">{problem.tests}</pre>
+        <div class="harness">
+          <CodeView code={problem.tests} />
+        </div>
       )}
     </aside>
   );
