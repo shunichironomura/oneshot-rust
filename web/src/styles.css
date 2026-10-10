@@ -406,6 +406,21 @@ main > section.home {
   font-size: 1.15em;
 }
 
+.credit {
+  margin-top: 3em;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.credit a {
+  color: inherit;
+}
+
+.credit a:hover {
+  color: var(--accent);
+}
+
 .demo {
   border: 1px solid var(--border);
   border-radius: 12px;

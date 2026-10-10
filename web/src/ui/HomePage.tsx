@@ -7,6 +7,8 @@ import { useApp } from "./context.ts";
 import { HeroDemo } from "./HeroDemo.tsx";
 import { ParChip } from "./ParMeter.tsx";
 
+const AUTHOR = { name: "Shunichiro Nomura", url: "https://github.com/shunichironomura" };
+
 export function HomePage() {
   const { content, storage, settings, locale, t } = useApp();
   const [solved, setSolved] = useState<Set<string>>(new Set());
@@ -88,6 +90,10 @@ export function HomePage() {
           </div>
         </div>
       </div>
+
+      <footer class="credit">
+        {t.madeBy} <a href={AUTHOR.url}>{AUTHOR.name}</a>
+      </footer>
     </section>
   );
 }
