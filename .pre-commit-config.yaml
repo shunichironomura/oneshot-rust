@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-toml
+      - id: check-yaml
+        args: [--allow-multiple-documents] # pnpm-lock.yaml
+      - id: end-of-file-fixer
+        exclude: ^web/src/core/__fixtures__/
+      - id: trailing-whitespace
+        exclude: ^(web/src/core/__fixtures__/|toolchain/patches/)
+  - repo: https://github.com/rvben/rumdl-pre-commit
+    rev: v0.2.79
+    hooks:
+      - id: rumdl
+  - repo: local
+    hooks:
+      - id: web-check
+        name: vp check (format, lint, type check)
+        entry: sh -c 'cd web && vp check'
+        language: system
+        files: ^web/
+        pass_filenames: false
+      - id: web-test
+        name: vp test
+        entry: sh -c 'cd web && vp test'
+        language: system
+        files: ^(web|judge)/
+        pass_filenames: false
