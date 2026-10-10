@@ -10,9 +10,9 @@ function post(message: FromWorker) {
   self.postMessage(message);
 }
 
-async function init(module: WebAssembly.Module, sysrootUrl: string) {
+async function init({ module, baseUrl, sysroot }: Extract<ToWorker, { type: "init" }>) {
   const start = performance.now();
-  const tar = new Uint8Array(await (await fetchCached(sysrootUrl)).arrayBuffer());
+  const tar = new Uint8Array(await (await fetchCached(baseUrl, sysroot)).arrayBuffer());
   toolchain = { module, sysroot: buildSysrootTree(parseTar(tar)) };
   post({ type: "ready", initMs: performance.now() - start });
 }
@@ -30,7 +30,7 @@ async function submit(message: Extract<ToWorker, { type: "submit" }>) {
 
 self.onmessage = (event: MessageEvent<ToWorker>) => {
   const message = event.data;
-  const task = message.type === "init" ? init(message.module, message.sysrootUrl) : submit(message);
+  const task = message.type === "init" ? init(message) : submit(message);
   task.catch((e: unknown) =>
     post({ type: "fatal", message: e instanceof Error ? e.message : String(e) }),
   );

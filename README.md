@@ -36,8 +36,33 @@ web/         フロントエンド（Vite+ / Preact / CodeMirror 6）
    vp dev
    ```
 
-   初回アクセス時にツールチェーン（約 230 MB）をダウンロードし、Cache Storage に保存します。
+   初回アクセス時にツールチェーン（圧縮して約 55 MB）をダウンロードし、Cache Storage に保存します。
    2 回目以降はキャッシュから読み込みます。
+
+## Cloudflare Pages へのデプロイ
+
+`web/dist/` を Wrangler で直接アップロードします（Pages 側でのビルドはしません）。ツールチェーンのビルドに
+20〜30 分かかり、Pages のビルド制限時間（20 分）を超えるためです。
+
+1. 初回のみ、ログインしてプロジェクトを作ります。
+
+   ```sh
+   cd web
+   vp exec wrangler login
+   vp exec wrangler pages project create oneshot-rust --production-branch main
+   ```
+
+2. ビルドしてデプロイします。`deploy` は本番、`deploy:preview` はプレビュー用の URL に配置します。
+
+   ```sh
+   vp run deploy
+   ```
+
+どちらのスクリプトも、ビルドのあとに `scripts/check-dist.ts` で Pages の制限（1 ファイル 25 MiB、20,000 ファイル）を
+確認し、超えていればデプロイを中止します。`vp run pages:dev` を使うと、Pages と同じ配信
+（`public/_headers` のキャッシュ設定を含む）を手元の `http://localhost:8788` で確認できます。
+
+CI から実行する場合は、`CLOUDFLARE_ACCOUNT_ID` と `CLOUDFLARE_API_TOKEN`（Cloudflare Pages の Edit 権限）を設定してください。
 
 ## 開発
 

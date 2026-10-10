@@ -9,9 +9,17 @@ export interface ToolchainManifest {
   };
 }
 
+/**
+ * One asset, served gzipped and split into parts (Cloudflare Pages limits files
+ * to 25 MiB). Paths are relative to the toolchain directory.
+ */
 export interface ToolchainFile {
-  /** Path relative to the toolchain directory. */
+  /** Logical path of the decompressed file; used as its Cache Storage key, not served. */
   path: string;
-  /** Uncompressed size in bytes. */
+  /** Decompressed size in bytes. */
   size: number;
+  /** Total size of the parts in bytes. */
+  compressedSize: number;
+  /** Parts of the gzipped file, in order. */
+  parts: string[];
 }

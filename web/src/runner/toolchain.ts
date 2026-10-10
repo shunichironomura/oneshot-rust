@@ -1,9 +1,11 @@
 // Main-thread toolchain loading: download (once, into Cache Storage) and compile miri.wasm.
-import { fetchCached, hasCacheStorage, TOOLCHAIN_CACHE } from "./fetch-cached.ts";
+import { downloadAsset } from "./assets.ts";
+import { assetUrl, fetchCached, hasCacheStorage, TOOLCHAIN_CACHE } from "./fetch-cached.ts";
 import type { ToolchainFile, ToolchainManifest } from "./manifest.ts";
 
 export interface LoadProgress {
   phase: "download" | "compile";
+  /** Compressed bytes downloaded so far. */
   loaded: number;
   total: number;
 }
@@ -18,55 +20,49 @@ export class ToolchainMissingError extends Error {
 
 export interface LoadedToolchain {
   manifest: ToolchainManifest;
+  /** Base URL that manifest paths are relative to. */
+  baseUrl: string;
   module: WebAssembly.Module;
-  sysrootUrl: string;
 }
 
-async function downloadWithProgress(
-  url: string,
-  onChunk: (bytes: number) => void,
-): Promise<Response> {
-  const res = await fetch(url);
-  if (!res.ok || res.body === null) throw new Error(`failed to download ${url}: ${res.status}`);
-  const chunks: Uint8Array<ArrayBuffer>[] = [];
-  const reader = res.body.getReader();
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    onChunk(value.byteLength);
-  }
-  return new Response(new Blob(chunks), { headers: res.headers });
-}
+const CONTENT_TYPES: Record<keyof ToolchainManifest["files"], string> = {
+  miriWasm: "application/wasm",
+  sysroot: "application/x-tar",
+};
 
+/** Downloads missing assets into Cache Storage and drops other toolchain versions. */
 async function ensureCached(
-  files: { url: string; file: ToolchainFile }[],
+  baseUrl: string,
+  manifest: ToolchainManifest,
   onProgress: (p: LoadProgress) => void,
 ): Promise<void> {
-  if (!hasCacheStorage()) return; // Workers fall back to plain fetch (HTTP cache).
+  if (!hasCacheStorage()) return; // Workers then download what they need themselves.
   const cache = await caches.open(TOOLCHAIN_CACHE);
-  // Drop assets of other toolchain versions.
-  const wanted = new Set(files.map((f) => f.url));
+  const entries = Object.entries(manifest.files) as [keyof typeof CONTENT_TYPES, ToolchainFile][];
+  const wanted = new Set(entries.map(([, file]) => assetUrl(baseUrl, file)));
   for (const req of await cache.keys()) {
     if (!wanted.has(req.url)) await cache.delete(req);
   }
-  const missing: typeof files = [];
-  for (const f of files) {
-    if ((await cache.match(f.url)) === undefined) missing.push(f);
+  const missing: typeof entries = [];
+  for (const entry of entries) {
+    if ((await cache.match(assetUrl(baseUrl, entry[1]))) === undefined) missing.push(entry);
   }
-  const total = missing.reduce((n, f) => n + f.file.size, 0);
+  const total = missing.reduce((n, [, file]) => n + file.compressedSize, 0);
   let loaded = 0;
-  for (const { url } of missing) {
-    const res = await downloadWithProgress(url, (bytes) => {
-      loaded += bytes;
-      onProgress({ phase: "download", loaded, total });
-    });
-    await cache.put(url, res);
-  }
+  await Promise.all(
+    missing.map(async ([key, file]) => {
+      const blob = await downloadAsset(baseUrl, file, (bytes) => {
+        loaded += bytes;
+        onProgress({ phase: "download", loaded, total });
+      });
+      const headers = { "Content-Type": CONTENT_TYPES[key] };
+      await cache.put(assetUrl(baseUrl, file), new Response(blob, { headers }));
+    }),
+  );
 }
 
-async function compileWasm(url: string): Promise<WebAssembly.Module> {
-  const res = await fetchCached(url);
+async function compileWasm(baseUrl: string, file: ToolchainFile): Promise<WebAssembly.Module> {
+  const res = await fetchCached(baseUrl, file);
   try {
     return await WebAssembly.compileStreaming(res.clone());
   } catch {
@@ -80,18 +76,12 @@ export async function loadToolchain(
   onProgress: (p: LoadProgress) => void,
 ): Promise<LoadedToolchain> {
   const manifestRes = await fetch(new URL("manifest.json", baseUrl), { cache: "no-cache" });
-  if (!manifestRes.ok) throw new ToolchainMissingError();
+  // Static hosts may answer a missing file with the SPA's index.html.
+  const isJson = manifestRes.headers.get("Content-Type")?.includes("json") ?? false;
+  if (!manifestRes.ok || !isJson) throw new ToolchainMissingError();
   const manifest = (await manifestRes.json()) as ToolchainManifest;
-  const miriUrl = new URL(manifest.files.miriWasm.path, baseUrl).href;
-  const sysrootUrl = new URL(manifest.files.sysroot.path, baseUrl).href;
-  await ensureCached(
-    [
-      { url: miriUrl, file: manifest.files.miriWasm },
-      { url: sysrootUrl, file: manifest.files.sysroot },
-    ],
-    onProgress,
-  );
+  await ensureCached(baseUrl, manifest, onProgress);
   onProgress({ phase: "compile", loaded: 0, total: 0 });
-  const module = await compileWasm(miriUrl);
-  return { manifest, module, sysrootUrl };
+  const module = await compileWasm(baseUrl, manifest.files.miriWasm);
+  return { manifest, baseUrl, module };
 }

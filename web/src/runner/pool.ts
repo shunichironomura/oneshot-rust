@@ -25,7 +25,12 @@ class RunnerWorker {
     });
     this.worker.onmessage = (e: MessageEvent<FromWorker>) => this.listener?.(e.data);
     this.worker.onerror = (e) => this.listener?.({ type: "fatal", message: e.message });
-    this.post({ type: "init", module: toolchain.module, sysrootUrl: toolchain.sysrootUrl });
+    this.post({
+      type: "init",
+      module: toolchain.module,
+      baseUrl: toolchain.baseUrl,
+      sysroot: toolchain.manifest.files.sysroot,
+    });
   }
 
   post(message: ToWorker) {

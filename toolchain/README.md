@@ -12,13 +12,15 @@
 
 ```text
 web/public/toolchain/
-  manifest.json            ツールチェーン ID とファイル一覧（フロントエンドが最初に読む）
-  <toolchainId>/miri.wasm  wasm32-wasip1 向けの Miri
-  <toolchainId>/sysroot.tar  x86_64-unknown-linux-gnu 向けの std など（MIR 付き rlib）
+  manifest.json                    ツールチェーン ID とファイル一覧（フロントエンドが最初に読む）
+  <toolchainId>/miri.wasm.gz.<n>   wasm32-wasip1 向けの Miri（gzip 圧縮して分割）
+  <toolchainId>/sysroot.tar.gz.<n> x86_64-unknown-linux-gnu 向けの std など（MIR 付き rlib、同上）
 ```
 
-`toolchainId` は 2 つのファイルの内容ハッシュです。ブラウザはこの ID を含む URL で Cache Storage に
-キャッシュするため、ツールチェーンを更新したときだけ再ダウンロードされます。
+- `toolchainId` は 2 つのファイルの内容ハッシュです。ブラウザは展開後のファイルを、この ID を含むキーで Cache Storage に
+  保存するため、ツールチェーンを更新したときだけ再ダウンロードされます。
+- Cloudflare Pages の 1 ファイル 25 MiB の上限に収めるため、各ファイルは gzip で圧縮したうえで 20 MiB ごとに分割しています。
+  ブラウザは断片を並列にダウンロードし、`DecompressionStream` で展開します（転送量は合計で約 55 MiB）。
 
 作業ディレクトリは `toolchain/work/`（git 管理外）です。2 回目以降は差分だけがビルドされます。
 
@@ -69,5 +71,4 @@ web/public/toolchain/
 
 - WASI 上の rustc は panic=abort なので、コンパイルエラー時は終了コード 1 ではなく Wasm の trap で終わります。
   判定側（`web/src/core/classify.ts`）で考慮しています。
-- 配信サイズが大きくなっています（miri.wasm 約 119 MB、sysroot 約 113 MB。gzip でそれぞれ約 22 MB と 35 MB）。
-  Cloudflare Pages の 1 ファイル 25 MiB の上限を超えるので、デプロイ時は分割配信などが必要です。
+- 展開後のサイズは miri.wasm が約 119 MB、sysroot が約 113 MB です。ブラウザのメモリにはこのサイズで載ります。

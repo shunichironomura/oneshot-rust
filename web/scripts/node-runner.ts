@@ -2,11 +2,12 @@
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { gunzipSync } from "node:zlib";
 import { classify, type Judgement, type RunOutput } from "../src/core/classify.ts";
 import { buildSubmission } from "../src/core/harness.ts";
 import type { JudgeSources, Problem } from "../src/core/problem.ts";
 import { parseTar } from "../src/core/tar.ts";
-import type { ToolchainManifest } from "../src/runner/manifest.ts";
+import type { ToolchainFile, ToolchainManifest } from "../src/runner/manifest.ts";
 import { buildSysrootTree, runMiri, type SysrootTree } from "../src/runner/miri.ts";
 
 const TOOLCHAIN_DIR = path.resolve(import.meta.dirname, "../public/toolchain");
@@ -16,17 +17,23 @@ export interface Toolchain {
   sysroot: SysrootTree;
 }
 
+/** Joins and decompresses the gzipped parts of an asset. */
+async function readAsset(file: ToolchainFile): Promise<Uint8Array<ArrayBuffer>> {
+  const parts = await Promise.all(file.parts.map((p) => readFile(path.join(TOOLCHAIN_DIR, p))));
+  return new Uint8Array(gunzipSync(Buffer.concat(parts)));
+}
+
 export async function loadToolchain(): Promise<Toolchain> {
   const manifest = JSON.parse(
     await readFile(path.join(TOOLCHAIN_DIR, "manifest.json"), "utf8"),
   ) as ToolchainManifest;
   const [wasm, tar] = await Promise.all([
-    readFile(path.join(TOOLCHAIN_DIR, manifest.files.miriWasm.path)),
-    readFile(path.join(TOOLCHAIN_DIR, manifest.files.sysroot.path)),
+    readAsset(manifest.files.miriWasm),
+    readAsset(manifest.files.sysroot),
   ]);
   return {
     module: await WebAssembly.compile(wasm),
-    sysroot: buildSysrootTree(parseTar(new Uint8Array(tar))),
+    sysroot: buildSysrootTree(parseTar(tar)),
   };
 }
 

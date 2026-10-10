@@ -106,6 +106,29 @@ def build-sysroot []: nothing -> nothing {
   with-env $env_vars { ^($bin | path join cargo-miri) miri setup --target $INTERPRETED_TARGET }
 }
 
+# Cloudflare Pages serves files of at most 25 MiB, so assets are gzipped and split.
+const PART_SIZE = 20 * 1024 * 1024
+
+# Gzips `file` and splits it into parts of at most PART_SIZE bytes under `dest`.
+# Returns its manifest entry; part paths are relative to the toolchain directory.
+def publish-asset [file: path, dest: path, id: string]: nothing -> record {
+  let name = $file | path basename
+  let size = ls $file | get 0.size | into int
+  let gz = $dest | path join $"($name).gz"
+  ^gzip -9 -n -c $file | save --raw $gz
+  let data = open --raw $gz
+  let compressed_size = $data | bytes length
+  let count = ($compressed_size + $PART_SIZE - 1) // $PART_SIZE
+  let parts = 0..<$count | each { |i|
+    let part = $"($name).gz.($i)"
+    let end = [(($i + 1) * $PART_SIZE) $compressed_size] | math min
+    $data | bytes at (($i * $PART_SIZE)..<$end) | save --raw --force ($dest | path join $part)
+    $"($id)/($part)"
+  }
+  rm $gz
+  { path: $"($id)/($name)", size: $size, compressedSize: $compressed_size, parts: $parts }
+}
+
 def package []: nothing -> nothing {
   let staging = $WORK_DIR | path join out
   rm --recursive --force $staging
@@ -128,14 +151,13 @@ def package []: nothing -> nothing {
   let dest = $PUBLIC_DIR | path join $id
   rm --recursive --force $PUBLIC_DIR
   mkdir $dest
-  mv $miri_wasm $sysroot_tar $dest
   {
     toolchainId: $id
     rustCommit: $RUST_COMMIT
     target: $INTERPRETED_TARGET
     files: {
-      miriWasm: { path: $"($id)/miri.wasm", size: (ls ($dest | path join miri.wasm) | get 0.size | into int) }
-      sysroot: { path: $"($id)/sysroot.tar", size: (ls ($dest | path join sysroot.tar) | get 0.size | into int) }
+      miriWasm: (publish-asset $miri_wasm $dest $id)
+      sysroot: (publish-asset $sysroot_tar $dest $id)
     }
   } | to json | save --force ($PUBLIC_DIR | path join manifest.json)
   print $"Installed toolchain ($id) into ($PUBLIC_DIR)"
