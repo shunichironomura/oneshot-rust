@@ -865,7 +865,7 @@ main > section.home {
 
 .harness {
   margin-top: 0.8em;
-  padding: 0.7em 1em;
+  padding: 0.7em 0;
   background: var(--code-bg);
   border-radius: var(--radius);
   font-size: 0.85em;
