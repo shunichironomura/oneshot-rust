@@ -8,9 +8,10 @@
     "build": "tsc -b && vp build",
     "preview": "vp preview",
     "check-dist": "node scripts/check-dist.ts",
-    "pages:dev": "vp run build && node scripts/check-dist.ts && wrangler pages dev dist",
-    "deploy": "vp run build && node scripts/check-dist.ts && wrangler pages deploy dist --project-name oneshot-rust --branch main",
-    "deploy:preview": "vp run build && node scripts/check-dist.ts && wrangler pages deploy dist --project-name oneshot-rust"
+    "deploy": "vp run build:deploy && wrangler deploy",
+    "fetch-toolchain": "node scripts/fetch-toolchain.ts",
+    "build:deploy": "vp run fetch-toolchain && vp run build && vp run check-dist",
+    "serve:dist": "vp run build && vp run check-dist && wrangler dev"
   },
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",
@@ -44,5 +45,6 @@
       "version": "12.10.1",
       "onFail": "download"
     }
-  }
+  },
+  "packageManager": "pnpm@12.10.1"
 }

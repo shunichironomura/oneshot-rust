@@ -19,10 +19,20 @@ web/public/toolchain/
 
 - `toolchainId` は 2 つのファイルの内容ハッシュです。ブラウザは展開後のファイルを、この ID を含むキーで Cache Storage に
   保存するため、ツールチェーンを更新したときだけ再ダウンロードされます。
-- Cloudflare Pages の 1 ファイル 25 MiB の上限に収めるため、各ファイルは gzip で圧縮したうえで 20 MiB ごとに分割しています。
+- Cloudflare（Workers の静的アセット）の 1 ファイル 25 MiB の上限に収めるため、各ファイルは gzip で圧縮したうえで 20 MiB ごとに分割しています。
   ブラウザは断片を並列にダウンロードし、`DecompressionStream` で展開します（転送量は合計で約 55 MiB）。
 
 作業ディレクトリは `toolchain/work/`（git 管理外）です。2 回目以降は差分だけがビルドされます。
+
+## 公開と取得
+
+ビルドには時間がかかるので、成果物は GitHub Release で共有します。
+
+- `./toolchain/publish.nu`：`web/public/toolchain/` の中身を Release `toolchain-<toolchainId>` としてアップロードし、
+  そのタグを `toolchain/RELEASE` に書き込みます。`RELEASE` はコミットしてください。
+- `web/` で `vp run fetch-toolchain`（`scripts/fetch-toolchain.ts`）：`toolchain/RELEASE` の Release をダウンロードし、
+  `web/public/toolchain/` に配置します。CI と Cloudflare のビルドもこれを使います。同じ版が配置済みなら何もしません。
+  リポジトリが private なので、環境変数 `GITHUB_TOKEN`（または `GH_TOKEN`）か、`gh` のログインが必要です。
 
 ## 必要なもの
 

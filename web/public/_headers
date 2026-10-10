@@ -1,4 +1,5 @@
-# Cloudflare Pages response headers (https://developers.cloudflare.com/pages/configuration/headers/).
+# Response headers for Cloudflare Workers static assets
+# (https://developers.cloudflare.com/workers/static-assets/headers/).
 
 # Toolchain assets live under a content-addressed directory and never change.
 /toolchain/:id/*

@@ -1,5 +1,5 @@
-// Fails if the build output cannot be deployed to Cloudflare Pages
-// (https://developers.cloudflare.com/pages/platform/limits/).
+// Fails if the build output exceeds the limits of Cloudflare Workers static assets
+// (https://developers.cloudflare.com/workers/platform/limits/).
 //
 // Usage: node scripts/check-dist.ts [dist-dir]
 import { readdir, stat } from "node:fs/promises";

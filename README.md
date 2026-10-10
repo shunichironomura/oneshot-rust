@@ -21,11 +21,14 @@ web/         フロントエンド（Vite+ / Preact / CodeMirror 6）
 必要なもの：[Nushell](https://www.nushell.sh/)、Python 3、git、Node.js 24 以降、
 [Vite+](https://viteplus.dev/)（`vp`）。
 
-1. ツールチェーン（`miri.wasm` と sysroot）をビルドします。初回は 20〜30 分ほどかかり、
-   `web/public/toolchain/` に配置されます。詳しくは [toolchain/README.md](toolchain/README.md) を参照してください。
+1. ツールチェーン（`miri.wasm` と sysroot）を `web/public/toolchain/` に配置します。公開済みのものを
+   ダウンロードする（`gh` が必要）か、自分でビルドします（初回は 20〜30 分）。詳しくは
+   [toolchain/README.md](toolchain/README.md) を参照してください。
 
    ```sh
-   ./toolchain/build.nu
+   cd web && vp run fetch-toolchain   # toolchain/RELEASE の版をダウンロード（gh のログインが必要）
+   # または
+   ./toolchain/build.nu               # ソースからビルド
    ```
 
 2. 開発サーバーを起動します。
@@ -39,30 +42,52 @@ web/         フロントエンド（Vite+ / Preact / CodeMirror 6）
    初回アクセス時にツールチェーン（圧縮して約 55 MB）をダウンロードし、Cache Storage に保存します。
    2 回目以降はキャッシュから読み込みます。
 
-## Cloudflare Pages へのデプロイ
+## デプロイ（Cloudflare Workers Builds）
 
-`web/dist/` を Wrangler で直接アップロードします（Pages 側でのビルドはしません）。ツールチェーンのビルドに
-20〜30 分かかり、Pages のビルド制限時間（20 分）を超えるためです。
+Cloudflare の Git 連携（Workers Builds）が、リポジトリへの push を検知してビルドとデプロイを行います。
+`main` は本番に、それ以外のブランチとプルリクエストはプレビュー URL にデプロイされます（URL は Cloudflare が PR にコメントします）。
+GitHub 側に Cloudflare の認証情報は置きません。配信は Workers の静的アセットで、設定は `web/wrangler.jsonc` にあります。
 
-1. 初回のみ、ログインしてプロジェクトを作ります。
+GitHub Actions（`.github/workflows/ci.yml`）は、チェック・テスト・全問題の検証・ビルドだけを行います。
 
-   ```sh
-   cd web
-   vp exec wrangler login
-   vp exec wrangler pages project create oneshot-rust --production-branch main
-   ```
+ツールチェーンはどちらでもビルドしません（20〜30 分かかり、ディスクも 30 GB ほど使うため）。手元でビルドしたものを
+GitHub Release として公開し、`toolchain/RELEASE` に記録した版をダウンロードして使います。
 
-2. ビルドしてデプロイします。`deploy` は本番、`deploy:preview` はプレビュー用の URL に配置します。
+### 初回のセットアップ
 
-   ```sh
-   vp run deploy
-   ```
+1. ツールチェーンを GitHub Release として公開します（次の節）。
+2. Cloudflare のビルドが Release を読むための GitHub トークンを作ります。fine-grained personal access token で、
+   対象リポジトリを `oneshot-rust` に限定し、権限は **Contents: Read-only** だけにします。
+3. Cloudflare のダッシュボードで **Workers & Pages → Create → Import a repository** から、このリポジトリを接続します。
+   - プロジェクト名：`oneshot-rust`（`wrangler.jsonc` の `name` と一致させる）
+   - Root directory：`web`
+   - Build command：`pnpm run build:deploy`（ツールチェーンの取得 → ビルド → サイズの確認）
+   - Deploy command：既定（`npx wrangler deploy`）のまま
+   - 本番以外のブランチのビルドを有効にする（プレビュー URL を出すため）
+   - Build variables and secrets：手順 2 のトークンを、シークレット `GITHUB_TOKEN` として登録する
+4. 独自ドメイン（oneshotrust.dev）を使う場合は、Worker の **Settings → Domains & Routes** で追加します。
 
-どちらのスクリプトも、ビルドのあとに `scripts/check-dist.ts` で Pages の制限（1 ファイル 25 MiB、20,000 ファイル）を
-確認し、超えていればデプロイを中止します。`vp run pages:dev` を使うと、Pages と同じ配信
-（`public/_headers` のキャッシュ設定を含む）を手元の `http://localhost:8788` で確認できます。
+pnpm のバージョンは `package.json` の `packageManager` で固定しています。Node.js はビルド環境の既定（24 系）を使います。
 
-CI から実行する場合は、`CLOUDFLARE_ACCOUNT_ID` と `CLOUDFLARE_API_TOKEN`（Cloudflare Pages の Edit 権限）を設定してください。
+### ツールチェーンを更新したとき
+
+```sh
+./toolchain/build.nu     # ビルド（web/public/toolchain/ に配置）
+./toolchain/publish.nu   # GitHub Release（toolchain-<id>）を作成し、toolchain/RELEASE を更新
+```
+
+更新された `toolchain/RELEASE` をコミットします。
+
+### 手元で確認・デプロイする場合
+
+`web/` で次のスクリプトを使います。
+
+| コマンド | 内容 |
+| --- | --- |
+| `vp run serve:dist` | ビルドしたものを Cloudflare と同じ配信（`public/_headers` を含む）で `http://localhost:8787` に出す |
+| `vp run deploy` | ツールチェーンの取得 → ビルド → サイズ確認 → `wrangler deploy`（本番。要 `wrangler login`） |
+
+サイズの確認（`scripts/check-dist.ts`）は、1 ファイル 25 MiB・20,000 ファイルの制限を超えるとビルドを失敗させます。
 
 ## 開発
 
