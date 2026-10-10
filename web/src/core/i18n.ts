@@ -78,6 +78,7 @@ export interface Messages {
   startOver: string;
   giveUp: string;
   nextInChallenge: string;
+  nextProblem: string;
   tabStatement: string;
   tabHarness: string;
   tabSolution: string;
@@ -243,6 +244,7 @@ const en: Messages = {
   startOver: "Start over",
   giveUp: "Give up",
   nextInChallenge: "Next problem",
+  nextProblem: "Next problem",
   tabStatement: "Problem",
   tabHarness: "tests.rs (read-only)",
   tabSolution: "Solution",
@@ -439,6 +441,7 @@ const ja: Messages = {
   startOver: "最初から",
   giveUp: "ギブアップ",
   nextInChallenge: "次の問題へ",
+  nextProblem: "次の問題へ",
   tabStatement: "問題文",
   tabHarness: "tests.rs（読み取り専用）",
   tabSolution: "模範解答",
