@@ -10,14 +10,29 @@ export const JUDGE_DIR = path.join(REPO_ROOT, "judge");
 
 async function readProblemDir(dirName: string): Promise<ProblemWithSolution> {
   const read = (file: string) => readFile(path.join(PROBLEMS_DIR, dirName, file), "utf8");
-  const [problemToml, statementMd, templateRs, testsRs, solutionRs] = await Promise.all([
-    read("problem.toml"),
-    read("statement.md"),
-    read("template.rs"),
-    read("tests.rs"),
-    read("solution.rs"),
-  ]);
-  return parseProblem({ dirName, problemToml, statementMd, templateRs, testsRs, solutionRs });
+  const readOptional = (file: string) =>
+    read(file).catch((e: unknown) => {
+      if (e instanceof Error && "code" in e && e.code === "ENOENT") return undefined;
+      throw e;
+    });
+  const [problemToml, statementMd, statementJaMd, templateRs, testsRs, solutionRs] =
+    await Promise.all([
+      read("problem.toml"),
+      read("statement.md"),
+      readOptional("statement.ja.md"),
+      read("template.rs"),
+      read("tests.rs"),
+      read("solution.rs"),
+    ]);
+  return parseProblem({
+    dirName,
+    problemToml,
+    statementMd,
+    statementJaMd,
+    templateRs,
+    testsRs,
+    solutionRs,
+  });
 }
 
 export async function loadProblems(): Promise<ProblemWithSolution[]> {

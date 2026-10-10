@@ -3,7 +3,6 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirro
 import { rust } from "@codemirror/lang-rust";
 import {
   bracketMatching,
-  defaultHighlightStyle,
   indentOnInput,
   indentUnit,
   syntaxHighlighting,
@@ -21,6 +20,7 @@ import {
 import { useEffect, useRef } from "preact/hooks";
 import type { EditorMarker } from "../core/present.ts";
 import type { EditorSettings } from "../core/settings.ts";
+import { baseTheme, highlightStyle } from "./editorTheme.ts";
 
 interface Props {
   /**
@@ -37,7 +37,7 @@ interface Props {
 
 function aids(settings: EditorSettings): Extension {
   return [
-    settings.syntaxHighlight ? [rust(), syntaxHighlighting(defaultHighlightStyle)] : [],
+    settings.syntaxHighlight ? [rust(), syntaxHighlighting(highlightStyle)] : [],
     settings.closeBrackets ? [closeBrackets(), keymap.of(closeBracketsKeymap)] : [],
     // Without auto-indent, Enter only inserts a newline.
     settings.autoIndent ? indentOnInput() : keymap.of([{ key: "Enter", run: insertPlainNewline }]),
@@ -49,10 +49,10 @@ function insertPlainNewline(view: EditorView): boolean {
   return true;
 }
 
-function theme(settings: EditorSettings): Extension {
+function fontTheme(settings: EditorSettings): Extension {
   return EditorView.theme({
-    "&": { height: "100%", fontSize: `${settings.fontSize}px` },
-    ".cm-scroller": { fontFamily: settings.fontFamily },
+    "&": { fontSize: `${settings.fontSize}px` },
+    ".cm-scroller": { fontFamily: settings.fontFamily, lineHeight: "1.55" },
   });
 }
 
@@ -110,8 +110,9 @@ export function Editor({
             ...defaultKeymap,
             ...historyKeymap,
           ]),
+          baseTheme,
           aidsCompartment.current.of(aids(settings)),
-          themeCompartment.current.of(theme(settings)),
+          themeCompartment.current.of(fontTheme(settings)),
           readOnlyCompartment.current.of(EditorState.readOnly.of(readOnly)),
           EditorView.updateListener.of((u) => {
             if (u.docChanged) callbacks.current.onChange(u.state.doc.toString());
@@ -128,7 +129,7 @@ export function Editor({
     view.current?.dispatch({
       effects: [
         aidsCompartment.current.reconfigure(aids(settings)),
-        themeCompartment.current.reconfigure(theme(settings)),
+        themeCompartment.current.reconfigure(fontTheme(settings)),
       ],
     });
   }, [settings]);

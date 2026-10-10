@@ -202,12 +202,18 @@ importers:
       '@codemirror/view':
         specifier: ^6.43.14
         version: 6.43.14
+      '@lezer/highlight':
+        specifier: ^1.2.5
+        version: 1.2.5
       diff:
         specifier: ^9.0.0
         version: 9.0.0
       idb:
         specifier: ^8.0.4
         version: 8.0.4
+      lucide-preact:
+        specifier: ^1.54.0
+        version: 1.54.0(preact@10.29.8)
       preact:
         specifier: ^10.29.8
         version: 10.29.8
@@ -1301,6 +1307,11 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
+  lucide-preact@1.54.0:
+    resolution: {integrity: sha512-xUu2KszP5wR0YBCgsz2V6LEjk29sx9FKzDH+mYn/KMz+/yfxhd7kao8rAVR+iWc0OWphW9Cv8EBmLyYd6gurfA==}
+    peerDependencies:
+      preact: ^10.27.2 || ^11.0.0-0
+
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -2375,6 +2386,10 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  lucide-preact@1.54.0(preact@10.29.8):
+    dependencies:
+      preact: 10.29.8
 
   lz-string@1.5.0: {}
 

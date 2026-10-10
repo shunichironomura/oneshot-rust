@@ -1,14 +1,15 @@
-次のコードはコンパイルが通りません。**エラーメッセージを見ずに**、どこで怒られるかを予想して直してください。
+The code below does not compile. **Without looking at the error message**, predict where the compiler
+complains and fix it.
 
-`greet_all` は名前のリストを受け取り、それぞれに `"Hello, <name>!"` という挨拶を作って返します。
-あわせて、何人に挨拶したかを返します。
+`greet_all` takes a list of names, builds the greeting `"Hello, <name>!"` for each of them, and also
+returns how many people it greeted.
 
 ```rust
 pub fn greet_all(names: Vec<String>) -> (Vec<String>, usize)
 ```
 
-シグネチャは変えないでください。
+Do not change the signature.
 
-### 例
+### Example
 
-`greet_all(vec!["Ferris".into()])` は `(vec!["Hello, Ferris!"], 1)` を返します。
+`greet_all(vec!["Ferris".into()])` returns `(vec!["Hello, Ferris!"], 1)`.

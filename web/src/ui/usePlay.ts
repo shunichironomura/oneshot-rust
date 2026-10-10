@@ -16,7 +16,7 @@ export type SubmitPhase =
 /** What the result panel shows: the latest judgement, or a rejected pre-check. */
 export type LastResult =
   | { kind: "judged"; judgement: Judgement; mode: Mode }
-  | { kind: "rejected"; message: string }
+  | { kind: "rejected"; forbiddenMacro: string }
   | { kind: "error"; message: string };
 
 export interface PlayState {
@@ -124,9 +124,9 @@ export function usePlay({
   const submit = useCallback(async () => {
     if (pool === undefined || state.phase.kind === "running" || !state.loaded) return;
     const code = state.code;
-    const rejected = precheck(code);
-    if (rejected !== null) {
-      setState((s) => ({ ...s, last: { kind: "rejected", message: rejected } }));
+    const forbiddenMacro = precheck(code);
+    if (forbiddenMacro !== null) {
+      setState((s) => ({ ...s, last: { kind: "rejected", forbiddenMacro } }));
       return;
     }
 

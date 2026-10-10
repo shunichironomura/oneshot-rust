@@ -85,10 +85,10 @@ const FORBIDDEN_MACROS = ["include_str", "include_bytes", "include", "env", "opt
 /**
  * Pre-submission check run before compiling. These macros can read the judge's
  * nonce from the virtual filesystem or the environment, so they are rejected.
- * A rejected submission is not counted.
+ * Returns the name of the first forbidden macro found. A rejected submission is
+ * not counted.
  */
 export function precheck(userCode: string): string | null {
   const code = stripCommentsAndStrings(userCode);
-  const found = FORBIDDEN_MACROS.find((m) => new RegExp(`\\b${m}\\s*!`).test(code));
-  return found === undefined ? null : `\`${found}!\` は使用できません（判定の改ざん防止のため）`;
+  return FORBIDDEN_MACROS.find((m) => new RegExp(`\\b${m}\\s*!`).test(code)) ?? null;
 }

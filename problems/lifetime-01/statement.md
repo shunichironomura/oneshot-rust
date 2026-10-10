@@ -1,16 +1,15 @@
-文字列 `s` を空白で区切ったとき、最も長い単語を返してください。
-同じ長さの単語が複数ある場合は、最初のものを返します。
-単語がない場合は空文字列を返します。
+Split `s` on whitespace and return the longest word. If several words share the longest length,
+return the first one. If there are no words, return the empty string.
 
 ```rust
 pub fn longest_word(s: &str) -> &str
 ```
 
-返り値は `s` の部分文字列（`s` を指すスライス）である必要があります。
+The result must be a substring of `s` (a slice pointing into `s`).
 
-### 例
+### Examples
 
-| 入力 | 出力 |
+| Input | Output |
 | --- | --- |
 | `"a bb ccc"` | `"ccc"` |
 | `"xx yy"` | `"xx"` |

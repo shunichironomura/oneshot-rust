@@ -1,4 +1,4 @@
-単方向連結リストを反転してください。ノードの型は次のとおりです（`template.rs` に定義済み。変更しないでください）。
+Reverse a singly linked list. The node type is defined in `template.rs`; do not change it.
 
 ```rust
 #[derive(Debug, PartialEq)]
@@ -10,9 +10,9 @@ pub struct Node {
 pub fn reverse(list: Option<Box<Node>>) -> Option<Box<Node>>
 ```
 
-ノードを新しく確保し直すのではなく、受け取ったノードをつなぎ替えて反転するのが理想です
-（ただし判定はリストの中身だけを見ます）。
+Ideally, relink the nodes you receive instead of allocating new ones (the judge only checks the
+contents, though).
 
-### 例
+### Example
 
-`1 -> 2 -> 3` は `3 -> 2 -> 1` になります。空リスト（`None`）は `None` のままです。
+`1 -> 2 -> 3` becomes `3 -> 2 -> 1`. An empty list (`None`) stays `None`.

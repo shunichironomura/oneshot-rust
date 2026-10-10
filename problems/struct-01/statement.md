@@ -1,7 +1,7 @@
-任意の型の値を積めるスタック `Stack<T>` を実装してください。
+Implement a stack `Stack<T>` that can hold values of any type.
 
 ```rust
-pub struct Stack<T> { /* 自由に定義 */ }
+pub struct Stack<T> { /* up to you */ }
 
 impl<T> Stack<T> {
     pub fn new() -> Self;
@@ -13,5 +13,5 @@ impl<T> Stack<T> {
 }
 ```
 
-- `pop` は最後に積んだ値を取り出します。空なら `None` です。
-- `peek` は最後に積んだ値への参照を返します（取り出しません）。
+- `pop` removes and returns the most recently pushed value, or `None` if the stack is empty.
+- `peek` returns a reference to the most recently pushed value without removing it.

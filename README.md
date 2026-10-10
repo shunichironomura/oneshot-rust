@@ -5,6 +5,7 @@ Write Rust that compiles in one shot — no LSP, as few compiles as possible.
 OneShot Rust は、指定された処理を Rust で実装し、**できるだけ少ない提出（＝コンパイル）回数で全テストを通す**ことを競う
 ブラウザゲームです。補完も LSP もありません。判定は Wasm 化した [Miri](https://github.com/rust-lang/miri) が
 ブラウザ内で行うので、型検査・借用検査は本物の rustc と同じで、未定義動作（UB）も検出されます。
+UI と問題文は英語が既定で、日本語にも切り替えられます。
 
 ## 構成
 

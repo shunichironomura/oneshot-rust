@@ -8,6 +8,14 @@ export interface LoadProgress {
   total: number;
 }
 
+/** `manifest.json` is missing: the toolchain has not been built yet. */
+export class ToolchainMissingError extends Error {
+  constructor() {
+    super("toolchain manifest not found");
+    this.name = "ToolchainMissingError";
+  }
+}
+
 export interface LoadedToolchain {
   manifest: ToolchainManifest;
   module: WebAssembly.Module;
@@ -72,9 +80,7 @@ export async function loadToolchain(
   onProgress: (p: LoadProgress) => void,
 ): Promise<LoadedToolchain> {
   const manifestRes = await fetch(new URL("manifest.json", baseUrl), { cache: "no-cache" });
-  if (!manifestRes.ok) {
-    throw new Error("ツールチェーンが見つかりません。`toolchain/build.nu` でビルドしてください。");
-  }
+  if (!manifestRes.ok) throw new ToolchainMissingError();
   const manifest = (await manifestRes.json()) as ToolchainManifest;
   const miriUrl = new URL(manifest.files.miriWasm.path, baseUrl).href;
   const sysrootUrl = new URL(manifest.files.sysroot.path, baseUrl).href;

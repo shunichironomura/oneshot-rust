@@ -1,5 +1,6 @@
 import { createContext } from "preact";
 import { useContext } from "preact/hooks";
+import type { Locale, Messages } from "../core/i18n.ts";
 import type { Content } from "../core/problem.ts";
 import type { Settings } from "../core/settings.ts";
 import type { Storage } from "../storage/db.ts";
@@ -11,6 +12,9 @@ export interface AppContextValue {
   settings: Settings;
   updateSettings: (settings: Settings) => void;
   toolchain: ToolchainState;
+  locale: Locale;
+  /** UI messages in the current locale. */
+  t: Messages;
 }
 
 export const AppContext = createContext<AppContextValue | null>(null);

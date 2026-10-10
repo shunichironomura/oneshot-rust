@@ -60,7 +60,7 @@ describe("classify (recorded Miri output)", () => {
 
   test("RE when the program exits early", () => {
     const v = run(reExit).verdict;
-    expect(v).toMatchObject({ kind: "RE", message: "終了コード 3" });
+    expect(v).toMatchObject({ kind: "RE", reason: { type: "exit-code", code: 3 } });
   });
 
   test("TLE reports the running case", () => {
@@ -111,7 +111,7 @@ describe("classify (edge cases)", () => {
     };
     expect(classify(out, ctx).verdict).toMatchObject({
       kind: "RE",
-      message: "panicked: boom at /src/tests.rs:1:1",
+      reason: { type: "panic", message: "panicked: boom at /src/tests.rs:1:1" },
     });
   });
 });

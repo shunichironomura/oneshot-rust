@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { loadJudgeSources, loadProblems } from "../content/load.ts";
 import { MODES, type Mode } from "../src/core/mode.ts";
+import { MESSAGES } from "../src/core/i18n.ts";
 import { present } from "../src/core/present.ts";
 import { judge, loadToolchain } from "./node-runner.ts";
 
@@ -35,6 +36,7 @@ const { judgement, elapsedMs } = await judge(toolchain, problem, judgeSources, c
 const view = present(judgement, {
   mode: mode satisfies Mode,
   harnessVisible: problem.judge.harnessVisible,
+  messages: MESSAGES.en,
 });
 console.log(
   JSON.stringify(

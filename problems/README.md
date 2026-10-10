@@ -4,18 +4,19 @@
 
 ```text
 problems/<id>/
-  problem.toml   メタデータ
-  statement.md   問題文（Markdown）
-  template.rs    初期コード
-  tests.rs       テストハーネス
-  solution.rs    模範解答（検証専用。配信されません）
+  problem.toml      メタデータ
+  statement.md      問題文（英語、必須）
+  statement.ja.md   問題文（日本語、任意。ない場合は英語版を表示）
+  template.rs       初期コード
+  tests.rs          テストハーネス
+  solution.rs       模範解答（検証専用。配信されません）
 ```
 
 ## problem.toml
 
 ```toml
 id = "lifetime-01"             # ディレクトリ名と同じにする
-title = "最長の単語"
+title = { en = "Longest word", ja = "最長の単語" }   # en は必須
 difficulty = 2                 # 1〜5
 par = 2                        # 想定提出回数（ゴルフのパー）
 concepts = ["lifetimes", "iterators"]

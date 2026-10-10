@@ -2,17 +2,8 @@
 import type { CaseResult, CaseStatus, Judgement, VerdictKind } from "./classify.ts";
 import { type Diagnostic, type DiagnosticSpan, primarySpan } from "./diagnostics.ts";
 import { SRC_DIR } from "./harness.ts";
+import type { Messages } from "./i18n.ts";
 import type { Mode } from "./mode.ts";
-
-export const VERDICT_LABELS: Record<VerdictKind, string> = {
-  AC: "正解",
-  WA: "不正解",
-  CE: "コンパイルエラー",
-  UB: "未定義動作",
-  RE: "実行時エラー",
-  TLE: "時間切れ",
-  IE: "内部エラー（カウントされません）",
-};
 
 export interface CaseView {
   id: string;
@@ -42,6 +33,7 @@ export interface Presentation {
 export interface PresentContext {
   mode: Mode;
   harnessVisible: boolean;
+  messages: Messages;
 }
 
 type FileRole = "user" | "harness" | "internal" | "external";
@@ -78,10 +70,10 @@ function location(span: DiagnosticSpan): string {
   return `${displayPath(span.file_name)}:${span.line_start}:${span.column_start}`;
 }
 
-function hiddenLocationNote(span: DiagnosticSpan): string {
+function hiddenLocationNote(span: DiagnosticSpan, messages: Messages): string {
   return fileRole(span.file_name) === "internal"
-    ? "（ハーネス内部）"
-    : "（ハーネス側でエラー。コードは非公開）";
+    ? messages.harnessInternalsNote
+    : messages.hiddenHarnessNote;
 }
 
 function renderSpanSnippet(span: DiagnosticSpan, gutter: number): string[] {
@@ -110,7 +102,7 @@ export function renderDiagnostic(d: Diagnostic, ctx: PresentContext): string {
   for (const span of spans) {
     if (isSnippetHidden(span, ctx)) {
       // Secondary spans in hidden code would only repeat the same uninformative line.
-      const line = `${pad}--> ${displayPath(span.file_name)} ${hiddenLocationNote(span)}`;
+      const line = `${pad}--> ${displayPath(span.file_name)} ${hiddenLocationNote(span, ctx.messages)}`;
       if (!hiddenLines.has(line)) lines.push(line);
       hiddenLines.add(line);
       continue;
@@ -148,8 +140,9 @@ function renderFull(d: Diagnostic, ctx: PresentContext): string {
 function lineSummary(diagnostics: Diagnostic[], ctx: PresentContext): string {
   const locations = diagnostics.map((d) => {
     const span = primarySpan(d);
-    if (span === undefined) return "位置不明";
-    if (isSnippetHidden(span, ctx)) return `${displayPath(span.file_name)}（ハーネス側）`;
+    if (span === undefined) return ctx.messages.unknownLocation;
+    if (isSnippetHidden(span, ctx))
+      return `${displayPath(span.file_name)}${ctx.messages.inHarness}`;
     return `${displayPath(span.file_name)}:${span.line_start}`;
   });
   return [...new Set(locations)].join(", ");
@@ -202,7 +195,7 @@ function visibleStderr(stderr: string, mode: Mode): string {
 
 export function present(judgement: Judgement, ctx: PresentContext): Presentation {
   const v = judgement.verdict;
-  const { mode } = ctx;
+  const { mode, messages } = ctx;
   const detailed = mode === "beginner" || mode === "standard";
   const base = {
     kind: v.kind,
@@ -219,7 +212,7 @@ export function present(judgement: Judgement, ctx: PresentContext): Presentation
         summary:
           mode === "oni"
             ? undefined
-            : `エラー ${v.diagnostics.length} 件（${lineSummary(v.diagnostics, ctx)}）`,
+            : messages.ceSummary(v.diagnostics.length, lineSummary(v.diagnostics, ctx)),
         diagnostics: renderDiagnostics(v.diagnostics, ctx),
         markers: markers(v.diagnostics, mode),
       };
@@ -229,7 +222,7 @@ export function present(judgement: Judgement, ctx: PresentContext): Presentation
     case "UB":
       return {
         ...base,
-        summary: mode === "oni" ? undefined : `${lineSummary(v.diagnostics, ctx)}`,
+        summary: mode === "oni" ? undefined : lineSummary(v.diagnostics, ctx),
         diagnostics: renderDiagnostics(v.diagnostics, ctx),
         cases: presentCases(v.cases, mode),
         markers: markers(v.diagnostics, mode),
@@ -237,7 +230,7 @@ export function present(judgement: Judgement, ctx: PresentContext): Presentation
     case "RE":
       return {
         ...base,
-        summary: detailed ? cleanPaths(v.message) : undefined,
+        summary: detailed ? cleanPaths(messages.runtimeError(v.reason)) : undefined,
         diagnostics: renderDiagnostics(v.diagnostics, ctx),
         cases: presentCases(v.cases, mode),
       };
@@ -246,11 +239,11 @@ export function present(judgement: Judgement, ctx: PresentContext): Presentation
         ...base,
         summary:
           mode !== "oni" && v.runningCase !== undefined
-            ? `ケース ${v.runningCase} の実行中に制限時間を超えました`
+            ? messages.tleSummary(v.runningCase)
             : undefined,
         cases: presentCases(v.cases, mode),
       };
     case "IE":
-      return { ...base, summary: v.detail };
+      return { ...base, summary: messages.internalError(v.reason) };
   }
 }

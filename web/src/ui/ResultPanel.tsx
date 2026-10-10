@@ -1,29 +1,30 @@
-import type { CaseStatus } from "../core/classify.ts";
-import { type Presentation, VERDICT_LABELS } from "../core/present.ts";
+import { EyeOff } from "lucide-preact";
+import type { Presentation } from "../core/present.ts";
+import { useApp } from "./context.ts";
 import type { LastResult, SubmitPhase } from "./usePlay.ts";
 
-const CASE_LABELS: Record<CaseStatus, string> = { pass: "PASS", fail: "FAIL", "not-run": "未実行" };
-
 function Running({ phase }: { phase: Extract<SubmitPhase, { kind: "running" }> }) {
+  const { t } = useApp();
   const p = phase.progress;
   return (
     <div class="result running">
       <div class="verdict-line">
         <span class="spinner" aria-hidden="true" />
         {p.phase === "compiling"
-          ? "コンパイル中…"
-          : `実行中（ケース ${Math.min(p.done + 1, p.total)}/${p.total}）`}
+          ? t.compiling
+          : t.runningCase(Math.min(p.done + 1, p.total), p.total)}
       </div>
-      {phase.output !== "" && <Output stdout={phase.output} stderr="" />}
+      <Output stdout={phase.output} stderr="" />
     </div>
   );
 }
 
 function Output({ stdout, stderr }: { stdout: string; stderr: string }) {
+  const { t } = useApp();
   if (stdout === "" && stderr === "") return null;
   return (
     <details class="output" open>
-      <summary>出力</summary>
+      <summary>{t.output}</summary>
       {stdout !== "" && <pre class="stdout">{stdout}</pre>}
       {stderr !== "" && <pre class="stderr">{stderr}</pre>}
     </details>
@@ -31,21 +32,20 @@ function Output({ stdout, stderr }: { stdout: string; stderr: string }) {
 }
 
 function Cases({ cases }: { cases: NonNullable<Presentation["cases"]> }) {
+  const { t } = useApp();
   return (
-    <table class="cases">
-      <tbody>
-        {cases.map((c) => (
-          <tr key={c.id} class={c.status}>
-            <td class="case-id">
-              {c.id}
-              {!c.visible && <span class="dim"> (非公開)</span>}
-            </td>
-            <td class="case-status">{CASE_LABELS[c.status]}</td>
-            <td class="case-message">{c.message !== undefined && <code>{c.message}</code>}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <ul class="cases">
+      {cases.map((c) => (
+        <li key={c.id} class={c.status}>
+          <span class="case-status">{t.caseStatus[c.status]}</span>
+          <span class="case-id">
+            {c.id}
+            {!c.visible && <EyeOff size={13} aria-label={t.hiddenCase} class="hidden-case" />}
+          </span>
+          {c.message !== undefined && <code class="case-message">{c.message}</code>}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -56,22 +56,24 @@ interface Props {
 }
 
 export function ResultPanel({ phase, last, presentation }: Props) {
+  const { t } = useApp();
   if (phase.kind === "running") return <Running phase={phase} />;
-  if (last === null) {
-    return <div class="result empty">Ctrl+Enter（⌘+Enter）で提出します。一発で通しましょう。</div>;
-  }
+  if (last === null) return <div class="result empty">{t.resultEmpty}</div>;
   if (last.kind === "rejected") {
     return (
       <div class="result">
-        <div class="verdict-line">提出できません（カウントされません）</div>
-        <p>{last.message}</p>
+        <div class="verdict-line">{t.rejected}</div>
+        <p>{t.forbiddenMacro(last.forbiddenMacro)}</p>
       </div>
     );
   }
   if (last.kind === "error") {
     return (
       <div class="result">
-        <div class="verdict-line verdict IE">エラー（カウントされません）</div>
+        <div class="verdict-line">
+          <span class="verdict IE">IE</span>
+          {t.submitError}
+        </div>
         <p>{last.message}</p>
       </div>
     );
@@ -81,7 +83,7 @@ export function ResultPanel({ phase, last, presentation }: Props) {
     <div class="result">
       <div class="verdict-line">
         <span class={`verdict ${presentation.kind}`}>{presentation.kind}</span>
-        <span>{VERDICT_LABELS[presentation.kind]}</span>
+        <span>{t.verdicts[presentation.kind]}</span>
       </div>
       {presentation.summary !== undefined && <p class="summary">{presentation.summary}</p>}
       {presentation.diagnostics.map((d, i) => (

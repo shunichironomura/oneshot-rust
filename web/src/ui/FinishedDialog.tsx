@@ -1,32 +1,32 @@
+import { Copy, History, X } from "lucide-preact";
 import { useState } from "preact/hooks";
-import { MODE_LABELS } from "../core/mode.ts";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
 import { type Best, ceCount, type Run, verdictsOf } from "../core/run.ts";
 import { shareText, titleFor, verdictEmoji } from "../core/scoring.ts";
+import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
 
 interface Props {
   problem: Problem;
   finished: { run: Run; newBest: Best | undefined } | null;
   onClose: () => void;
-  /** The main follow-up action (start over, or move on in a challenge). */
+  /** The main follow-up action (try again, or move on in a challenge). */
   next: { label: string; action: () => void };
 }
 
 export function FinishedDialog({ problem, finished, onClose, next }: Props) {
+  const { t } = useApp();
   const [copied, setCopied] = useState(false);
   if (finished === null) return null;
   const { run, newBest } = finished;
   const n = run.attempts.length;
   const solved = run.status === "solved";
-  const text = shareText({
-    problemId: problem.id,
-    mode: run.mode,
-    par: problem.par,
-    verdicts: verdictsOf(run),
-    solved,
-  });
+  const verdicts = verdictsOf(run);
+  const text = shareText(
+    { problemId: problem.id, mode: run.mode, par: problem.par, verdicts, solved },
+    t,
+  );
   const copy = async () => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
@@ -34,32 +34,39 @@ export function FinishedDialog({ problem, finished, onClose, next }: Props) {
 
   return (
     <Dialog open onClose={onClose} class="finished">
-      <h2>{solved ? `${titleFor(n, problem.par)}!` : "残機がなくなりました"}</h2>
-      <p class="squares">{verdictsOf(run).map(verdictEmoji).join("")}</p>
+      <button
+        type="button"
+        class="dialog-close icon-button icon-only"
+        aria-label={t.close}
+        onClick={onClose}
+      >
+        <X size={18} aria-hidden="true" />
+      </button>
+      <h2 class={solved ? "solved" : "failed"}>
+        {solved ? `${titleFor(n, problem.par)}!` : t.outOfLives}
+      </h2>
+      <p class="squares">{verdicts.map(verdictEmoji).join("")}</p>
+      {newBest !== undefined && <p class="new-best">{t.newBest}</p>}
       <dl>
-        <dt>提出回数</dt>
-        <dd>
-          {n} 回（Par {problem.par}）
-        </dd>
-        <dt>うち CE</dt>
-        <dd>{ceCount(run)} 回</dd>
-        <dt>モード</dt>
-        <dd>{MODE_LABELS[run.mode]}</dd>
+        <dt>{t.submissions}</dt>
+        <dd>{t.submissionsValue(n, problem.par)}</dd>
+        <dt>{t.compileErrors}</dt>
+        <dd>{ceCount(run)}</dd>
+        <dt>{t.mode}</dt>
+        <dd>{t.modes[run.mode]}</dd>
       </dl>
-      {newBest !== undefined && <p class="new-best">自己ベスト更新！</p>}
       <div class="actions">
-        <button type="button" onClick={() => void copy()}>
-          {copied ? "コピーしました" : "結果をコピー"}
-        </button>
-        <a class="button" href={routeHref({ page: "history", problemId: problem.id })}>
-          振り返る（提出履歴と差分）
-        </a>
         <button type="button" class="primary" onClick={next.action}>
           {next.label}
         </button>
-        <button type="button" onClick={onClose}>
-          閉じる
+        <button type="button" class="icon-button" onClick={() => void copy()}>
+          <Copy size={16} aria-hidden="true" />
+          {copied ? t.copied : t.copyResult}
         </button>
+        <a class="button icon-button" href={routeHref({ page: "history", problemId: problem.id })}>
+          <History size={16} aria-hidden="true" />
+          {t.reviewSubmissions}
+        </a>
       </div>
     </Dialog>
   );

@@ -35,7 +35,7 @@ describe("precheck", () => {
     ['let n = env!("X");', "env"],
     ['include ! ("x.rs");', "include"],
   ])("rejects %s", (code, macro) => {
-    expect(precheck(code)).toContain(`${macro}!`);
+    expect(precheck(code)).toBe(macro);
   });
 
   test.each([

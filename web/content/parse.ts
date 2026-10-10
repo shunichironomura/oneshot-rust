@@ -1,5 +1,6 @@
 import { marked } from "marked";
 import { parse as parseToml } from "smol-toml";
+import type { Localized } from "../src/core/i18n.ts";
 import type { JudgeConfig, MiriChecks, Problem, ProblemKind } from "../src/core/problem.ts";
 
 /** Raw files of one problem directory (`problems/<id>/`). */
@@ -7,6 +8,8 @@ export interface ProblemFiles {
   dirName: string;
   problemToml: string;
   statementMd: string;
+  /** Optional Japanese statement (`statement.ja.md`). */
+  statementJaMd?: string;
   templateRs: string;
   testsRs: string;
   solutionRs: string;
@@ -74,6 +77,20 @@ class FieldReader {
     return typeof v === "boolean" ? v : this.fail(key, "a boolean");
   }
 
+  /** `key = { en = "...", ja = "..." }`; `en` is required. */
+  localized(key: string): Localized {
+    const v = this.table[key];
+    if (!isTable(v) || typeof v["en"] !== "string" || v["en"] === "") {
+      return this.fail(
+        key,
+        'a table with a non-empty `en` string (e.g. { en = "...", ja = "..." })',
+      );
+    }
+    const ja = v["ja"];
+    if (ja !== undefined && typeof ja !== "string") return this.fail(`${key}.ja`, "a string");
+    return ja === undefined ? { en: v["en"] } : { en: v["en"], ja };
+  }
+
   stringArray(key: string): string[] {
     const v = this.table[key];
     return Array.isArray(v) && v.every((x) => typeof x === "string")
@@ -105,6 +122,12 @@ function parseJudge(dirName: string, value: unknown): JudgeConfig {
   };
 }
 
+function renderStatements(files: ProblemFiles): Localized {
+  const render = (md: string) => marked.parse(md, { async: false });
+  const en = render(files.statementMd);
+  return files.statementJaMd === undefined ? { en } : { en, ja: render(files.statementJaMd) };
+}
+
 export function parseProblem(files: ProblemFiles): ProblemWithSolution {
   const { dirName } = files;
   let toml: Table;
@@ -128,12 +151,12 @@ export function parseProblem(files: ProblemFiles): ProblemWithSolution {
   }
   const problem: Problem = {
     id,
-    title: r.string("title"),
+    title: r.localized("title"),
     difficulty: r.int("difficulty", 1, 5),
     par: r.int("par", 1, 20),
     concepts: r.stringArray("concepts"),
     kind: r.oneOf("kind", KINDS),
-    statementHtml: marked.parse(files.statementMd, { async: false }),
+    statementHtml: renderStatements(files),
     template: files.templateRs,
     tests: files.testsRs,
     caseIds,

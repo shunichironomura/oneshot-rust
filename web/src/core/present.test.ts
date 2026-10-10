@@ -4,6 +4,7 @@ import ceHarness from "./__fixtures__/ce-harness.json";
 import ubDangling from "./__fixtures__/ub-dangling.json";
 import waTodo from "./__fixtures__/wa-todo.json";
 import { classify, type RunOutput } from "./classify.ts";
+import { MESSAGES } from "./i18n.ts";
 import type { Mode } from "./mode.ts";
 import { cleanPaths, present } from "./present.ts";
 
@@ -19,7 +20,7 @@ function view(fixture: Fixture, mode: Mode, harnessVisible = false) {
     caseIds: fixture.caseIds,
     stdoutLimitBytes: 1024,
   });
-  return present(judgement, { mode, harnessVisible });
+  return present(judgement, { mode, harnessVisible, messages: MESSAGES.ja });
 }
 
 describe("CE", () => {

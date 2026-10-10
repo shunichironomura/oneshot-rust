@@ -1,5 +1,6 @@
 import type { VerdictKind } from "./classify.ts";
-import { MODE_LABELS, type Mode } from "./mode.ts";
+import type { Messages } from "./i18n.ts";
+import type { Mode } from "./mode.ts";
 
 /** Golf-style title for solving a problem in `submissions` tries. */
 export function titleFor(submissions: number, par: number): string {
@@ -50,11 +51,12 @@ export interface ShareInput {
 }
 
 /** Wordle-style result text for the clipboard. */
-export function shareText(input: ShareInput): string {
+export function shareText(input: ShareInput, messages: Messages): string {
   const n = input.verdicts.length;
   const squares = input.verdicts.map(verdictEmoji).join("");
+  const tries = messages.shareTries(n);
   const result = input.solved
-    ? `${n}回 (Par ${input.par}, ${titleFor(n, input.par)})`
-    : `${n}回 (未解決)`;
-  return `OneShot Rust 🦀 ${input.problemId} [${MODE_LABELS[input.mode]}]\n${squares}  ${result}`;
+    ? `${tries} (Par ${input.par}, ${titleFor(n, input.par)})`
+    : `${tries} (${messages.unsolved})`;
+  return `OneShot Rust 🦀 ${input.problemId} [${messages.modes[input.mode]}]\n${squares}  ${result}`;
 }

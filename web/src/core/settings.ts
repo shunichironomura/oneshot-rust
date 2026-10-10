@@ -1,3 +1,4 @@
+import { LOCALES, type Locale } from "./i18n.ts";
 import { MODES, type Mode } from "./mode.ts";
 
 export interface EditorSettings {
@@ -9,6 +10,7 @@ export interface EditorSettings {
 }
 
 export interface Settings {
+  locale: Locale;
   mode: Mode;
   /** Maximum submissions per run (残機制), or `null` for unlimited. */
   lives: number | null;
@@ -26,6 +28,7 @@ export const FONT_FAMILIES: readonly string[] = [
 ];
 
 export const DEFAULT_SETTINGS: Settings = {
+  locale: "en",
   mode: "standard",
   lives: null,
   confirmSubmit: true,
@@ -52,6 +55,7 @@ export function normalizeSettings(stored: unknown): Settings {
   const d = DEFAULT_SETTINGS;
   const bool = (v: unknown, fallback: boolean) => (typeof v === "boolean" ? v : fallback);
   return {
+    locale: LOCALES.find((l) => l === s.locale) ?? d.locale,
     mode: MODES.find((m) => m === s.mode) ?? d.mode,
     lives: LIVES_OPTIONS.includes(s.lives ?? null) ? (s.lives ?? null) : d.lives,
     confirmSubmit: bool(s.confirmSubmit, d.confirmSubmit),

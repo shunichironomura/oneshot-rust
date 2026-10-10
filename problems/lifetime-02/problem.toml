@@ -1,5 +1,5 @@
 id = "lifetime-02"
-title = "借りっぱなしのトークナイザ"
+title = { en = "A borrowing tokenizer", ja = "借りっぱなしのトークナイザ" }
 difficulty = 4
 par = 3
 concepts = ["lifetimes", "structs holding references"]

@@ -1,19 +1,26 @@
+import { ArrowLeft, Flag, Heart, History, Play, RotateCcw, SkipForward } from "lucide-preact";
 import { useMemo, useState } from "preact/hooks";
-import { MODE_LABELS } from "../core/mode.ts";
+import { localize } from "../core/i18n.ts";
 import { type EditorMarker, present } from "../core/present.ts";
-import { KIND_LABELS, type Problem } from "../core/problem.ts";
+import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
 import { remainingLives, type Run } from "../core/run.ts";
 import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
 import { Editor } from "./Editor.tsx";
 import { FinishedDialog } from "./FinishedDialog.tsx";
+import { IconButton } from "./IconButton.tsx";
+import { KindBadge } from "./KindBadge.tsx";
 import { ResultPanel } from "./ResultPanel.tsx";
 import { type RunRules, usePlay } from "./usePlay.ts";
 
 const NO_MARKERS: EditorMarker[] = [];
 
+const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+const SUBMIT_SHORTCUT = isMac ? "⌘↵" : "Ctrl+↵";
+
 function Statement({ problem }: { problem: Problem }) {
+  const { locale, t } = useApp();
   const [tab, setTab] = useState<"statement" | "harness">("statement");
   return (
     <aside class="statement">
@@ -25,7 +32,7 @@ function Statement({ problem }: { problem: Problem }) {
             aria-selected={tab === "statement"}
             onClick={() => setTab("statement")}
           >
-            問題文
+            {t.tabStatement}
           </button>
           <button
             type="button"
@@ -33,13 +40,25 @@ function Statement({ problem }: { problem: Problem }) {
             aria-selected={tab === "harness"}
             onClick={() => setTab("harness")}
           >
-            tests.rs（読み取り専用）
+            {t.tabHarness}
           </button>
         </div>
       )}
       {tab === "statement" ? (
-        // statementHtml is rendered at build time from the repository's own Markdown.
-        <div class="markdown" dangerouslySetInnerHTML={{ __html: problem.statementHtml }} />
+        <>
+          <div
+            class="markdown"
+            // statementHtml is rendered at build time from the repository's own Markdown.
+            dangerouslySetInnerHTML={{ __html: localize(problem.statementHtml, locale) }}
+          />
+          <div class="concepts">
+            {problem.concepts.map((c) => (
+              <span class="tag" key={c}>
+                {c}
+              </span>
+            ))}
+          </div>
+        </>
       ) : (
         <pre class="harness">{problem.tests}</pre>
       )}
@@ -58,6 +77,32 @@ export interface ChallengeContext {
   onNext: () => void;
 }
 
+interface ConfirmProps {
+  open: boolean;
+  message: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function Confirm({ open, message, confirmLabel, onConfirm, onCancel }: ConfirmProps) {
+  const { t } = useApp();
+  return (
+    <Dialog open={open} onClose={onCancel} onEnter={onConfirm} class="confirm">
+      <p>{message}</p>
+      <div class="actions">
+        <button type="button" class="primary" onClick={onConfirm}>
+          <kbd>↵</kbd>
+          {confirmLabel}
+        </button>
+        <button type="button" onClick={onCancel}>
+          {t.cancel}
+        </button>
+      </div>
+    </Dialog>
+  );
+}
+
 export function PlayView({
   problem,
   challenge,
@@ -65,7 +110,7 @@ export function PlayView({
   problem: Problem;
   challenge?: ChallengeContext;
 }) {
-  const { content, storage, settings, toolchain } = useApp();
+  const { content, storage, settings, toolchain, locale, t } = useApp();
   const pool = toolchain.status === "ready" ? toolchain.pool : undefined;
   const freeRules = useMemo(
     () => ({ mode: settings.mode, lives: settings.lives }),
@@ -81,14 +126,13 @@ export function PlayView({
     challengeId: challenge?.id,
     onRunFinished: challenge?.onRunFinished,
   });
-  const [confirming, setConfirming] = useState(false);
-  const [confirmingRestart, setConfirmingRestart] = useState(false);
+  const [confirming, setConfirming] = useState<"submit" | "restart" | null>(null);
 
   const running = state.phase.kind === "running";
   const canSubmit = pool !== undefined && !running && state.loaded;
   const requestSubmit = () => {
     if (!canSubmit) return;
-    if (settings.confirmSubmit) setConfirming(true);
+    if (settings.confirmSubmit) setConfirming("submit");
     else void submit();
   };
 
@@ -98,48 +142,84 @@ export function PlayView({
         ? present(state.last.judgement, {
             mode: state.last.mode,
             harnessVisible: problem.judge.harnessVisible,
+            messages: t,
           })
         : null,
-    [state.last, problem],
+    [state.last, problem, t],
   );
 
   const run = state.run;
   const playing = run?.status === "playing";
   const runMode = playing ? run.mode : rules.mode;
   const lives = playing ? remainingLives(run) : rules.lives;
+  // A finished run keeps showing its count; the next submission starts a new run.
+  const tries = run?.attempts.length ?? 0;
+  const finishedInChallenge = challenge !== undefined && run !== null && !playing;
 
   return (
     <div class="play">
       <div class="play-header">
-        {challenge !== undefined && <span class="tag">連続チャレンジ {challenge.position}</span>}
-        <h1>{problem.title}</h1>
-        <span class="tag">{KIND_LABELS[problem.kind]}</span>
-        <span class="meta">Par {problem.par}</span>
-        <span class="meta">モード: {MODE_LABELS[runMode]}</span>
-        <span class="meta">提出: {playing ? run.attempts.length : 0} 回</span>
-        {lives !== null && <span class="meta">残機: {lives}</span>}
+        {challenge === undefined ? (
+          <IconButton
+            icon={ArrowLeft}
+            label={t.backToProblems}
+            href={routeHref({ page: "list" })}
+          />
+        ) : (
+          <span class="chip accent">{t.challengeChip(challenge.position)}</span>
+        )}
+        <h1>{localize(problem.title, locale)}</h1>
+        <KindBadge kind={problem.kind} />
+        <span class="chip" title={t.modeHeading}>
+          {t.modeChip(t.modes[runMode])}
+        </span>
+        <span class="chip">{t.par(problem.par)}</span>
+        <span class="chip strong">{t.tries(tries)}</span>
+        {lives !== null && (
+          <span class="chip" title={t.lives(lives)}>
+            <Heart size={14} aria-hidden="true" /> {lives}
+          </span>
+        )}
         <span class="spacer" />
         {challenge === undefined && (
-          <a href={routeHref({ page: "history", problemId: problem.id })}>履歴</a>
+          <IconButton
+            icon={History}
+            label={t.history}
+            href={routeHref({ page: "history", problemId: problem.id })}
+          />
         )}
-        {challenge !== undefined && run !== null && !playing ? (
-          <button type="button" class="primary" onClick={challenge.onNext}>
-            次へ進む
-          </button>
+        {finishedInChallenge ? (
+          <IconButton
+            icon={SkipForward}
+            label={t.nextInChallenge}
+            onClick={challenge.onNext}
+            class="primary"
+          >
+            {t.nextInChallenge}
+          </IconButton>
         ) : (
-          <button type="button" onClick={() => setConfirmingRestart(true)} disabled={running}>
-            {challenge === undefined ? "最初から" : "ギブアップ"}
-          </button>
+          <>
+            <IconButton
+              icon={challenge === undefined ? RotateCcw : Flag}
+              label={challenge === undefined ? t.startOver : t.giveUp}
+              onClick={() => setConfirming("restart")}
+              disabled={running}
+            />
+            <IconButton
+              icon={Play}
+              label={`${t.submit} (${SUBMIT_SHORTCUT})`}
+              onClick={requestSubmit}
+              disabled={!canSubmit}
+              class="primary"
+            >
+              {running ? t.judging : pool === undefined ? t.toolchainStarting : t.submit}
+              <kbd>{SUBMIT_SHORTCUT}</kbd>
+            </IconButton>
+          </>
         )}
-        <button type="button" class="primary" onClick={requestSubmit} disabled={!canSubmit}>
-          {running ? "判定中…" : "提出 (Ctrl+Enter)"}
-        </button>
       </div>
       {challenge === undefined && playing && run.mode !== settings.mode && (
-        <p class="notice">
-          このランは「{MODE_LABELS[run.mode]}
-          」モードで開始されています。モードの変更は次のランから反映されます。
-        </p>
+        <p class="notice">{t.runModeNotice(t.modes[run.mode])}</p>
       )}
       <div class="play-body">
         <Statement problem={problem} />
@@ -159,48 +239,30 @@ export function PlayView({
       </div>
       <ResultPanel phase={state.phase} last={state.last} presentation={presentation} />
 
-      <Dialog open={confirming} onClose={() => setConfirming(false)} class="confirm">
-        <p>この内容で提出しますか？（{playing ? run.attempts.length + 1 : 1} 回目の提出）</p>
-        <div class="actions">
-          <button
-            type="button"
-            class="primary"
-            autofocus
-            onClick={() => {
-              setConfirming(false);
-              void submit();
-            }}
-          >
-            提出する
-          </button>
-          <button type="button" onClick={() => setConfirming(false)}>
-            やめる
-          </button>
-        </div>
-      </Dialog>
-      <Dialog open={confirmingRestart} onClose={() => setConfirmingRestart(false)} class="confirm">
-        <p>
-          {challenge === undefined
-            ? "コードをテンプレートに戻し、新しいランを始めますか？"
-            : "この問題をあきらめて次に進みますか？（未解決として記録されます）"}
-          {challenge === undefined && playing && "（進行中のランは未解決で終了します）"}
-        </p>
-        <div class="actions">
-          <button
-            type="button"
-            class="primary"
-            onClick={() => {
-              setConfirmingRestart(false);
-              void restart().then(() => challenge?.onNext());
-            }}
-          >
-            {challenge === undefined ? "最初からやり直す" : "ギブアップする"}
-          </button>
-          <button type="button" onClick={() => setConfirmingRestart(false)}>
-            やめる
-          </button>
-        </div>
-      </Dialog>
+      <Confirm
+        open={confirming === "submit"}
+        message={t.confirmSubmit(playing ? tries + 1 : 1)}
+        confirmLabel={t.confirmSubmitYes}
+        onCancel={() => setConfirming(null)}
+        onConfirm={() => {
+          setConfirming(null);
+          void submit();
+        }}
+      />
+      <Confirm
+        open={confirming === "restart"}
+        message={
+          challenge === undefined
+            ? `${t.confirmStartOver}${playing ? ` ${t.startOverAbandons}` : ""}`
+            : t.confirmGiveUp
+        }
+        confirmLabel={challenge === undefined ? t.confirmStartOverYes : t.confirmGiveUpYes}
+        onCancel={() => setConfirming(null)}
+        onConfirm={() => {
+          setConfirming(null);
+          void restart().then(() => challenge?.onNext());
+        }}
+      />
       <FinishedDialog
         problem={problem}
         finished={state.finished}
@@ -208,14 +270,14 @@ export function PlayView({
         next={
           challenge === undefined
             ? {
-                label: "最初から挑戦",
+                label: t.tryAgain,
                 action: () => {
                   dismissFinished();
                   void restart();
                 },
               }
             : {
-                label: "次へ進む",
+                label: t.nextInChallenge,
                 action: () => {
                   dismissFinished();
                   challenge.onNext();
@@ -228,14 +290,14 @@ export function PlayView({
 }
 
 export function PlayPage({ problemId }: { problemId: string }) {
-  const { content } = useApp();
+  const { content, t } = useApp();
   const problem = content.problems.find((p) => p.id === problemId);
   if (problem === undefined) {
     return (
-      <p>
-        問題「{problemId}」は見つかりませんでした。
-        <a href={routeHref({ page: "list" })}>問題一覧へ</a>
-      </p>
+      <section>
+        <p>{t.problemNotFound(problemId)}</p>
+        <a href={routeHref({ page: "list" })}>{t.backToProblems}</a>
+      </section>
     );
   }
   // Remount per problem so that all per-problem state starts fresh.

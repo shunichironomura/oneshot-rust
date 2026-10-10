@@ -1,15 +1,16 @@
-文章 `text` に含まれる単語の出現回数を数えてください。
+Count how many times each word appears in `text`.
 
 ```rust
 pub fn word_count(text: &str) -> Vec<(String, usize)>
 ```
 
-- 単語は空白で区切られた部分です。単語は**小文字に変換**してから数えます（`"Rust"` と `"rust"` は同じ単語）。
-- 結果は、出現回数の**多い順**に並べます。同じ回数の単語どうしは、辞書順（昇順）に並べます。
+- Words are separated by whitespace and are **lowercased** before counting (`"Rust"` and `"rust"` are
+  the same word).
+- Sort the result by count, **highest first**. Words with the same count are sorted alphabetically.
 
-### 例
+### Example
 
-`word_count("b a B c a b")` は次を返します。
+`word_count("b a B c a b")` returns:
 
 ```text
 [("b", 3), ("a", 2), ("c", 1)]

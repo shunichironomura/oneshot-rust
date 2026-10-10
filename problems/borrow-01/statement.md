@@ -1,11 +1,12 @@
-次のコードはコンパイルが通りません。直してください。
+The code below does not compile. Fix it.
 
-`push_doubled` は、ベクタ `v` の**元々の要素**のうち正のものを、出現順に 2 倍して末尾に追加します。
+`push_doubled` appends, in order, twice the value of every **originally present** positive element
+of `v` to the end of `v`.
 
 ```rust
 pub fn push_doubled(v: &mut Vec<i32>)
 ```
 
-### 例
+### Example
 
-`[3, -1, 2]` は `[3, -1, 2, 6, 4]` になります。
+`[3, -1, 2]` becomes `[3, -1, 2, 6, 4]`.

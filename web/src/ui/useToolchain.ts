@@ -1,11 +1,12 @@
 import { useEffect, useState } from "preact/hooks";
 import { RunnerPool } from "../runner/pool.ts";
-import { type LoadProgress, loadToolchain } from "../runner/toolchain.ts";
+import { type LoadProgress, loadToolchain, ToolchainMissingError } from "../runner/toolchain.ts";
 
 export type ToolchainState =
   | { status: "loading"; progress: LoadProgress | null }
   | { status: "warming"; pool: RunnerPool }
   | { status: "ready"; pool: RunnerPool; toolchainId: string }
+  | { status: "missing" }
   | { status: "error"; message: string };
 
 /** Downloads (or loads from cache) the toolchain and starts the runner Workers. */
@@ -28,8 +29,9 @@ export function useToolchain(): ToolchainState {
           setState({ status: "ready", pool, toolchainId: toolchain.manifest.toolchainId });
       })
       .catch((e: unknown) => {
-        if (!disposed)
-          setState({ status: "error", message: e instanceof Error ? e.message : String(e) });
+        if (disposed) return;
+        if (e instanceof ToolchainMissingError) setState({ status: "missing" });
+        else setState({ status: "error", message: e instanceof Error ? e.message : String(e) });
       });
     return () => {
       disposed = true;

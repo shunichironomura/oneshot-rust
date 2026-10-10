@@ -1,0 +1,495 @@
+// UI messages. English is the default; Japanese is available as an alternative.
+import type {
+  CaseStatus,
+  InternalErrorReason,
+  RuntimeErrorReason,
+  VerdictKind,
+} from "./classify.ts";
+import type { Mode } from "./mode.ts";
+import type { ProblemKind } from "./problem.ts";
+
+export type Locale = "en" | "ja";
+
+export const LOCALES: readonly Locale[] = ["en", "ja"];
+
+export const LOCALE_NAMES: Record<Locale, string> = { en: "English", ja: "日本語" };
+
+/** Text that problems provide per locale. English is required. */
+export interface Localized {
+  en: string;
+  ja?: string;
+}
+
+export function localize(text: Localized, locale: Locale): string {
+  return text[locale] ?? text.en;
+}
+
+export interface Messages {
+  // Navigation and app shell
+  navProblems: string;
+  navChallenge: string;
+  navSettings: string;
+  language: string;
+  storageError: (message: string) => string;
+
+  // Toolchain loading
+  toolchainDownloading: (loadedMb: string, totalMb: string) => string;
+  /** Submit button label while the compiler is not ready yet. */
+  toolchainStarting: string;
+  toolchainMissing: string;
+  toolchainError: (message: string) => string;
+
+  // Landing page and problem list
+  heroTitle: string;
+  heroLead: string;
+  howToPlay: readonly string[];
+  nextProblem: string;
+  continueProblem: string;
+  allSolved: (mode: string) => string;
+  tryChallenge: string;
+  problemsHeading: string;
+  columnProblem: string;
+  columnDifficulty: string;
+  columnBest: (mode: string) => string;
+  difficulty: (n: number) => string;
+  bestTooltip: (ceCount: number) => string;
+  modes: Record<Mode, string>;
+  modeDescriptions: Record<Mode, string>;
+  kinds: Record<ProblemKind, string>;
+
+  // Play screen
+  par: (n: number) => string;
+  tries: (n: number) => string;
+  lives: (n: number) => string;
+  modeChip: (mode: string) => string;
+  submit: string;
+  judging: string;
+  history: string;
+  startOver: string;
+  giveUp: string;
+  nextInChallenge: string;
+  tabStatement: string;
+  tabHarness: string;
+  runModeNotice: (mode: string) => string;
+  confirmSubmit: (n: number) => string;
+  confirmSubmitYes: string;
+  cancel: string;
+  confirmStartOver: string;
+  startOverAbandons: string;
+  confirmStartOverYes: string;
+  confirmGiveUp: string;
+  confirmGiveUpYes: string;
+  problemNotFound: (id: string) => string;
+  backToProblems: string;
+  challengeChip: (position: string) => string;
+
+  // Result panel
+  resultEmpty: string;
+  compiling: string;
+  runningCase: (i: number, n: number) => string;
+  rejected: string;
+  forbiddenMacro: (name: string) => string;
+  submitError: string;
+  output: string;
+  hiddenCase: string;
+  caseStatus: Record<CaseStatus, string>;
+  verdicts: Record<VerdictKind, string>;
+  ceSummary: (count: number, locations: string) => string;
+  inHarness: string;
+  unknownLocation: string;
+  hiddenHarnessNote: string;
+  harnessInternalsNote: string;
+  tleSummary: (caseId: string) => string;
+  runtimeError: (reason: RuntimeErrorReason) => string;
+  internalError: (reason: InternalErrorReason) => string;
+
+  // End of a run
+  outOfLives: string;
+  submissions: string;
+  submissionsValue: (n: number, par: number) => string;
+  compileErrors: string;
+  mode: string;
+  newBest: string;
+  copyResult: string;
+  copied: string;
+  reviewSubmissions: string;
+  tryAgain: string;
+  close: string;
+  shareTries: (n: number) => string;
+  unsolved: string;
+
+  // History
+  historyTitle: string;
+  noSubmissions: string;
+  runSolved: (n: number, title: string) => string;
+  runFailed: string;
+  runPlaying: string;
+  attemptHeading: (i: number, verdict: string) => string;
+  changesFromTemplate: string;
+  changesFrom: (i: number) => string;
+
+  // Settings
+  settingsTitle: string;
+  modeHeading: string;
+  modeHint: string;
+  rulesHeading: string;
+  livesLabel: string;
+  livesUnlimited: string;
+  confirmLabel: string;
+  editorHeading: string;
+  syntaxHighlight: string;
+  closeBrackets: string;
+  autoIndent: string;
+  notepadMode: string;
+  fontSize: string;
+  font: string;
+  resetSettings: string;
+
+  // Challenge
+  challengeTitle: string;
+  challengeIntro: (n: number) => string;
+  challengeRules: (mode: string, lives: string) => string;
+  challengeStart: string;
+  challengePast: string;
+  challengeResult: string;
+  challengeTotal: (total: number, solved: number, count: number) => string;
+  challengeNew: string;
+  challengeSkipDeleted: (id: string) => string;
+  challengeShareHeader: (mode: string) => string;
+}
+
+const en: Messages = {
+  navProblems: "Problems",
+  navChallenge: "Challenge",
+  navSettings: "Settings",
+  language: "Language",
+  storageError: (m) => `Could not open browser storage (IndexedDB): ${m}`,
+
+  toolchainDownloading: (l, t) => `Downloading the compiler (first visit only) — ${l} / ${t} MB`,
+  toolchainStarting: "Starting compiler…",
+  toolchainMissing: "The toolchain is missing. Build it with toolchain/build.nu.",
+  toolchainError: (m) => `Could not load the compiler: ${m}`,
+
+  heroTitle: "Write Rust that compiles in one shot.",
+  heroLead:
+    "No autocomplete, no language server. Solve each problem in as few submissions as possible — every compile counts.",
+  howToPlay: [
+    "Read the problem and write your Rust in the editor.",
+    "Submit with Ctrl+Enter. The real Rust compiler checks it and runs the tests in Miri, so even undefined behavior is caught.",
+    "Every submission counts. Aim for par — or a hole in one.",
+  ],
+  nextProblem: "Start",
+  continueProblem: "Continue",
+  allSolved: (mode) => `You have solved every problem in ${mode} mode.`,
+  tryChallenge: "5-problem challenge",
+  problemsHeading: "Problems",
+  columnProblem: "Problem",
+  columnDifficulty: "Difficulty",
+  columnBest: (mode) => `Best (${mode})`,
+  difficulty: (n) => `Difficulty ${n} of 5`,
+  bestTooltip: (ce) => `${ce} compile error${ce === 1 ? "" : "s"}`,
+  modes: { beginner: "Beginner", standard: "Standard", advanced: "Hard", oni: "Extreme" },
+  modeDescriptions: {
+    beginner:
+      "Full compiler output, including help and suggestions. Errors are marked in the editor.",
+    standard: "Error messages, code snippets and notes. No help or suggested fixes.",
+    advanced: "Only the number of errors and their line numbers.",
+    oni: "Only the two-letter verdict.",
+  },
+  kinds: { implement: "Implement", repair: "Repair", signature: "Signature" },
+
+  par: (n) => `Par ${n}`,
+  tries: (n) => `${n} ${n === 1 ? "try" : "tries"}`,
+  lives: (n) => `${n} ${n === 1 ? "life" : "lives"} left`,
+  modeChip: (mode) => mode,
+  submit: "Submit",
+  judging: "Judging…",
+  history: "Submission history",
+  startOver: "Start over",
+  giveUp: "Give up",
+  nextInChallenge: "Next problem",
+  tabStatement: "Problem",
+  tabHarness: "tests.rs (read-only)",
+  runModeNotice: (mode) =>
+    `This run started in ${mode} mode. A new mode applies from the next run.`,
+  confirmSubmit: (n) => `Submit this code? This will be submission #${n}.`,
+  confirmSubmitYes: "Submit",
+  cancel: "Cancel",
+  confirmStartOver: "Reset the code to the template and start a new run?",
+  startOverAbandons: "The current run will end unsolved.",
+  confirmStartOverYes: "Start over",
+  confirmGiveUp: "Give up this problem and move on? It is recorded as unsolved.",
+  confirmGiveUpYes: "Give up",
+  problemNotFound: (id) => `Problem “${id}” was not found.`,
+  backToProblems: "Back to problems",
+  challengeChip: (p) => `Challenge ${p}`,
+
+  resultEmpty: "Press Ctrl+Enter (⌘+Enter) to submit. Make it count.",
+  compiling: "Compiling…",
+  runningCase: (i, n) => `Running test ${i} of ${n}…`,
+  rejected: "Not submitted (not counted)",
+  forbiddenMacro: (m) => `\`${m}!\` is not allowed: it could read the judge's secrets.`,
+  submitError: "Error (not counted)",
+  output: "Output",
+  hiddenCase: "hidden",
+  caseStatus: { pass: "PASS", fail: "FAIL", "not-run": "not run" },
+  verdicts: {
+    AC: "Accepted",
+    WA: "Wrong answer",
+    CE: "Compile error",
+    UB: "Undefined behavior",
+    RE: "Runtime error",
+    TLE: "Time limit exceeded",
+    IE: "Internal error (not counted)",
+  },
+  ceSummary: (n, locs) => `${n} error${n === 1 ? "" : "s"} (${locs})`,
+  inHarness: " (test harness)",
+  unknownLocation: "unknown location",
+  hiddenHarnessNote: "(in the test harness; code hidden)",
+  harnessInternalsNote: "(harness internals)",
+  tleSummary: (id) => `Time limit exceeded while running ${id}`,
+  runtimeError: (r) => {
+    switch (r.type) {
+      case "diagnostic":
+      case "panic":
+        return r.message;
+      case "exit-code":
+        return `The program exited with code ${r.code}`;
+      case "abnormal-exit":
+        return "The program terminated abnormally";
+      case "output-limit":
+        return `Output exceeded the limit of ${r.limitBytes} bytes`;
+    }
+  },
+  internalError: (r) => {
+    switch (r.type) {
+      case "ice":
+        return `Internal compiler error: ${r.message}`;
+      case "crash":
+        return `Miri crashed: ${r.message}`;
+      case "compile-timeout":
+        return "Compilation did not finish within the time limit";
+      case "no-start":
+        return `The judge could not start (exit code ${r.exitCode ?? "none"})`;
+    }
+  },
+
+  outOfLives: "Out of lives",
+  submissions: "Submissions",
+  submissionsValue: (n, par) => `${n} (par ${par})`,
+  compileErrors: "Compile errors",
+  mode: "Mode",
+  newBest: "New personal best!",
+  copyResult: "Copy result",
+  copied: "Copied!",
+  reviewSubmissions: "Review submissions",
+  tryAgain: "Try again",
+  close: "Close",
+  shareTries: (n) => `${n} ${n === 1 ? "try" : "tries"}`,
+  unsolved: "unsolved",
+
+  historyTitle: "Submission history",
+  noSubmissions: "No submissions yet.",
+  runSolved: (n, title) => `Solved in ${n} (${title})`,
+  runFailed: "Ended unsolved",
+  runPlaying: "In progress",
+  attemptHeading: (i, v) => `Submission #${i} — ${v}`,
+  changesFromTemplate: "Changes from the template",
+  changesFrom: (i) => `Changes from submission #${i}`,
+
+  settingsTitle: "Settings",
+  modeHeading: "Feedback mode",
+  modeHint: "Records are kept per mode. A new mode applies from your next run.",
+  rulesHeading: "Rules",
+  livesLabel: "Lives (maximum submissions per problem)",
+  livesUnlimited: "Unlimited",
+  confirmLabel: "Ask for confirmation before each submission",
+  editorHeading: "Editor",
+  syntaxHighlight: "Syntax highlighting",
+  closeBrackets: "Auto-close brackets",
+  autoIndent: "Auto-indent",
+  notepadMode: "Notepad mode (turn all aids off)",
+  fontSize: "Font size",
+  font: "Font",
+  resetSettings: "Reset to defaults",
+
+  challengeTitle: "5-problem challenge",
+  challengeIntro: (n) =>
+    `Solve ${n} random problems in a row. Your score is the total number of submissions. Giving up records a problem as unsolved.`,
+  challengeRules: (mode, lives) => `Mode: ${mode} · Lives: ${lives}`,
+  challengeStart: "Start the challenge",
+  challengePast: "Past results",
+  challengeResult: "Challenge result",
+  challengeTotal: (t, s, c) => `${t} submission${t === 1 ? "" : "s"} in total · ${s}/${c} solved`,
+  challengeNew: "New challenge",
+  challengeSkipDeleted: (id) => `Problem “${id}” no longer exists and is skipped.`,
+  challengeShareHeader: (mode) => `OneShot Rust 🦀 Challenge [${mode}]`,
+};
+
+const ja: Messages = {
+  navProblems: "問題一覧",
+  navChallenge: "連続チャレンジ",
+  navSettings: "設定",
+  language: "言語",
+  storageError: (m) => `保存領域（IndexedDB）を開けませんでした: ${m}`,
+
+  toolchainDownloading: (l, t) => `コンパイラをダウンロード中（初回のみ）… ${l} / ${t} MB`,
+  toolchainStarting: "コンパイラ起動中…",
+  toolchainMissing: "ツールチェーンが見つかりません。toolchain/build.nu でビルドしてください。",
+  toolchainError: (m) => `コンパイラを読み込めませんでした: ${m}`,
+
+  heroTitle: "一発でコンパイルを通す Rust を書こう。",
+  heroLead: "補完も LSP もなし。できるだけ少ない提出回数で、すべてのテストを通してください。",
+  howToPlay: [
+    "問題を読み、エディタに Rust のコードを書きます。",
+    "Ctrl+Enter で提出。本物の Rust コンパイラが検査し、Miri でテストを実行します（未定義動作も検出されます）。",
+    "提出はすべてカウントされます。パー、できればホールインワンを狙いましょう。",
+  ],
+  nextProblem: "はじめる",
+  continueProblem: "続きから",
+  allSolved: (mode) => `${mode}モードの問題をすべて解きました。`,
+  tryChallenge: "連続チャレンジ（5 問）",
+  problemsHeading: "問題",
+  columnProblem: "問題",
+  columnDifficulty: "難易度",
+  columnBest: (mode) => `ベスト（${mode}）`,
+  difficulty: (n) => `難易度 ${n} / 5`,
+  bestTooltip: (ce) => `うち CE ${ce} 回`,
+  modes: { beginner: "入門", standard: "標準", advanced: "上級", oni: "鬼" },
+  modeDescriptions: {
+    beginner: "rustc の出力をすべて表示（help・修正提案つき）。エディタにエラー行マーカーを表示",
+    standard: "エラーメッセージ、コード片、note を表示。help と修正提案は非表示",
+    advanced: "エラーの件数と行番号のみ",
+    oni: "判定の 2 文字のみ",
+  },
+  kinds: { implement: "実装", repair: "修理", signature: "シグネチャ" },
+
+  par: (n) => `Par ${n}`,
+  tries: (n) => `提出 ${n} 回`,
+  lives: (n) => `残機 ${n}`,
+  modeChip: (mode) => `${mode}モード`,
+  submit: "提出",
+  judging: "判定中…",
+  history: "提出履歴",
+  startOver: "最初から",
+  giveUp: "ギブアップ",
+  nextInChallenge: "次の問題へ",
+  tabStatement: "問題文",
+  tabHarness: "tests.rs（読み取り専用）",
+  runModeNotice: (mode) =>
+    `このランは「${mode}」モードで開始されています。モードの変更は次のランから反映されます。`,
+  confirmSubmit: (n) => `この内容で提出しますか？（${n} 回目の提出）`,
+  confirmSubmitYes: "提出する",
+  cancel: "やめる",
+  confirmStartOver: "コードをテンプレートに戻し、新しいランを始めますか？",
+  startOverAbandons: "進行中のランは未解決で終了します。",
+  confirmStartOverYes: "最初からやり直す",
+  confirmGiveUp: "この問題をあきらめて次に進みますか？（未解決として記録されます）",
+  confirmGiveUpYes: "ギブアップする",
+  problemNotFound: (id) => `問題「${id}」は見つかりませんでした。`,
+  backToProblems: "問題一覧へ",
+  challengeChip: (p) => `連続チャレンジ ${p}`,
+
+  resultEmpty: "Ctrl+Enter（⌘+Enter）で提出します。一発で通しましょう。",
+  compiling: "コンパイル中…",
+  runningCase: (i, n) => `実行中（ケース ${i}/${n}）`,
+  rejected: "提出できません（カウントされません）",
+  forbiddenMacro: (m) => `\`${m}!\` は使用できません（判定の改ざん防止のため）`,
+  submitError: "エラー（カウントされません）",
+  output: "出力",
+  hiddenCase: "非公開",
+  caseStatus: { pass: "PASS", fail: "FAIL", "not-run": "未実行" },
+  verdicts: {
+    AC: "正解",
+    WA: "不正解",
+    CE: "コンパイルエラー",
+    UB: "未定義動作",
+    RE: "実行時エラー",
+    TLE: "時間切れ",
+    IE: "内部エラー（カウントされません）",
+  },
+  ceSummary: (n, locs) => `エラー ${n} 件（${locs}）`,
+  inHarness: "（ハーネス側）",
+  unknownLocation: "位置不明",
+  hiddenHarnessNote: "（ハーネス側でエラー。コードは非公開）",
+  harnessInternalsNote: "（ハーネス内部）",
+  tleSummary: (id) => `ケース ${id} の実行中に制限時間を超えました`,
+  runtimeError: (r) => {
+    switch (r.type) {
+      case "diagnostic":
+      case "panic":
+        return r.message;
+      case "exit-code":
+        return `終了コード ${r.code}`;
+      case "abnormal-exit":
+        return "プログラムが異常終了しました";
+      case "output-limit":
+        return `標準出力が上限（${r.limitBytes} バイト）を超えました`;
+    }
+  },
+  internalError: (r) => {
+    switch (r.type) {
+      case "ice":
+        return `コンパイラの内部エラー: ${r.message}`;
+      case "crash":
+        return `Miri が異常終了しました: ${r.message}`;
+      case "compile-timeout":
+        return "コンパイルが制限時間内に終わりませんでした";
+      case "no-start":
+        return `判定を開始できませんでした（終了コード ${r.exitCode ?? "なし"}）`;
+    }
+  },
+
+  outOfLives: "残機がなくなりました",
+  submissions: "提出回数",
+  submissionsValue: (n, par) => `${n} 回（Par ${par}）`,
+  compileErrors: "うち CE",
+  mode: "モード",
+  newBest: "自己ベスト更新！",
+  copyResult: "結果をコピー",
+  copied: "コピーしました",
+  reviewSubmissions: "振り返る",
+  tryAgain: "もう一度",
+  close: "閉じる",
+  shareTries: (n) => `${n}回`,
+  unsolved: "未解決",
+
+  historyTitle: "提出履歴",
+  noSubmissions: "まだ提出がありません。",
+  runSolved: (n, title) => `${n} 回で正解（${title}）`,
+  runFailed: "未解決で終了",
+  runPlaying: "挑戦中",
+  attemptHeading: (i, v) => `${i} 回目の提出 — ${v}`,
+  changesFromTemplate: "テンプレートからの変更",
+  changesFrom: (i) => `${i} 回目からの変更`,
+
+  settingsTitle: "設定",
+  modeHeading: "診断表示モード",
+  modeHint: "記録はモードごとに管理されます。挑戦中のランには、次のランから反映されます。",
+  rulesHeading: "ルール",
+  livesLabel: "残機（1 問あたりの提出回数の上限）",
+  livesUnlimited: "なし",
+  confirmLabel: "提出前に確認ダイアログを出す",
+  editorHeading: "エディタ",
+  syntaxHighlight: "シンタックスハイライト",
+  closeBrackets: "括弧の自動補完",
+  autoIndent: "自動インデント",
+  notepadMode: "メモ帳モード（すべて OFF）",
+  fontSize: "フォントサイズ",
+  font: "フォント",
+  resetSettings: "既定値に戻す",
+
+  challengeTitle: "連続チャレンジ",
+  challengeIntro: (n) =>
+    `ランダムに選ばれた ${n} 問を続けて解き、合計の提出回数を競います。ギブアップした問題は未解決として記録されます。`,
+  challengeRules: (mode, lives) => `モード: ${mode} ・ 残機: ${lives}`,
+  challengeStart: "チャレンジを始める",
+  challengePast: "これまでの記録",
+  challengeResult: "連続チャレンジの結果",
+  challengeTotal: (t, s, c) => `合計 ${t} 回 ・ ${s}/${c} 問正解`,
+  challengeNew: "新しいチャレンジ",
+  challengeSkipDeleted: (id) => `問題「${id}」は削除されたため、スキップします。`,
+  challengeShareHeader: (mode) => `OneShot Rust 🦀 連続チャレンジ [${mode}]`,
+};
+
+export const MESSAGES: Record<Locale, Messages> = { en, ja };

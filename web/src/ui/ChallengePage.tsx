@@ -1,3 +1,4 @@
+import { Copy, Play, Trophy } from "lucide-preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import {
   CHALLENGE_LENGTH,
@@ -9,33 +10,37 @@ import {
   solvedCount,
   totalSubmissions,
 } from "../core/challenge.ts";
-import { MODE_LABELS } from "../core/mode.ts";
+import { routeHref } from "../core/route.ts";
 import type { Run } from "../core/run.ts";
 import { useApp } from "./context.ts";
 import { type ChallengeContext, PlayView } from "./PlayPage.tsx";
 
-const dateFormat = new Intl.DateTimeFormat("ja-JP", { dateStyle: "short", timeStyle: "short" });
-
 function Summary({ challenge, onNew }: { challenge: Challenge; onNew: () => void }) {
+  const { t } = useApp();
   const [copied, setCopied] = useState(false);
-  const text = challengeShareText(challenge);
+  const text = challengeShareText(challenge, t);
   return (
     <section class="challenge">
-      <h1>連続チャレンジ 結果</h1>
+      <h1>{t.challengeResult}</h1>
       <p class="challenge-total">
-        合計 <strong>{totalSubmissions(challenge)}</strong> 回（{solvedCount(challenge)} /{" "}
-        {challenge.problemIds.length} 問正解）
+        {t.challengeTotal(
+          totalSubmissions(challenge),
+          solvedCount(challenge),
+          challenge.problemIds.length,
+        )}
       </p>
       <pre class="share">{text}</pre>
       <div class="actions">
+        <button type="button" class="primary" onClick={onNew}>
+          {t.challengeNew}
+        </button>
         <button
           type="button"
+          class="icon-button"
           onClick={() => void navigator.clipboard.writeText(text).then(() => setCopied(true))}
         >
-          {copied ? "コピーしました" : "結果をコピー"}
-        </button>
-        <button type="button" class="primary" onClick={onNew}>
-          新しいチャレンジ
+          <Copy size={16} aria-hidden="true" />
+          {copied ? t.copied : t.copyResult}
         </button>
       </div>
     </section>
@@ -43,29 +48,33 @@ function Summary({ challenge, onNew }: { challenge: Challenge; onNew: () => void
 }
 
 function Start({ past, onStart }: { past: Challenge[]; onStart: () => void }) {
-  const { settings } = useApp();
+  const { settings, locale, t } = useApp();
+  const dateFormat = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
   return (
     <section class="challenge">
-      <h1>連続チャレンジ</h1>
-      <p>
-        ランダムに選ばれた {CHALLENGE_LENGTH} 問を続けて解き、<strong>合計の提出回数</strong>
-        を競います。途中でギブアップすると、その問題は未解決として記録されます。
-      </p>
+      <h1>
+        <Trophy size={26} aria-hidden="true" /> {t.challengeTitle}
+      </h1>
+      <p class="lead">{t.challengeIntro(CHALLENGE_LENGTH)}</p>
       <p class="hint">
-        モード: {MODE_LABELS[settings.mode]} / 残機:{" "}
-        {settings.lives === null ? "なし" : `${settings.lives} 回`}（設定画面で変更できます）
+        {t.challengeRules(
+          t.modes[settings.mode],
+          settings.lives === null ? t.livesUnlimited : String(settings.lives),
+        )}{" "}
+        · <a href={routeHref({ page: "settings" })}>{t.navSettings}</a>
       </p>
-      <button type="button" class="primary" onClick={onStart}>
-        開始する
+      <button type="button" class="primary large" onClick={onStart}>
+        <Play size={18} aria-hidden="true" /> {t.challengeStart}
       </button>
       {past.length > 0 && (
         <>
-          <h2>これまでの記録</h2>
+          <h2>{t.challengePast}</h2>
           <ul class="challenge-history">
             {past.map((c) => (
               <li key={c.id}>
-                {dateFormat.format(c.startedAt)} [{MODE_LABELS[c.mode]}] 合計 {totalSubmissions(c)}{" "}
-                回（{solvedCount(c)} / {c.problemIds.length} 問正解）
+                <span class="run-date">{dateFormat.format(c.startedAt)}</span>
+                <span class="chip">{t.modes[c.mode]}</span>
+                {t.challengeTotal(totalSubmissions(c), solvedCount(c), c.problemIds.length)}
               </li>
             ))}
           </ul>
@@ -76,7 +85,7 @@ function Start({ past, onStart }: { past: Challenge[]; onStart: () => void }) {
 }
 
 export function ChallengePage() {
-  const { content, storage, settings } = useApp();
+  const { content, storage, settings, t } = useApp();
   const [challenges, setChallenges] = useState<Challenge[]>();
   const [active, setActive] = useState<Challenge>();
   /**
@@ -151,9 +160,9 @@ export function ChallengePage() {
   if (problem === undefined) {
     return (
       <section class="challenge">
-        <p>問題「{problemId}」は削除されたため、スキップします。</p>
+        <p>{t.challengeSkipDeleted(problemId)}</p>
         <button type="button" onClick={onNext}>
-          次へ進む
+          {t.nextInChallenge}
         </button>
       </section>
     );

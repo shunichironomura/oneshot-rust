@@ -1,5 +1,5 @@
-関数 `largest` の本体はすでに書かれています。**シグネチャだけ**を書き換えて、ハーネス（`tests.rs` タブ）から
-呼べるようにしてください。本体は変更しないでください。
+The body of `largest` is already written. Change **only its signature** so that the test harness
+(the `tests.rs` tab) can call it. Do not change the body.
 
-`largest` はスライスのうち最大の要素への参照を返します（スライスは空でないものとします）。
-ハーネスは整数、浮動小数点数、文字列のスライスで呼び出します。
+`largest` returns a reference to the largest element of a non-empty slice. The harness calls it with
+slices of integers, floating-point numbers, strings and characters.

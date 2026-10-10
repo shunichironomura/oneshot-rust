@@ -1,6 +1,7 @@
 // 連続チャレンジ: play several problems in a row and compete on the total number of submissions.
 import type { VerdictKind } from "./classify.ts";
-import { MODE_LABELS, type Mode } from "./mode.ts";
+import type { Messages } from "./i18n.ts";
+import type { Mode } from "./mode.ts";
 import { type Run, verdictsOf } from "./run.ts";
 import { verdictEmoji } from "./scoring.ts";
 
@@ -78,13 +79,17 @@ export function solvedCount(challenge: Challenge): number {
 }
 
 /** Wordle-style result text: one row of squares per problem. */
-export function challengeShareText(challenge: Challenge): string {
+export function challengeShareText(challenge: Challenge, messages: Messages): string {
   const rows = challenge.entries.map(
     (e) => `${e.verdicts.map(verdictEmoji).join("") || "—"}${e.solved ? "" : " ✗"}  ${e.problemId}`,
   );
   return [
-    `OneShot Rust 🦀 連続チャレンジ [${MODE_LABELS[challenge.mode]}]`,
+    messages.challengeShareHeader(messages.modes[challenge.mode]),
     ...rows,
-    `合計 ${totalSubmissions(challenge)}回 (${solvedCount(challenge)}/${challenge.problemIds.length} 問正解)`,
+    messages.challengeTotal(
+      totalSubmissions(challenge),
+      solvedCount(challenge),
+      challenge.problemIds.length,
+    ),
   ].join("\n");
 }

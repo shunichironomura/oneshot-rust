@@ -1,15 +1,15 @@
-次のコードはコンパイルが通り、手元で実行すると「それっぽく」動くこともあります。
-しかし**未定義動作（UB）**を含んでおり、Miri で実行すると UB として検出されます。
+This code compiles, and it may even seem to work when you run it natively. But it contains
+**undefined behavior (UB)**, and Miri detects it.
 
-`push_and_sum` は、ベクタ `v` の末尾に `extra` を追加し、
-「追加後の全要素の合計」と「**追加前の**先頭要素」の和を返します（`v` は空でないものとします）。
+`push_and_sum` appends `extra` to `v` and returns the sum of all elements after the push plus the
+first element **before** the push (`v` is never empty).
 
 ```rust
 pub fn push_and_sum(v: &mut Vec<i32>, extra: i32) -> i32
 ```
 
-UB を取り除いて、正しく動くようにしてください（`unsafe` を使い続けてもかまいません）。
+Remove the UB so that it works correctly. (You may keep using `unsafe` if you like.)
 
-### 例
+### Example
 
-`v = [1, 2, 3]`, `extra = 4` のとき、`v` は `[1, 2, 3, 4]` になり、`10 + 1 = 11` を返します。
+With `v = [1, 2, 3]` and `extra = 4`, `v` becomes `[1, 2, 3, 4]` and the result is `10 + 1 = 11`.

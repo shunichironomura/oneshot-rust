@@ -1,23 +1,23 @@
+import { ArrowLeft } from "lucide-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { lineDiff } from "../core/diff.ts";
-import { MODE_LABELS } from "../core/mode.ts";
-import { present, VERDICT_LABELS } from "../core/present.ts";
+import { localize, type Messages } from "../core/i18n.ts";
+import { present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
 import { type Run, verdictsOf } from "../core/run.ts";
 import { titleFor, verdictEmoji } from "../core/scoring.ts";
 import { useApp } from "./context.ts";
+import { IconButton } from "./IconButton.tsx";
 
-const dateFormat = new Intl.DateTimeFormat("ja-JP", { dateStyle: "short", timeStyle: "short" });
-
-function runStatus(run: Run, problem: Problem): string {
+function runStatus(run: Run, problem: Problem, t: Messages): string {
   switch (run.status) {
     case "solved":
-      return `${run.attempts.length} 回で正解（${titleFor(run.attempts.length, problem.par)}）`;
+      return t.runSolved(run.attempts.length, titleFor(run.attempts.length, problem.par));
     case "failed":
-      return "未解決で終了";
+      return t.runFailed;
     case "playing":
-      return "挑戦中";
+      return t.runPlaying;
   }
 }
 
@@ -36,13 +36,15 @@ function DiffView({ before, after }: { before: string; after: string }) {
 }
 
 function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
+  const { t } = useApp();
   const [selected, setSelected] = useState(run.attempts.length - 1);
   const attempt = run.attempts[selected];
-  if (attempt === undefined) return <p>提出がありません。</p>;
+  if (attempt === undefined) return <p>{t.noSubmissions}</p>;
   const before = selected === 0 ? problem.template : run.attempts[selected - 1].code;
   const view = present(attempt.judgement, {
     mode: run.mode,
     harnessVisible: problem.judge.harnessVisible,
+    messages: t,
   });
   return (
     <div class="run-detail">
@@ -50,22 +52,20 @@ function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
         {run.attempts.map((a, i) => (
           <li key={i}>
             <button type="button" aria-pressed={i === selected} onClick={() => setSelected(i)}>
-              {verdictEmoji(a.judgement.verdict.kind)} {i + 1} 回目: {a.judgement.verdict.kind}
+              {verdictEmoji(a.judgement.verdict.kind)} #{i + 1} {a.judgement.verdict.kind}
             </button>
           </li>
         ))}
       </ol>
       <div class="attempt">
-        <h3>
-          {selected + 1} 回目の提出 — {VERDICT_LABELS[view.kind]}
-        </h3>
+        <h3>{t.attemptHeading(selected + 1, t.verdicts[view.kind])}</h3>
         {view.summary !== undefined && <p class="summary">{view.summary}</p>}
         {view.diagnostics.map((d, i) => (
           <pre class="diagnostic" key={i}>
             {d}
           </pre>
         ))}
-        <h4>{selected === 0 ? "テンプレートからの変更" : `${selected} 回目からの変更`}</h4>
+        <h4>{selected === 0 ? t.changesFromTemplate : t.changesFrom(selected)}</h4>
         <DiffView before={before} after={attempt.code} />
       </div>
     </div>
@@ -73,10 +73,14 @@ function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
 }
 
 export function HistoryPage({ problemId }: { problemId: string }) {
-  const { content, storage } = useApp();
+  const { content, storage, locale, t } = useApp();
   const problem = content.problems.find((p) => p.id === problemId);
   const [runs, setRuns] = useState<Run[]>();
   const [openRun, setOpenRun] = useState<string>();
+  const dateFormat = useMemo(
+    () => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }),
+    [locale],
+  );
 
   useEffect(() => {
     void storage.runsOf(problemId).then((rs) => {
@@ -85,13 +89,20 @@ export function HistoryPage({ problemId }: { problemId: string }) {
     });
   }, [storage, problemId]);
 
-  if (problem === undefined) return <p>問題「{problemId}」は見つかりませんでした。</p>;
+  if (problem === undefined) return <p>{t.problemNotFound(problemId)}</p>;
   return (
     <section class="history">
-      <h1>
-        提出履歴: <a href={routeHref({ page: "play", problemId })}>{problem.title}</a>
-      </h1>
-      {runs?.length === 0 && <p>まだ提出がありません。</p>}
+      <div class="section-head">
+        <IconButton
+          icon={ArrowLeft}
+          label={localize(problem.title, locale)}
+          href={routeHref({ page: "play", problemId })}
+        />
+        <h1>
+          {t.historyTitle}: {localize(problem.title, locale)}
+        </h1>
+      </div>
+      {runs?.length === 0 && <p>{t.noSubmissions}</p>}
       {runs?.map((run) => (
         <details
           key={run.id}
@@ -101,8 +112,10 @@ export function HistoryPage({ problemId }: { problemId: string }) {
           }}
         >
           <summary>
-            {dateFormat.format(run.startedAt)} [{MODE_LABELS[run.mode]}]{" "}
-            {verdictsOf(run).map(verdictEmoji).join("")} {runStatus(run, problem)}
+            <span class="run-date">{dateFormat.format(run.startedAt)}</span>
+            <span class="chip">{t.modes[run.mode]}</span>
+            <span>{verdictsOf(run).map(verdictEmoji).join("")}</span>
+            <span>{runStatus(run, problem, t)}</span>
           </summary>
           {run.id === openRun && <RunDetail run={run} problem={problem} />}
         </details>

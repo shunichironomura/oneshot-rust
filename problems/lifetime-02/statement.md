@@ -1,8 +1,8 @@
-入力文字列を借りたまま、空白区切りのトークンを順に返す `Tokenizer` があります。
-ロジックは完成していますが、**ライフタイム注釈**が足りずコンパイルが通りません。
+`Tokenizer` borrows an input string and yields its whitespace-separated tokens one by one. The logic
+is complete, but **lifetime annotations** are missing, so it does not compile.
 
-型と関数のシグネチャにライフタイムを補って、ハーネス（`tests.rs` タブ）から使えるようにしてください。
-メソッドの本体は変更しないでください。
+Add lifetimes to the types and signatures so that the test harness (the `tests.rs` tab) can use it.
+Do not change the method bodies.
 
-ハーネスは `next_token` で得たトークンを `Vec` に溜めながら、続けて `next_token` を呼びます。
-返り値のライフタイムを何に結びつけるべきかがポイントです。
+The harness keeps the tokens returned by `next_token` in a `Vec` while it keeps calling `next_token`.
+What should the returned reference's lifetime be tied to?

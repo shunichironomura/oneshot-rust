@@ -7,12 +7,13 @@
 import { parseArgs } from "node:util";
 import { loadJudgeSources, loadProblems } from "../content/load.ts";
 import type { Judgement } from "../src/core/classify.ts";
+import { MESSAGES } from "../src/core/i18n.ts";
 import { present } from "../src/core/present.ts";
 import type { Problem } from "../src/core/problem.ts";
 import { judge, loadToolchain } from "./node-runner.ts";
 
 function describe(judgement: Judgement, problem: Problem): string {
-  const p = present(judgement, { mode: "beginner", harnessVisible: true });
+  const p = present(judgement, { mode: "beginner", harnessVisible: true, messages: MESSAGES.en });
   const cases = (p.cases ?? [])
     .filter((c) => c.status !== "pass")
     .map((c) => `    ${c.id}: ${c.status}${c.message ? ` (${c.message})` : ""}`);

@@ -1,39 +1,63 @@
-import { MODE_DESCRIPTIONS, MODE_LABELS, MODES } from "../core/mode.ts";
-import { DEFAULT_SETTINGS, FONT_FAMILIES, LIVES_OPTIONS, notepadEditor } from "../core/settings.ts";
+import { LOCALE_NAMES, LOCALES } from "../core/i18n.ts";
+import { MODES } from "../core/mode.ts";
+import {
+  DEFAULT_SETTINGS,
+  type EditorSettings,
+  FONT_FAMILIES,
+  LIVES_OPTIONS,
+  notepadEditor,
+} from "../core/settings.ts";
 import { useApp } from "./context.ts";
 
 export function SettingsPage() {
-  const { settings, updateSettings } = useApp();
+  const { settings, updateSettings, t } = useApp();
   const editor = settings.editor;
-  const setEditor = (patch: Partial<typeof editor>) =>
+  const setEditor = (patch: Partial<EditorSettings>) =>
     updateSettings({ ...settings, editor: { ...editor, ...patch } });
 
   return (
     <section class="settings">
-      <h1>設定</h1>
+      <h1>{t.settingsTitle}</h1>
 
       <fieldset>
-        <legend>診断表示モード</legend>
-        {MODES.map((m) => (
-          <label key={m} class="radio">
-            <input
-              type="radio"
-              name="mode"
-              checked={settings.mode === m}
-              onChange={() => updateSettings({ ...settings, mode: m })}
-            />
-            <strong>{MODE_LABELS[m]}</strong> — {MODE_DESCRIPTIONS[m]}
-          </label>
-        ))}
-        <p class="hint">
-          記録はモードごとに管理されます。挑戦中のランには、次のランから反映されます。
-        </p>
+        <legend>{t.language}</legend>
+        <div class="segmented">
+          {LOCALES.map((l) => (
+            <button
+              key={l}
+              type="button"
+              aria-pressed={settings.locale === l}
+              onClick={() => updateSettings({ ...settings, locale: l })}
+            >
+              {LOCALE_NAMES[l]}
+            </button>
+          ))}
+        </div>
       </fieldset>
 
       <fieldset>
-        <legend>ルール</legend>
-        <label>
-          残機（1 問あたりの提出回数の上限）{" "}
+        <legend>{t.modeHeading}</legend>
+        <div class="mode-options">
+          {MODES.map((m) => (
+            <label key={m} class={`mode-option${settings.mode === m ? " selected" : ""}`}>
+              <input
+                type="radio"
+                name="mode"
+                checked={settings.mode === m}
+                onChange={() => updateSettings({ ...settings, mode: m })}
+              />
+              <strong>{t.modes[m]}</strong>
+              <span>{t.modeDescriptions[m]}</span>
+            </label>
+          ))}
+        </div>
+        <p class="hint">{t.modeHint}</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>{t.rulesHeading}</legend>
+        <label class="row">
+          <span>{t.livesLabel}</span>
           <select
             value={String(settings.lives)}
             onChange={(e) => {
@@ -43,7 +67,7 @@ export function SettingsPage() {
           >
             {LIVES_OPTIONS.map((l) => (
               <option key={String(l)} value={String(l)}>
-                {l === null ? "なし" : `${l} 回`}
+                {l === null ? t.livesUnlimited : String(l)}
               </option>
             ))}
           </select>
@@ -56,19 +80,19 @@ export function SettingsPage() {
               updateSettings({ ...settings, confirmSubmit: e.currentTarget.checked })
             }
           />
-          提出前に確認ダイアログを出す
+          {t.confirmLabel}
         </label>
       </fieldset>
 
       <fieldset>
-        <legend>エディタ</legend>
+        <legend>{t.editorHeading}</legend>
         <label class="checkbox">
           <input
             type="checkbox"
             checked={editor.syntaxHighlight}
             onChange={(e) => setEditor({ syntaxHighlight: e.currentTarget.checked })}
           />
-          シンタックスハイライト
+          {t.syntaxHighlight}
         </label>
         <label class="checkbox">
           <input
@@ -76,7 +100,7 @@ export function SettingsPage() {
             checked={editor.closeBrackets}
             onChange={(e) => setEditor({ closeBrackets: e.currentTarget.checked })}
           />
-          括弧の自動補完
+          {t.closeBrackets}
         </label>
         <label class="checkbox">
           <input
@@ -84,16 +108,16 @@ export function SettingsPage() {
             checked={editor.autoIndent}
             onChange={(e) => setEditor({ autoIndent: e.currentTarget.checked })}
           />
-          自動インデント
+          {t.autoIndent}
         </label>
         <button
           type="button"
           onClick={() => updateSettings({ ...settings, editor: notepadEditor(editor) })}
         >
-          メモ帳モード（すべて OFF）
+          {t.notepadMode}
         </button>
-        <label>
-          フォントサイズ{" "}
+        <label class="row">
+          <span>{t.fontSize}</span>
           <input
             type="number"
             min={10}
@@ -102,8 +126,8 @@ export function SettingsPage() {
             onChange={(e) => setEditor({ fontSize: Number(e.currentTarget.value) })}
           />
         </label>
-        <label>
-          フォント{" "}
+        <label class="row">
+          <span>{t.font}</span>
           <select
             value={editor.fontFamily}
             onChange={(e) => setEditor({ fontFamily: e.currentTarget.value })}
@@ -117,8 +141,11 @@ export function SettingsPage() {
         </label>
       </fieldset>
 
-      <button type="button" onClick={() => updateSettings(DEFAULT_SETTINGS)}>
-        既定値に戻す
+      <button
+        type="button"
+        onClick={() => updateSettings({ ...DEFAULT_SETTINGS, locale: settings.locale })}
+      >
+        {t.resetSettings}
       </button>
     </section>
   );

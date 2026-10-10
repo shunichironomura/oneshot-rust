@@ -35,13 +35,22 @@ export class Storage {
   }
 
   static async open(): Promise<Storage> {
-    const db = await openDB<OneShotDB>("oneshot-rust", 1, {
-      upgrade(db) {
-        db.createObjectStore("drafts", { keyPath: "key" });
-        db.createObjectStore("runs", { keyPath: "id" }).createIndex("byProblem", "problemId");
-        db.createObjectStore("bests", { keyPath: ["problemId", "mode"] });
-        db.createObjectStore("challenges", { keyPath: "id" });
-        db.createObjectStore("settings");
+    const db = await openDB<OneShotDB>("oneshot-rust", 2, {
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          db.createObjectStore("bests", { keyPath: ["problemId", "mode"] });
+          db.createObjectStore("settings");
+        }
+        if (oldVersion < 2) {
+          // v2 changed the draft key and the stored judgement format. Data from
+          // pre-release builds in these stores is dropped (best records are kept).
+          for (const name of ["drafts", "runs", "challenges"] as const) {
+            if (db.objectStoreNames.contains(name)) db.deleteObjectStore(name);
+          }
+          db.createObjectStore("drafts", { keyPath: "key" });
+          db.createObjectStore("runs", { keyPath: "id" }).createIndex("byProblem", "problemId");
+          db.createObjectStore("challenges", { keyPath: "id" });
+        }
       },
     });
     return new Storage(db);
@@ -67,6 +76,16 @@ export class Storage {
   async runsOf(problemId: string): Promise<Run[]> {
     const runs = await this.db.getAllFromIndex("runs", "byProblem", problemId);
     return runs.sort((a, b) => b.startedAt - a.startedAt);
+  }
+
+  /** Problems with an unfinished free-play run. */
+  async problemsInProgress(): Promise<Set<string>> {
+    const runs = await this.db.getAll("runs");
+    return new Set(
+      runs
+        .filter((r) => r.status === "playing" && r.challengeId === undefined)
+        .map((r) => r.problemId),
+    );
   }
 
   async allBests(): Promise<Best[]> {

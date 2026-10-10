@@ -23,9 +23,23 @@ export type Verdict =
   | { kind: "AC"; cases: CaseResult[] }
   | { kind: "WA"; cases: CaseResult[] }
   | { kind: "UB"; diagnostics: Diagnostic[]; cases: CaseResult[] }
-  | { kind: "RE"; message: string; diagnostics: Diagnostic[]; cases: CaseResult[] }
+  | { kind: "RE"; reason: RuntimeErrorReason; diagnostics: Diagnostic[]; cases: CaseResult[] }
   | { kind: "TLE"; cases: CaseResult[]; runningCase?: string }
-  | { kind: "IE"; detail: string };
+  | { kind: "IE"; reason: InternalErrorReason };
+
+/** Why a run ended abnormally. Messages are localized by the UI. */
+export type RuntimeErrorReason =
+  | { type: "diagnostic"; message: string }
+  | { type: "panic"; message: string }
+  | { type: "exit-code"; code: number }
+  | { type: "abnormal-exit" }
+  | { type: "output-limit"; limitBytes: number };
+
+export type InternalErrorReason =
+  | { type: "ice"; message: string }
+  | { type: "crash"; message: string }
+  | { type: "compile-timeout" }
+  | { type: "no-start"; exitCode: number | null };
 
 export type VerdictKind = Verdict["kind"];
 
@@ -77,11 +91,14 @@ function caseResults(
   });
 }
 
-function runtimeErrorMessage(errors: Diagnostic[], stderrText: string, exitCode: number | null) {
-  if (errors.length > 0) return errors[0].message;
-  const panic = stderrText.split("\n").find((l) => l.startsWith("panicked: "));
-  if (panic !== undefined) return panic;
-  return exitCode === null ? "プログラムが異常終了しました" : `終了コード ${exitCode}`;
+function runtimeErrorReason(
+  errors: Diagnostic[],
+  panic: string | undefined,
+  exitCode: number | null,
+): RuntimeErrorReason {
+  if (errors.length > 0) return { type: "diagnostic", message: errors[0].message };
+  if (panic !== undefined) return { type: "panic", message: panic };
+  return exitCode === null ? { type: "abnormal-exit" } : { type: "exit-code", code: exitCode };
 }
 
 export function classify(out: RunOutput, ctx: ClassifyContext): Judgement {
@@ -98,23 +115,21 @@ export function classify(out: RunOutput, ctx: ClassifyContext): Judgement {
 
   const ice = stderr.diagnostics.find(isInternalCompilerError);
   if (ice !== undefined) {
-    return judged({ kind: "IE", detail: `コンパイラの内部エラー: ${ice.message}` });
+    return judged({ kind: "IE", reason: { type: "ice", message: ice.message } });
   }
   // Note: on WASI, rustc is built with panic=abort, so even an ordinary compile error
   // ends in a trap (`crash`). The output decides the verdict; a crash only matters
   // when nothing else explains how the run ended.
-  const crashDetail = `Miri が異常終了しました: ${out.crash}`;
+  const crashed: Verdict | undefined =
+    out.crash === undefined
+      ? undefined
+      : { kind: "IE", reason: { type: "crash", message: out.crash } };
 
   if (!stdout.started) {
     if (errors.length > 0) return judged({ kind: "CE", diagnostics: errors });
-    if (out.timedOut) {
-      return judged({ kind: "IE", detail: "コンパイルが制限時間内に終わりませんでした" });
-    }
-    if (out.crash !== undefined) return judged({ kind: "IE", detail: crashDetail });
-    return judged({
-      kind: "IE",
-      detail: `判定を開始できませんでした（終了コード ${out.exitCode ?? "なし"}）`,
-    });
+    if (out.timedOut) return judged({ kind: "IE", reason: { type: "compile-timeout" } });
+    if (crashed !== undefined) return judged(crashed);
+    return judged({ kind: "IE", reason: { type: "no-start", exitCode: out.exitCode } });
   }
 
   if (out.timedOut) {
@@ -124,7 +139,7 @@ export function classify(out: RunOutput, ctx: ClassifyContext): Judgement {
   if (out.outputLimitExceeded) {
     return judged({
       kind: "RE",
-      message: `標準出力が上限（${ctx.stdoutLimitBytes} バイト）を超えました`,
+      reason: { type: "output-limit", limitBytes: ctx.stdoutLimitBytes },
       diagnostics: [],
       cases,
     });
@@ -133,13 +148,11 @@ export function classify(out: RunOutput, ctx: ClassifyContext): Judgement {
   // `END` without a clean exit happens when Miri reports e.g. a memory leak after `main`.
   if (!stdout.ended || out.exitCode !== 0) {
     if (errors.some(isUndefinedBehavior)) return judged({ kind: "UB", diagnostics: errors, cases });
-    const panicked = stderr.text.split("\n").some((l) => l.startsWith("panicked: "));
-    if (out.crash !== undefined && errors.length === 0 && !panicked) {
-      return judged({ kind: "IE", detail: crashDetail });
-    }
+    const panic = stderr.text.split("\n").find((l) => l.startsWith("panicked: "));
+    if (crashed !== undefined && errors.length === 0 && panic === undefined) return judged(crashed);
     return judged({
       kind: "RE",
-      message: runtimeErrorMessage(errors, stderr.text, out.exitCode),
+      reason: runtimeErrorReason(errors, panic, out.exitCode),
       diagnostics: errors,
       cases,
     });

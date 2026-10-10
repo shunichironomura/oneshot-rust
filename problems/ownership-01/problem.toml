@@ -1,5 +1,5 @@
 id = "ownership-01"
-title = "あいさつ係"
+title = { en = "The greeter", ja = "あいさつ係" }
 difficulty = 1
 par = 2
 concepts = ["ownership", "move", "borrowing"]

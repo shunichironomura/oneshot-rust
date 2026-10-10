@@ -11,7 +11,7 @@ const files = (toml: string, tests = 'case("sample-1", || Ok(()));'): ProblemFil
 });
 
 const MINIMAL = `id = "p-01"
-title = "T"
+title = { en = "T" }
 difficulty = 1
 par = 1
 concepts = ["x"]
@@ -27,7 +27,8 @@ test("parseProblem applies judge defaults and renders the statement", () => {
     stdoutLimitBytes: 65536,
     harnessVisible: false,
   });
-  expect(problem.statementHtml).toBe("<h1>hi</h1>\n");
+  expect(problem.title).toEqual({ en: "T" });
+  expect(problem.statementHtml).toEqual({ en: "<h1>hi</h1>\n" });
   expect(problem.caseIds).toEqual(["sample-1"]);
   expect(solution).toBe("pub fn f() {}");
 });
@@ -41,6 +42,18 @@ test.each([
   ["not toml =", /invalid problem\.toml/],
 ])("parseProblem rejects invalid problem.toml (%#)", (toml, error) => {
   expect(() => parseProblem(files(toml))).toThrow(error);
+});
+
+test("parseProblem reads Japanese titles and statements", () => {
+  const toml = MINIMAL.replace('title = { en = "T" }', 'title = { en = "T", ja = "ティー" }');
+  const { problem } = parseProblem({ ...files(toml), statementJaMd: "こんにちは" });
+  expect(problem.title).toEqual({ en: "T", ja: "ティー" });
+  expect(problem.statementHtml).toEqual({ en: "<h1>hi</h1>\n", ja: "<p>こんにちは</p>\n" });
+});
+
+test("parseProblem requires an English title", () => {
+  const toml = MINIMAL.replace('title = { en = "T" }', 'title = "T"');
+  expect(() => parseProblem(files(toml))).toThrow(/`title` must be a table/);
 });
 
 test("parseProblem rejects duplicate or missing cases", () => {

@@ -6,4 +6,4 @@ exclude = [".local/**", "**/node_modules/**"]
 
 [per-file-ignores]
 # Problem statements are fragments; the title comes from problem.toml.
-"problems/*/statement.md" = ["MD041"]
+"problems/*/statement*.md" = ["MD041"]

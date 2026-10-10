@@ -1,3 +1,5 @@
+import type { Localized } from "./i18n.ts";
+
 export type ProblemKind = "implement" | "repair" | "signature";
 export type MiriChecks = "full" | "fast";
 
@@ -11,13 +13,13 @@ export interface JudgeConfig {
 
 export interface Problem {
   id: string;
-  title: string;
+  title: Localized;
   difficulty: number;
   par: number;
   concepts: string[];
   kind: ProblemKind;
   /** Problem statement, already rendered from Markdown to HTML at build time. */
-  statementHtml: string;
+  statementHtml: Localized;
   template: string;
   tests: string;
   /** Test case ids in the order they appear in `tests.rs`. */
@@ -42,9 +44,3 @@ export const SAMPLE_CASE_PREFIX = "sample-";
 export function isSampleCase(id: string): boolean {
   return id.startsWith(SAMPLE_CASE_PREFIX);
 }
-
-export const KIND_LABELS: Record<ProblemKind, string> = {
-  implement: "実装",
-  repair: "修理",
-  signature: "シグネチャ",
-};

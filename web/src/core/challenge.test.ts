@@ -8,6 +8,7 @@ import {
   totalSubmissions,
 } from "./challenge.ts";
 import type { Judgement, Verdict } from "./classify.ts";
+import { MESSAGES } from "./i18n.ts";
 import type { Run, RunStatus } from "./run.ts";
 
 function run(id: string, problemId: string, status: RunStatus, kinds: Verdict["kind"][]): Run {
@@ -69,7 +70,10 @@ test("challengeShareText", () => {
   let c = start();
   c = recordRun(c, run("r1", "a", "solved", ["CE", "AC"]));
   c = recordRun(c, run("r2", "b", "failed", []));
-  expect(challengeShareText(c)).toBe(
-    "OneShot Rust 🦀 連続チャレンジ [標準]\n🟥🟩  a\n— ✗  b\n合計 2回 (1/2 問正解)",
+  expect(challengeShareText(c, MESSAGES.ja)).toBe(
+    "OneShot Rust 🦀 連続チャレンジ [標準]\n🟥🟩  a\n— ✗  b\n合計 2 回 ・ 1/2 問正解",
+  );
+  expect(challengeShareText(c, MESSAGES.en)).toBe(
+    "OneShot Rust 🦀 Challenge [Standard]\n🟥🟩  a\n— ✗  b\n2 submissions in total · 1/2 solved",
   );
 });
