@@ -83,20 +83,11 @@ function Statement({ problem, tab, onTab, solution, solutionPanel }: StatementPr
       {tab === "solution" && solution !== "hidden" ? (
         <div class="solution">{solutionPanel}</div>
       ) : tab === "statement" || tab === "solution" ? (
-        <>
-          <div
-            class="markdown"
-            // statementHtml is rendered at build time from the repository's own Markdown.
-            dangerouslySetInnerHTML={{ __html: localize(problem.statementHtml, locale) }}
-          />
-          <div class="concepts">
-            {problem.concepts.map((c) => (
-              <span class="tag" key={c}>
-                {c}
-              </span>
-            ))}
-          </div>
-        </>
+        <div
+          class="markdown"
+          // statementHtml is rendered at build time from the repository's own Markdown.
+          dangerouslySetInnerHTML={{ __html: localize(problem.statementHtml, locale) }}
+        />
       ) : (
         <pre class="harness">{problem.tests}</pre>
       )}
