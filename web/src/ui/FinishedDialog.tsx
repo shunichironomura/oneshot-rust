@@ -10,10 +10,11 @@ interface Props {
   problem: Problem;
   finished: { run: Run; newBest: Best | undefined } | null;
   onClose: () => void;
-  onRestart: () => void;
+  /** The main follow-up action (start over, or move on in a challenge). */
+  next: { label: string; action: () => void };
 }
 
-export function FinishedDialog({ problem, finished, onClose, onRestart }: Props) {
+export function FinishedDialog({ problem, finished, onClose, next }: Props) {
   const [copied, setCopied] = useState(false);
   if (finished === null) return null;
   const { run, newBest } = finished;
@@ -53,8 +54,8 @@ export function FinishedDialog({ problem, finished, onClose, onRestart }: Props)
         <a class="button" href={routeHref({ page: "history", problemId: problem.id })}>
           振り返る（提出履歴と差分）
         </a>
-        <button type="button" onClick={onRestart}>
-          最初から挑戦
+        <button type="button" class="primary" onClick={next.action}>
+          {next.label}
         </button>
         <button type="button" onClick={onClose}>
           閉じる

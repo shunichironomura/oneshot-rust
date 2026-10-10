@@ -3,13 +3,13 @@ import { MODE_LABELS } from "../core/mode.ts";
 import { type EditorMarker, present } from "../core/present.ts";
 import { KIND_LABELS, type Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
-import { remainingLives } from "../core/run.ts";
+import { remainingLives, type Run } from "../core/run.ts";
 import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
 import { Editor } from "./Editor.tsx";
 import { FinishedDialog } from "./FinishedDialog.tsx";
 import { ResultPanel } from "./ResultPanel.tsx";
-import { usePlay } from "./usePlay.ts";
+import { type RunRules, usePlay } from "./usePlay.ts";
 
 const NO_MARKERS: EditorMarker[] = [];
 
@@ -47,15 +47,39 @@ function Statement({ problem }: { problem: Problem }) {
   );
 }
 
-function PlayView({ problem }: { problem: Problem }) {
+/** Set when the problem is played as part of a 連続チャレンジ. */
+export interface ChallengeContext {
+  id: string;
+  rules: RunRules;
+  /** e.g. "2 / 5" */
+  position: string;
+  onRunFinished: (run: Run) => void;
+  /** Moves on to the next problem (after solving, failing or giving up). */
+  onNext: () => void;
+}
+
+export function PlayView({
+  problem,
+  challenge,
+}: {
+  problem: Problem;
+  challenge?: ChallengeContext;
+}) {
   const { content, storage, settings, toolchain } = useApp();
   const pool = toolchain.status === "ready" ? toolchain.pool : undefined;
+  const freeRules = useMemo(
+    () => ({ mode: settings.mode, lives: settings.lives }),
+    [settings.mode, settings.lives],
+  );
+  const rules = challenge?.rules ?? freeRules;
   const { state, setCode, submit, restart, dismissFinished } = usePlay({
     problem,
     judgeSources: content.judge,
     storage,
-    settings,
+    rules,
     pool,
+    challengeId: challenge?.id,
+    onRunFinished: challenge?.onRunFinished,
   });
   const [confirming, setConfirming] = useState(false);
   const [confirmingRestart, setConfirmingRestart] = useState(false);
@@ -81,12 +105,13 @@ function PlayView({ problem }: { problem: Problem }) {
 
   const run = state.run;
   const playing = run?.status === "playing";
-  const runMode = playing ? run.mode : settings.mode;
-  const lives = playing ? remainingLives(run) : settings.lives;
+  const runMode = playing ? run.mode : rules.mode;
+  const lives = playing ? remainingLives(run) : rules.lives;
 
   return (
     <div class="play">
       <div class="play-header">
+        {challenge !== undefined && <span class="tag">連続チャレンジ {challenge.position}</span>}
         <h1>{problem.title}</h1>
         <span class="tag">{KIND_LABELS[problem.kind]}</span>
         <span class="meta">Par {problem.par}</span>
@@ -94,15 +119,23 @@ function PlayView({ problem }: { problem: Problem }) {
         <span class="meta">提出: {playing ? run.attempts.length : 0} 回</span>
         {lives !== null && <span class="meta">残機: {lives}</span>}
         <span class="spacer" />
-        <a href={routeHref({ page: "history", problemId: problem.id })}>履歴</a>
-        <button type="button" onClick={() => setConfirmingRestart(true)} disabled={running}>
-          最初から
-        </button>
+        {challenge === undefined && (
+          <a href={routeHref({ page: "history", problemId: problem.id })}>履歴</a>
+        )}
+        {challenge !== undefined && run !== null && !playing ? (
+          <button type="button" class="primary" onClick={challenge.onNext}>
+            次へ進む
+          </button>
+        ) : (
+          <button type="button" onClick={() => setConfirmingRestart(true)} disabled={running}>
+            {challenge === undefined ? "最初から" : "ギブアップ"}
+          </button>
+        )}
         <button type="button" class="primary" onClick={requestSubmit} disabled={!canSubmit}>
           {running ? "判定中…" : "提出 (Ctrl+Enter)"}
         </button>
       </div>
-      {playing && run.mode !== settings.mode && (
+      {challenge === undefined && playing && run.mode !== settings.mode && (
         <p class="notice">
           このランは「{MODE_LABELS[run.mode]}
           」モードで開始されています。モードの変更は次のランから反映されます。
@@ -147,8 +180,10 @@ function PlayView({ problem }: { problem: Problem }) {
       </Dialog>
       <Dialog open={confirmingRestart} onClose={() => setConfirmingRestart(false)} class="confirm">
         <p>
-          コードをテンプレートに戻し、新しいランを始めますか？
-          {playing && "（進行中のランは未解決で終了します）"}
+          {challenge === undefined
+            ? "コードをテンプレートに戻し、新しいランを始めますか？"
+            : "この問題をあきらめて次に進みますか？（未解決として記録されます）"}
+          {challenge === undefined && playing && "（進行中のランは未解決で終了します）"}
         </p>
         <div class="actions">
           <button
@@ -156,10 +191,10 @@ function PlayView({ problem }: { problem: Problem }) {
             class="primary"
             onClick={() => {
               setConfirmingRestart(false);
-              void restart();
+              void restart().then(() => challenge?.onNext());
             }}
           >
-            最初からやり直す
+            {challenge === undefined ? "最初からやり直す" : "ギブアップする"}
           </button>
           <button type="button" onClick={() => setConfirmingRestart(false)}>
             やめる
@@ -170,10 +205,23 @@ function PlayView({ problem }: { problem: Problem }) {
         problem={problem}
         finished={state.finished}
         onClose={dismissFinished}
-        onRestart={() => {
-          dismissFinished();
-          void restart();
-        }}
+        next={
+          challenge === undefined
+            ? {
+                label: "最初から挑戦",
+                action: () => {
+                  dismissFinished();
+                  void restart();
+                },
+              }
+            : {
+                label: "次へ進む",
+                action: () => {
+                  dismissFinished();
+                  challenge.onNext();
+                },
+              }
+        }
       />
     </div>
   );

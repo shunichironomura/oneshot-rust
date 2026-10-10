@@ -20,6 +20,8 @@ export interface Run {
   attempts: Attempt[];
   status: RunStatus;
   finishedAt?: number;
+  /** Set when the run is part of a 連続チャレンジ. */
+  challengeId?: string;
 }
 
 export interface Best {
@@ -37,6 +39,7 @@ export function newRun(params: {
   mode: Mode;
   lives: number | null;
   now: number;
+  challengeId?: string;
 }): Run {
   return {
     id: params.id,
@@ -46,6 +49,7 @@ export function newRun(params: {
     startedAt: params.now,
     attempts: [],
     status: "playing",
+    challengeId: params.challengeId,
   };
 }
 

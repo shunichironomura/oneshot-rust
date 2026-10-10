@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "preact/hooks";
 import { parseRoute, type Route, routeHref } from "./core/route.ts";
 import type { Settings } from "./core/settings.ts";
 import { Storage } from "./storage/db.ts";
+import { ChallengePage } from "./ui/ChallengePage.tsx";
 import { AppContext } from "./ui/context.ts";
 import { HistoryPage } from "./ui/HistoryPage.tsx";
 import { PlayPage } from "./ui/PlayPage.tsx";
@@ -29,6 +30,8 @@ function Page({ route }: { route: Route }) {
       return <PlayPage problemId={route.problemId} />;
     case "history":
       return <HistoryPage problemId={route.problemId} />;
+    case "challenge":
+      return <ChallengePage />;
     case "settings":
       return <SettingsPage />;
   }
@@ -72,6 +75,7 @@ export function App() {
         <span class="tagline">LSP なし、なるべく少ないコンパイル回数で。</span>
         <nav>
           <a href={routeHref({ page: "list" })}>問題一覧</a>
+          <a href={routeHref({ page: "challenge" })}>連続チャレンジ</a>
           <a href={routeHref({ page: "settings" })}>設定</a>
         </nav>
       </header>

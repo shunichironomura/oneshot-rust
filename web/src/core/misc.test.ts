@@ -9,6 +9,7 @@ test.each([
   ["#/p/lifetime-01", { page: "play", problemId: "lifetime-01" }],
   ["#/p/lifetime-01/history", { page: "history", problemId: "lifetime-01" }],
   ["#/settings", { page: "settings" }],
+  ["#/challenge", { page: "challenge" }],
   ["#/unknown", { page: "list" }],
 ] as const)("parseRoute(%j)", (hash, route) => {
   expect(parseRoute(hash)).toEqual(route);
