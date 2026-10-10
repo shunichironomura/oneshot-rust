@@ -6,7 +6,11 @@ import { useApp } from "./context.ts";
 import { ParChip, type Shot } from "./ParMeter.tsx";
 
 const BUGGY = `fn longest(a: &str, b: &str) -> &str {
-    if a.len() > b.len() { a } else { b }
+    if a.len() < b.len() { a } else { b }
+}`;
+
+const COMPILES = `fn longest<'a>(a: &'a str, b: &'a str) -> &'a str {
+    if a.len() < b.len() { a } else { b }
 }`;
 
 const FIXED = `fn longest<'a>(a: &'a str, b: &'a str) -> &'a str {
@@ -15,6 +19,8 @@ const FIXED = `fn longest<'a>(a: &'a str, b: &'a str) -> &'a str {
 
 const PAR = 3;
 const TESTS = 4;
+/** Tests that the wrong comparison still passes (strings of equal length). */
+const PASSED_WITH_BUG = 1;
 
 interface Frame {
   code: string;
@@ -26,15 +32,17 @@ interface Frame {
 const FRAMES: Frame[] = [
   { code: BUGGY, shots: [], duration: 2200 },
   { code: BUGGY, shots: ["CE"], duration: 3200 },
-  { code: FIXED, shots: ["CE"], duration: 1600 },
-  { code: FIXED, shots: ["CE", "AC"], duration: 4000 },
+  { code: COMPILES, shots: ["CE"], duration: 1600 },
+  { code: COMPILES, shots: ["CE", "WA"], duration: 3200 },
+  { code: FIXED, shots: ["CE", "WA"], duration: 1600 },
+  { code: FIXED, shots: ["CE", "WA", "AC"], duration: 4000 },
 ];
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** A looping replay of one round: write, get a compile error, fix it, pass. */
+/** A looping replay of one round: a compile error, then a wrong answer, then a pass. */
 export function HeroDemo() {
   const { t } = useApp();
   const [index, setIndex] = useState(() => (prefersReducedMotion() ? FRAMES.length - 1 : 0));
@@ -72,6 +80,11 @@ export function HeroDemo() {
         {last === "CE" && (
           <span>
             <span class="verdict CE">CE</span> error[E0106]: missing lifetime specifier
+          </span>
+        )}
+        {last === "WA" && (
+          <span>
+            <span class="verdict WA">WA</span> {t.demoWrongAnswer(PASSED_WITH_BUG, TESTS)}
           </span>
         )}
         {last === "AC" && (

@@ -56,6 +56,7 @@ export interface Messages {
   challengeCardStart: string;
   challengeCardContinue: string;
   demoAccepted: (n: number) => string;
+  demoWrongAnswer: (passed: number, n: number) => string;
   demoSubmitHint: string;
   madeBy: string;
 
@@ -218,6 +219,7 @@ const en: Messages = {
   challengeCardStart: "Start challenge",
   challengeCardContinue: "Continue challenge",
   demoAccepted: (n) => `Accepted · ${n}/${n} tests passed`,
+  demoWrongAnswer: (passed, n) => `Wrong answer · ${passed}/${n} tests passed`,
   demoSubmitHint: "Submit",
   madeBy: "Made by",
 
@@ -416,6 +418,7 @@ const ja: Messages = {
   challengeCardStart: "チャレンジ開始",
   challengeCardContinue: "チャレンジの続きへ",
   demoAccepted: (n) => `正解 · ${n}/${n} テスト通過`,
+  demoWrongAnswer: (passed, n) => `不正解 · ${passed}/${n} テスト通過`,
   demoSubmitHint: "提出",
   madeBy: "作者：",
 
