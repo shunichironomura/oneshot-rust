@@ -23,10 +23,10 @@ impl<T, F: FnOnce() -> T> Lazy<T, F> {
   `init` again.
 - `init` is called at most once per `Lazy`, by the first `get` or `into_value`. If neither is called,
   for example when a `Lazy` is dropped unused, `init` is never called.
-- `init` can be any value whose type implements `FnOnce() -> T`: a function, a closure or a boxed
-  closure. This includes closures that can be called only once, such as `move || name`, which gives
-  away a captured `String`. `T` can be any type: it does not have to implement `Clone`, `Copy` or
-  `Default`.
+- `init` can be any value whose type implements `FnOnce() -> T`, for example a function, a closure
+  or a boxed closure. This includes closures that can be called only once, such as `move || name`,
+  which gives away a captured `String`. `T` can be any type: it does not have to implement `Clone`,
+  `Copy` or `Default`.
 
 Do not change the signatures, and do not add trait bounds.
 

@@ -37,7 +37,7 @@ Reading then continues right after the invalid sequence. These are exactly the s
 | Bytes | Invalid sequences |
 | --- | --- |
 | `F0 9F 98 41` | `F0 9F 98`, the beginning of `😀` (`F0 9F 98 80`). Then `41` is read as `A`. |
-| `C0 AF` | `C0` and `AF`: no `char` is encoded with a first byte `C0`. |
+| `C0 AF` | `C0` and `AF`: no `char` is encoded with a first byte `C0` or `AF`. |
 | `ED A0 80` | `ED`, `A0` and `80`: `ED A0 80` would be the surrogate U+D800, which is not a `char`. |
 
 An invalid sequence of the first kind that reaches the end of the input is an *incomplete

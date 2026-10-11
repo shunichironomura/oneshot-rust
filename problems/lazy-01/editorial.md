@@ -22,9 +22,10 @@ goes for `self.value.unwrap_or_else(self.init.unwrap())` in `into_value`: it pan
 been called. Wrapping the expression in a closure (`|| (self.init.take().unwrap())()`) delays it
 until it is really needed.
 
-`into_value` takes `self` by value, so it may move the fields out directly. The `expect` in
-`get` and `into_value` can only fail if an earlier call to `init` panicked and left neither a
-closure nor a value.
+`into_value` takes `self` by value, so it may move the fields out directly. (This works because
+`Lazy` does not implement `Drop`: moving a field out of a type that does is rejected with E0509.)
+The `expect` in `get` and `into_value` can only fail if an earlier call to `init` panicked and left
+neither a closure nor a value.
 
 Adding a bound such as `F: Fn` or `F: Clone` would let you call `init` without moving it, and
 `T: Clone` would let `into_value` clone the value, but the tests use closures that give away what

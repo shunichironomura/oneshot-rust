@@ -13,17 +13,17 @@ impl<F: Future> Future for Budget<F> {
 }
 ```
 
-Below, `fut` is called the *inner future*.
+Below, `fut` is called the *inner future*, and `polls` the *budget*.
 
 - Calling `with_budget` polls nothing and drops nothing.
-- Each poll of the `Budget` polls the inner future once, passing on the `Context` that the `Budget`
-  is being polled with. Then:
+- If the budget is `0`, the first poll of the `Budget` returns `Poll::Ready(None)` without polling
+  the inner future.
+- Otherwise, each poll of the `Budget` polls the inner future once, passing on the `Context` that the
+  `Budget` is being polled with. Then:
   - If the inner future returned `Poll::Ready(v)`, the `Budget` returns `Poll::Ready(Some(v))`.
   - If it returned `Poll::Pending`, the `Budget` returns `Poll::Pending`, unless that was the
     `polls`-th poll of the inner future. Then the budget is used up, and the `Budget` gives up right
     away: it returns `Poll::Ready(None)` in that same poll.
-- If `polls` is `0`, the first poll of the `Budget` returns `Poll::Ready(None)` without polling the
-  inner future.
 - The inner future is dropped as soon as it is no longer needed. Whenever the `Budget` returns
   `Poll::Ready`, it has already dropped the inner future during that poll, before returning; it does
   not wait until the `Budget` itself is dropped. A `Budget` that is dropped before it is ready drops
@@ -32,8 +32,9 @@ Below, `fut` is called the *inner future*.
 - The inner future can be any future, including an `async` block that borrows local variables and
   is neither `Unpin` nor `Send`. Its output can be of any type.
 
-The test harness polls the futures on the current thread. It never polls a `Budget` again after it
-has returned `Poll::Ready`.
+The test harness polls the futures on the current thread. Some tests run them like a real executor,
+which polls a future again only after its waker has been woken. The harness never polls a `Budget`
+again after it has returned `Poll::Ready`.
 
 ### Examples
 

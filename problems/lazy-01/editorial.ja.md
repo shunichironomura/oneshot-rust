@@ -1,7 +1,7 @@
 `FnOnce` を呼ぶとそのクロージャは消費されるので、呼ぶには構造体から取り出す必要があります。ところが、
 `&mut self` 越しにフィールドをムーブで取り出すことはできません。ほかの誰かが所有している構造体に穴が
-空いてしまうからです。`init: F` として保存し、`get` の中で `(self.init)()` と書くと E0507
-（「cannot move out of `self.init` which is behind a mutable reference」）になります。
+空いてしまうからです。`init: F` として保存し、`get` の中で `(self.init)()` と書くと
+E0507（「cannot move out of `self.init` which is behind a mutable reference」）になります。
 
 解決策は `Option<F>` で保存することです。`Option::take` はクロージャを取り出して代わりに `None` を残すので、
 構造体に穴は空きません。残った `None` は、`init` を使い終えたという記録にもなります。値は `Option<T>`
@@ -21,9 +21,10 @@ self.value.get_or_insert_with(self.init.take().unwrap())
 `into_value` の `self.value.unwrap_or_else(self.init.unwrap())` も同じで、`get` の後に呼ぶとパニックします。
 式をクロージャで包めば（`|| (self.init.take().unwrap())()`）、本当に必要になるまで評価が遅れます。
 
-`into_value` は `self` を値で受け取るので、フィールドをそのままムーブで取り出せます。`get` と
-`into_value` の `expect` が失敗するのは、以前の `init` の呼び出しがパニックして、クロージャも値も
-残っていない場合だけです。
+`into_value` は `self` を値で受け取るので、フィールドをそのままムーブで取り出せます（これは `Lazy`
+が `Drop` を実装していないからできることで、`Drop` を実装した型からフィールドをムーブで取り出すと
+E0509 になります）。`get` と `into_value` の `expect` が失敗するのは、以前の `init` の呼び出しが
+パニックして、クロージャも値も残っていない場合だけです。
 
 `F: Fn` や `F: Clone` のような境界を追加すれば `init` をムーブせずに呼べ、`T: Clone` があれば
 `into_value` で値を複製できます。しかしテストでは、キャプチャしたものを手放すクロージャや、

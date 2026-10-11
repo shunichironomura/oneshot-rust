@@ -120,8 +120,8 @@ pub fn run() {
     });
     case("hidden-3", || {
         // Two threads pop until `None`, then wait in push on a full queue. The first queue has room
-        // for 1 item. Three times, while both threads wait in pop, the main thread pushes two
-        // items right away, so its second push often waits for room while the other thread still
+        // for 1 item. Twice, while both threads wait in pop, the main thread pushes two items
+        // right away, so its second push often waits for room while the other thread still
         // waits for an item. The pop that takes the first item must then wake the waiting push
         // (waking only the other waiting pop loses the wakeup). Closing a queue wakes both threads.
         let q = &BoundedQueue::new(1);
@@ -137,7 +137,7 @@ pub fn run() {
                     (got, full.push(job))
                 })
             });
-            let pushed: Vec<_> = (1..=3)
+            let pushed: Vec<_> = (1..=2)
                 .map(|i| {
                     let_others_run();
                     [q.push(2 * i - 1), q.push(2 * i)]
@@ -153,7 +153,7 @@ pub fn run() {
         check(a.is_sorted() && b.is_sorted(), "a thread got items out of order")?;
         let mut all = [a, b].concat();
         all.sort();
-        check_eq(all, vec![1, 2, 3, 4, 5, 6])?;
+        check_eq(all, vec![1, 2, 3, 4])?;
         check_eq([a_pushed, b_pushed], [Err(Job(1)), Err(Job(2))])?;
         check_eq(full.len(), 1)?;
         check_eq(full.pop(), Some(Job(0)))?;

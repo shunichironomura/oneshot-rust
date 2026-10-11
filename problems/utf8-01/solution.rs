@@ -56,8 +56,8 @@ impl Utf8Stream {
                 continue;
             }
             // An incomplete character can only be at the very end. Keep it for the next chunk.
-            if matches!(decode(invalid), Err(DecodeError::Incomplete { .. }))
-                && used + invalid.len() == self.pending.len()
+            if used + invalid.len() == self.pending.len()
+                && matches!(decode(invalid), Err(DecodeError::Incomplete { .. }))
             {
                 break;
             }

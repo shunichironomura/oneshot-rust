@@ -12,10 +12,10 @@ For `decode_lossy`, `String::from_utf8_lossy` is tempting, but it returns a `Cow
 `from_utf8_lossy(bytes).replace('\u{FFFD}', "?")` also rewrites every U+FFFD that was correctly
 encoded in the input. Counting U+FFFD in its result has the same problem. `<[u8]>::utf8_chunks`
 gives the pieces that `from_utf8_lossy` works with: each `Utf8Chunk` is a valid `&str`
-(`valid()`) followed by one invalid sequence (`invalid()`, empty only in the last chunk). Writing
-your own decoder is harder than it looks: the length of an invalid sequence depends on overlong
-encodings, surrogates and values above U+10FFFF, and replacing every bad byte separately turns
-`F0 9F 98 41` into `"???A"` instead of `"?A"`.
+(`valid()`) followed by one invalid sequence (`invalid()`, which can be empty only in the last
+chunk). Writing your own decoder is harder than it looks: the length of an invalid sequence
+depends on overlong encodings, surrogates and values above U+10FFFF, and replacing every bad byte
+separately turns `F0 9F 98 41` into `"???A"` instead of `"?A"`.
 
 In `Utf8Stream::push`, `utf8_chunks` alone cannot tell an incomplete character (`E2 82`) from an
 invalid sequence that nothing can complete (`FF`): both are the `invalid()` part of the last chunk.

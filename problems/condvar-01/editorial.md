@@ -17,7 +17,8 @@ Then every change must wake the threads that wait for it. A push wakes one waiti
 notification at all, the other waiting threads sleep forever, and Miri reports "the evaluated
 program deadlocked". If pushes and pops share a single condvar, `notify_one` may wake a
 thread of the wrong kind (a pop, when only a push can go on), which goes back to sleep, and the
-wakeup is lost. Use `notify_all` everywhere in that case (see the alternative).
+wakeup is lost. A hidden case makes this happen. Use `notify_all` everywhere in that case (see the
+alternative).
 
 A few more points:
 
@@ -29,8 +30,8 @@ A few more points:
 - `Mutex` is not reentrant: calling `self.len()` from `push` while holding the guard deadlocks.
 - `push` gives the item back in `Err(item)`. It still owns `item` there, because the item is only
   moved into the queue on success.
-- `Mutex<State<T>>` and `Condvar` are `Sync` when `T: Send`, so `BoundedQueue<T>` is `Sync` without
-  any extra work, and the harness can share `&BoundedQueue<T>` between threads.
+- `Mutex<State<T>>` is `Sync` when `T: Send`, and `Condvar` always is, so `BoundedQueue<T>` is
+  `Sync` without any extra work, and the harness can share `&BoundedQueue<T>` between threads.
 - The model solution notifies after dropping the guard, so that the woken thread does not have to
   wait for the lock right away. Notifying while holding the guard is also correct.
 
