@@ -14,7 +14,7 @@ fn summary(stats: &Stats) -> Summary {
     (stats.count(), stats.sum(), stats.max(), stats.min())
 }
 
-const ROUNDS: usize = 3;
+const ROUNDS: usize = 4;
 const BUCKETS_PER_ROUND: usize = 6;
 const BUCKETS: usize = ROUNDS * BUCKETS_PER_ROUND;
 
@@ -41,8 +41,9 @@ fn record_in_buckets() -> Result<(), String> {
             let (buckets, together) = (&buckets, &together);
             s.spawn(move || {
                 for (i, bucket) in buckets.iter().enumerate() {
-                    let _ = i;
-                    together.wait();
+                    if i % BUCKETS_PER_ROUND == 0 {
+                        together.wait();
+                    }
                     bucket.record(base(i) + f64::from(ORDERS[i % 6][t]) / 4.0);
                 }
             });
