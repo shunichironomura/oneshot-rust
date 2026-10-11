@@ -18,9 +18,10 @@ and `min` look at the count instead.
 
 `Ordering::Relaxed` is enough everywhere. All the changes to one atomic happen in a single order
 (its modification order), and a read-modify-write always reads the value just before its own change
-in that order, whatever the ordering, so no update is lost. The results are read only after the recording threads have been joined, and joining a
-thread makes everything it did visible to the joining thread. Stronger orderings matter when an
-atomic tells another thread that *other* data is ready, like the flag of a spin lock.
+in that order, whatever the ordering, so no update is lost. The results are read only after the
+recording threads have been joined, and joining a thread makes everything it did visible to the
+joining thread. Stronger orderings matter when an atomic tells another thread that *other* data is
+ready, like the flag of a spin lock.
 
 Pitfalls:
 
