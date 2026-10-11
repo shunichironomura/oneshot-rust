@@ -273,7 +273,7 @@ button.chip:hover:not(:disabled) {
   gap: 0.25em;
   padding: 0 0.5em;
   border-radius: 4px;
-  font-size: 0.75em;
+  font-size: var(--step--1);
   background: var(--code-bg);
   color: var(--muted);
   vertical-align: middle;
@@ -564,6 +564,12 @@ main > section.home {
   margin: 0;
   color: var(--muted);
   font-size: 0.9em;
+}
+
+.ladder-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
 }
 
 .link-button.abandon-round {

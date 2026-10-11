@@ -1,5 +1,4 @@
 import { ArrowRight, Play } from "lucide-preact";
-import { Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import type { Problem } from "../core/problem.ts";
 import {
@@ -116,10 +115,11 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
       <p class="round-ladder">
         {t.roundLadder(ROUND_LADDER.length)}
         {ROUND_LADDER.map((d, i) => (
-          <Fragment key={d}>
+          // An arrow stays with the badge after it when the line wraps.
+          <span key={d} class="ladder-step">
             {i > 0 && <span aria-hidden="true">→</span>}
             <DifficultyBadge difficulty={d} />
-          </Fragment>
+          </span>
         ))}
       </p>
     </div>
