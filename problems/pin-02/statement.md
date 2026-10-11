@@ -1,9 +1,12 @@
 Write `with_budget`, which wraps a future in a `Budget`: a future that runs the wrapped future, but
 gives up if it has not finished after a given number of polls. There is no async runtime (only `std`
-is available). The skeleton below is already in the editor; choose the fields of `Budget` yourself.
+is available). The struct `Budget` with its two fields is already in the editor.
 
 ```rust
-pub struct Budget<F> { /* private */ }
+pub struct Budget<F> {
+    inner: Option<F>,
+    left: u32,
+}
 
 pub fn with_budget<F: Future>(fut: F, polls: u32) -> Budget<F>;
 
@@ -15,6 +18,10 @@ impl<F: Future> Future for Budget<F> {
 
 Below, `fut` is called the *inner future*, and `polls` the *budget*.
 
+- Like the combinators of async libraries, a `Budget` keeps the inner future inside itself, so that
+  wrapping a future allocates nothing. Do not change the fields, and do not move the inner future to
+  the heap: `size_of::<Budget<F>>()` is at least `size_of::<F>()`. `Budget<F>` is `Unpin` exactly
+  when `F` is.
 - Calling `with_budget` polls nothing and drops nothing.
 - If the budget is `0`, the first poll of the `Budget` returns `Poll::Ready(None)` without polling
   the inner future.
@@ -28,9 +35,13 @@ Below, `fut` is called the *inner future*, and `polls` the *budget*.
   `Poll::Ready`, it has already dropped the inner future during that poll, before returning; it does
   not wait until the `Budget` itself is dropped. A `Budget` that is dropped before it is ready drops
   the inner future with it.
+- Once the inner future has been polled, it stays at the same place in memory until it is dropped,
+  as `Pin` requires.
 - The `Budget` never wakes the waker itself; waking it is up to the inner future.
-- The inner future can be any future, including an `async` block that borrows local variables and
-  is neither `Unpin` nor `Send`. Its output can be of any type.
+- The inner future can be any future, including an `async` block that borrows local variables (also
+  its own, across an `.await`) and is neither `Unpin` nor `Send`. Its output can be of any type.
+- You may use `unsafe`. Undefined behavior and memory leaks are detected by Miri and fail the
+  submission.
 
 The test harness polls the futures on the current thread. Some tests run them like a real executor,
 which polls a future again only after its waker has been woken. The harness never polls a `Budget`
