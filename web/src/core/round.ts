@@ -20,7 +20,6 @@ export interface Round {
   /** The course the problems were drawn from. Missing for rounds from before courses existed. */
   course?: Difficulty;
   mode: Mode;
-  lives: number | null;
   problemIds: string[];
   startedAt: number;
   entries: RoundEntry[];
@@ -70,7 +69,6 @@ export function newRound(params: {
   id: string;
   course: Difficulty;
   mode: Mode;
-  lives: number | null;
   problemIds: string[];
   now: number;
 }): Round {

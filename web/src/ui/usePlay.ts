@@ -30,7 +30,7 @@ export interface PlayState {
   run: Run | null;
   phase: SubmitPhase;
   last: LastResult | null;
-  /** Set when the latest submission finished the run (solved or out of lives). */
+  /** Set when the latest submission finished the run (solved). */
   finished: { run: Run; newBest: Best | undefined } | null;
   /** Some run of this problem has ended (which unlocks the model solution). */
   hasFinished: boolean;
@@ -41,7 +41,6 @@ export interface PlayState {
 /** Rules fixed when a run starts. */
 export interface RunRules {
   mode: Mode;
-  lives: number | null;
 }
 
 interface Params {
@@ -149,7 +148,6 @@ export function usePlay({
             id: crypto.randomUUID(),
             problemId: problem.id,
             mode: rules.mode,
-            lives: rules.lives,
             now: Date.now(),
             roundId,
             assisted: state.revealed,

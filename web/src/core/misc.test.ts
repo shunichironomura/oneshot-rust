@@ -30,7 +30,6 @@ test("normalizeSettings fills defaults and rejects invalid values", () => {
     normalizeSettings({
       mode: "oni",
       course: 4,
-      lives: 7,
       editor: { fontSize: 99, closeBrackets: false },
     }),
   ).toEqual({

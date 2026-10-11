@@ -15,15 +15,10 @@ export interface Settings {
   locale: Locale;
   /** The course of the next round. */
   course: Difficulty;
+  /** The feedback mode of the next round and of practice. */
   mode: Mode;
-  /** Maximum submissions per run (残機制), or `null` for unlimited. */
-  lives: number | null;
-  /** Ask for confirmation before each submission. */
-  confirmSubmit: boolean;
   editor: EditorSettings;
 }
-
-export const LIVES_OPTIONS: readonly (number | null)[] = [null, 3, 5];
 
 export const FONT_FAMILIES: readonly string[] = [
   "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
@@ -35,8 +30,6 @@ export const DEFAULT_SETTINGS: Settings = {
   locale: "en",
   course: 1,
   mode: "standard",
-  lives: null,
-  confirmSubmit: true,
   editor: {
     syntaxHighlight: true,
     closeBrackets: true,
@@ -63,8 +56,6 @@ export function normalizeSettings(stored: unknown): Settings {
     locale: LOCALES.find((l) => l === s.locale) ?? d.locale,
     course: DIFFICULTIES.find((c) => c === s.course) ?? d.course,
     mode: MODES.find((m) => m === s.mode) ?? d.mode,
-    lives: LIVES_OPTIONS.includes(s.lives ?? null) ? (s.lives ?? null) : d.lives,
-    confirmSubmit: bool(s.confirmSubmit, d.confirmSubmit),
     editor: {
       syntaxHighlight: bool(e.syntaxHighlight, d.editor.syntaxHighlight),
       closeBrackets: bool(e.closeBrackets, d.editor.closeBrackets),

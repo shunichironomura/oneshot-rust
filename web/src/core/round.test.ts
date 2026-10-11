@@ -26,7 +26,6 @@ function run(id: string, problemId: string, status: RunStatus, kinds: Verdict["k
     id,
     problemId,
     mode: "standard",
-    lives: null,
     startedAt: 0,
     attempts,
     status,
@@ -35,7 +34,7 @@ function run(id: string, problemId: string, status: RunStatus, kinds: Verdict["k
 }
 
 const start = (problemIds = ["a", "b"]) =>
-  newRound({ id: "r", course: 1, mode: "standard", lives: null, problemIds, now: 0 });
+  newRound({ id: "r", course: 1, mode: "standard", problemIds, now: 0 });
 
 let seed = 1;
 const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;

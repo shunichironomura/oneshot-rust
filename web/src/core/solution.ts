@@ -5,7 +5,7 @@ import type { Run } from "./run.ts";
 export type SolutionAccess =
   /** The problem has not been finished yet; giving up reveals it. */
   | "locked"
-  /** Finished (solved, out of lives or given up), but not seen yet. */
+  /** Finished (solved or given up), but not seen yet. */
   | "unlocked"
   /** Already seen. */
   | "revealed";

@@ -10,7 +10,6 @@ import {
   improvedBest,
   newRun,
   recordAttempt,
-  remainingLives,
   type Run,
 } from "./run.ts";
 
@@ -26,8 +25,7 @@ function attempt(kind: Verdict["kind"], at = 1): Attempt {
   return { submittedAt: at, code: "", judgement };
 }
 
-const fresh = (lives: number | null = null): Run =>
-  newRun({ id: "r", problemId: "p", mode: "standard", lives, now: 0 });
+const fresh = (): Run => newRun({ id: "r", problemId: "p", mode: "standard", now: 0 });
 
 describe("recordAttempt", () => {
   test("AC solves the run", () => {
@@ -46,14 +44,10 @@ describe("recordAttempt", () => {
     expect(run.attempts).toHaveLength(0);
   });
 
-  test("running out of lives fails the run", () => {
-    const run = [attempt("CE"), attempt("WA")].reduce(recordAttempt, fresh(2));
-    expect(run.status).toBe("failed");
-    expect(remainingLives(run)).toBe(0);
-  });
-
-  test("solving with the last life still solves", () => {
-    expect([attempt("CE"), attempt("AC")].reduce(recordAttempt, fresh(2)).status).toBe("solved");
+  test("there is no limit on the number of submissions", () => {
+    const run = Array.from({ length: 10 }, () => attempt("WA")).reduce(recordAttempt, fresh());
+    expect(run.status).toBe("playing");
+    expect(run.attempts).toHaveLength(10);
   });
 
   test("a finished run ignores further submissions", () => {
@@ -79,7 +73,7 @@ describe("improvedBest", () => {
       .map((k) => attempt(k as Verdict["kind"], 10))
       .reduce(
         recordAttempt,
-        newRun({ id: "r", problemId: "p", mode: "standard", lives: null, now: 0, assisted: true }),
+        newRun({ id: "r", problemId: "p", mode: "standard", now: 0, assisted: true }),
       );
     expect(assisted.status).toBe("solved");
     expect(improvedBest(undefined, assisted)).toBeUndefined();
