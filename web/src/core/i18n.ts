@@ -120,7 +120,6 @@ export interface Messages {
   solutionDiffLegend: string;
 
   // Result panel
-  resultEmpty: string;
   compiling: string;
   runningCase: (i: number, n: number) => string;
   rejected: string;
@@ -287,7 +286,6 @@ const en: Messages = {
   solutionDiff: "Diff from your code",
   solutionDiffLegend: "- your code   + model solution",
 
-  resultEmpty: "Press Ctrl+Enter (⌘+Enter) to submit. Make it count.",
   compiling: "Compiling…",
   runningCase: (i, n) => `Running test ${i} of ${n}…`,
   rejected: "Not submitted (not counted)",
@@ -484,7 +482,6 @@ const ja: Messages = {
   solutionDiff: "自分のコードとの差分",
   solutionDiffLegend: "- 自分のコード   + 模範解答",
 
-  resultEmpty: "Ctrl+Enter（⌘+Enter）で提出します。一発で通しましょう。",
   compiling: "コンパイル中…",
   runningCase: (i, n) => `実行中（ケース ${i}/${n}）`,
   rejected: "提出できません（カウントされません）",
