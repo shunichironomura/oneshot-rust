@@ -28,8 +28,8 @@ unchanged.
 
 The other direction needs no such care. In `impl<U, K: Into<f64>> Mul<K> for Length<U>`, `T0` is
 the local `Length<U>`, so the type parameter `K` after it is fine: one impl makes `l * k` work for
-every `K: Into<f64>`, while `k * l` needs one impl per type. (Deleting the generic impl and writing
-`(w + h) * 2` in `perimeter` compiles too, but the tests write `3 * a` and `2.5 * l`.)
+every `K: Into<f64>`, while `k * l` needs one impl per type. (Deleting the impl for `k * l` and
+writing `(w + h) * 2` in `perimeter` compiles too, but the tests write `3 * a` and `2.5 * l`.)
 
 With several impls for numbers on the left, a literal such as `2` in `2 * (w + h)` could be an
 `i32` or a `u32`. The compiler settles it with the default type, `i32` (and `f64` for `2.5`), but
@@ -38,7 +38,10 @@ only at the end of type checking, so a method call directly on the result, as in
 a type first.
 
 The units derive `Debug`, `Clone`, `Copy` and `PartialEq` because the derives on `Length<U>`
-require each of these traits of `U` as well, even though `U` only appears in `PhantomData<U>`.
+require each of these traits of `U` as well, even though `U` only appears in `PhantomData<U>`. So
+generic code that copies or compares a `Length<U>` would need `U: Copy` or `U: PartialEq` (the tests'
+generic code only multiplies). Impls written by hand, such as `impl<U> Copy for Length<U> {}`, have
+no such bounds.
 
 ### Alternatives
 

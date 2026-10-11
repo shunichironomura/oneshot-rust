@@ -1,6 +1,7 @@
-Future を `Budget` で包む関数 `with_budget` を書いてください。`Budget` は包んだ Future を実行する
-Future ですが、決められた回数だけポーリングしても終わらなければ、あきらめて終わります。非同期ランタイムは
-ありません（使えるのは `std` だけです）。構造体 `Budget` は 2 つのフィールドとともにエディタに入っています。
+関数 `with_budget` と、`Budget` の `Future` の実装を書いてください。`with_budget` は Future を
+`Budget` で包みます。`Budget` は包んだ Future を実行する Future ですが、決められた回数だけポーリング
+しても終わらなければ、あきらめて終わります。非同期ランタイムはありません（使えるのは `std` だけ
+です）。構造体 `Budget` は 2 つのフィールドとともにエディタに入っています。
 
 ```rust
 pub struct Budget<F> {
@@ -21,7 +22,7 @@ impl<F: Future> Future for Budget<F> {
 - 非同期ライブラリのコンビネータと同じように、`Budget` は内側の Future を自分の中に持ち、Future を
   包むときにメモリを確保しません。フィールドは変えないでください。内側の Future をヒープに移しても
   いけません。`size_of::<Budget<F>>()` は `size_of::<F>()` 以上です。`Budget<F>` は、`F` が
-  `Unpin` のときに限り `Unpin` です。
+  `Unpin` なら `Unpin` で、そうでなければ `Unpin` ではありません。
 - `with_budget` を呼んだ時点では、何もポーリングせず、何も破棄しません。
 - 予算が `0` のときは、`Budget` の最初のポーリングで、内側の Future をポーリングせずに
   `Poll::Ready(None)` を返します。

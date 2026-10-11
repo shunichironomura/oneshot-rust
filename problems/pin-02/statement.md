@@ -1,6 +1,7 @@
-Write `with_budget`, which wraps a future in a `Budget`: a future that runs the wrapped future, but
-gives up if it has not finished after a given number of polls. There is no async runtime (only `std`
-is available). The struct `Budget` with its two fields is already in the editor.
+Write `with_budget` and the `Future` impl of `Budget`. `with_budget` wraps a future in a `Budget`: a
+future that runs the wrapped future, but gives up if it has not finished after a given number of
+polls. There is no async runtime (only `std` is available). The struct `Budget` with its two fields
+is already in the editor.
 
 ```rust
 pub struct Budget<F> {

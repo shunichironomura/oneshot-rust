@@ -76,7 +76,7 @@ pub fn run() {
         // to_mm multiplies by 25.4, and the result is an ordinary Length<Mm>.
         check_eq(to_mm(Length::new(0.0)), Length::<Mm>::new(0.0))?;
         check_eq(to_mm(Length::new(10.0)), Length::new(10.0 * 25.4))?;
-        let total = to_mm(Length::new(1.0)) + 2 * Length::<Mm>::new(4.5);
+        let total: Length<Mm> = to_mm(Length::new(1.0)) + 2 * Length::new(4.5);
         check_eq(total.value(), 25.4 + 9.0)
     });
 }

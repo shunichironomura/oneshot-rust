@@ -28,10 +28,10 @@ it can still be used for `set` afterwards.
 The trap is `take()`. With an `Option` field, the natural code takes the future out, polls it, and
 puts it back, or takes it out to drop it. With `unsafe { Pin::new_unchecked(&mut fut) }` on the moved
 future, this compiles, but it breaks the promise. An `async` block that borrows its own local across
-an `.await` (like the `for len in &lens` loop in a test) holds a pointer into itself, and after the
-move, it still points to the old place. The next poll then follows a dangling pointer, and Miri
-reports undefined behavior. The `ticks` futures of the harness also check that they stay where they
-were first polled.
+an `.await` holds a pointer into itself, and after the move, it still points to the old place (in
+one of the tests, the block awaits inside a `for x in &items` loop over its own local array). The
+next poll then follows a dangling pointer, and Miri reports undefined behavior. The `ticks` futures
+of the harness also check that they stay where they were first polled.
 
 Dropping the inner future early is how a future is cancelled in Rust: an `async` block dropped in the
 middle of an `.await` never resumes, and the values it holds at that point are dropped. It matters
