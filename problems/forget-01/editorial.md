@@ -13,19 +13,19 @@ fields instead, which compiles but builds a second file, and the old one is drop
 The real trap is `mem::forget(self)` in `persist`. It skips `drop`, but it also skips the
 destructors of **all the fields**. Taking `name` and `data` out with `std::mem::take` and then
 forgetting `self` looks clean, but `log` is still inside: its `Rc` is never released,
-`Rc::strong_count(&log)` never goes back to 1, and Miri reports the leak. Patching it in safe code
-fails too: `let log = self.log.clone()` before `forget` adds one count and later removes only that
-one, and `drop(mem::take(&mut self.log))` releases the real log but puts a brand-new `Rc` (from
-`Rc::default()`) in its place, which `forget` then leaks. Forgetting a value is only harmless when
-none of its remaining fields own anything.
+`Rc::strong_count(&log)` never goes back to 1, and Miri reports the leak. Keeping `forget` and
+patching around it in safe code fails too: `let log = self.log.clone()` before `forget` adds one
+count and later removes only that one, and `drop(mem::take(&mut self.log))` releases the real log
+but puts a brand-new `Rc` (from `Rc::default()`) in its place, which `forget` then leaks.
+Forgetting a value is only harmless when none of its remaining fields own anything.
 
-So `persist` has to skip `TempFile::drop` and still give **every** field a new owner, the log
-included. (If the fields could change, a flag that `drop` checks would do, but the statement rules
-that out.) The solution wraps `self` in `ManuallyDrop`, which never drops its contents, and moves
-the fields out one by one with `ptr::read`. Each value then has exactly one owner: `name` and
-`data` are returned, and `log` is dropped normally, which releases the handle. The fields have to
-be read individually: a copy of the whole struct made with `ptr::read` cannot be destructured
-either (E0509 again), and `ManuallyDrop::into_inner` or `ManuallyDrop::drop` would run
+So when `persist` skips `TempFile::drop`, it still has to give **every** field a new owner, the log
+included. (If the fields and the `Drop` impl could change, a flag that `drop` checks would do, but
+the statement rules that out.) The solution wraps `self` in `ManuallyDrop`, which never drops its
+contents, and moves the fields out one by one with `ptr::read`. Each value then has exactly one
+owner: `name` and `data` are returned, and `log` is dropped normally, which releases the handle.
+The fields have to be read individually: a copy of the whole struct made with `ptr::read` cannot be
+destructured either (E0509 again), and `ManuallyDrop::into_inner` or `ManuallyDrop::drop` would run
 `TempFile::drop` after all. Wrapping `self` first, before anything is read, also guarantees that
 nothing can be dropped twice if a panic happened in between.
 
