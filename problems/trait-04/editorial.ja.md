@@ -19,7 +19,7 @@ impl<A: Describe, B: Describe> Describe for (A, B)
 - `Vec` の本体は `self.as_slice().describe()` を呼ぶので、`[T]: Describe` が必要です。ハーネスは
   スライスも直接説明しますが、そうでなくてもスライスの `impl` はジェネリックにしなければなりません。
   `impl Describe for [i32]` のままでは、ジェネリックにした `Vec` の `impl` のコンパイルが通りません。
-- 組には型引数が 2 つ必要です。`(T, T)` では `(true, vec!["a", "b"])` に合いません。要素が `bool` と
+- ペアには型引数が 2 つ必要です。`(T, T)` では `(true, vec!["a", "b"])` に合いません。要素が `bool` と
   `Vec<&str>` だからです。
 - 本体が要素の `describe` を呼べるのは境界があるからです。`impl<T> Describe for Option<T>` では
   `T` について何もわからないので、`value.describe()` がエラー（E0599）になります。

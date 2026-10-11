@@ -22,8 +22,8 @@ The compiler chains these impls for nested types: `Vec<Option<i32>>` implements 
   generic: with `impl Describe for [i32]`, the generic `Vec` impl does not compile.
 - The pair needs two type parameters. With `(T, T)`, `(true, vec!["a", "b"])` would not match: its
   parts are a `bool` and a `Vec<&str>`.
-- The bound is what lets a body call `describe` on its elements. In `impl<T> Describe for Option<T>`,
-  nothing is known about `T`, so `value.describe()` fails (E0599).
+- The bound is what lets a body call `describe` on its elements. In
+  `impl<T> Describe for Option<T>`, nothing is known about `T`, so `value.describe()` fails (E0599).
 - The type parameter must be declared after `impl`. `impl Describe for Vec<T>` alone fails with
   "cannot find type `T` in this scope".
 

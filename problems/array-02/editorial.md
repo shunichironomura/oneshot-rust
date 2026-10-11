@@ -5,8 +5,8 @@ between `char`, `u8` and `usize`, which Rust never crosses on its own.
   of two `char`s. Convert to an integer first. `first` is an ASCII letter at this point, so `as u8`
   loses nothing, and `b'a'` is the byte `97`: `(first.to_ascii_lowercase() as u8 - b'a') as usize`.
 - **`buckets[letter - b'a']`**: `letter` comes from the range `b'a'..=b'z'`, so it is a `u8`, and so
-  is the difference. Arrays, slices and `Vec`s are indexed by `usize` only ("the type
-  `[Vec<String>]` cannot be indexed by `u8`"), and a smaller integer is not widened automatically.
+  is the difference. Arrays, slices and `Vec`s are indexed by `usize` only (the slice "cannot be
+  indexed by `u8`"), and a smaller integer is not widened automatically.
   `usize::from(letter - b'a')` widens it without loss; `(letter - b'a') as usize` works too.
 - **`letters.push(letter)`**: a `u8` is not a `char`, even when it holds an ASCII code.
   `char::from(letter)` or `letter as char` converts it. This conversion exists only from `u8`: every

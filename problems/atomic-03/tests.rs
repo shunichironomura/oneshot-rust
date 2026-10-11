@@ -14,7 +14,7 @@ fn summary(stats: &Stats) -> Summary {
     (stats.count(), stats.sum(), stats.max(), stats.min())
 }
 
-const ROUNDS: usize = 4;
+const ROUNDS: usize = 3;
 const BUCKETS_PER_ROUND: usize = 6;
 const BUCKETS: usize = ROUNDS * BUCKETS_PER_ROUND;
 

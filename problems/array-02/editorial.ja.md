@@ -5,8 +5,8 @@
   できません。先に整数に変換します。ここでの `first` は ASCII の英字なので `as u8` で情報は失われません。
   `b'a'` はバイト `97` です。`(first.to_ascii_lowercase() as u8 - b'a') as usize` と書きます。
 - **`buckets[letter - b'a']`**：`letter` は範囲 `b'a'..=b'z'` から来るので `u8` で、差も `u8` です。
-  配列、スライス、`Vec` の添字は `usize` だけです（「the type `[Vec<String>]` cannot be indexed by
-  `u8`」）。小さい整数型が自動で広げられることもありません。`usize::from(letter - b'a')` で
+  配列、スライス、`Vec` の添字は `usize` だけです（エラーは「cannot be indexed by `u8`」）。
+  小さい整数型が自動で広げられることもありません。`usize::from(letter - b'a')` で
   情報を失わずに広げます。`(letter - b'a') as usize` でも構いません。
 - **`letters.push(letter)`**：`u8` は、ASCII のコードを持っていても `char` ではありません。
   `char::from(letter)` か `letter as char` で変換します。この変換ができるのは `u8` からだけです。
