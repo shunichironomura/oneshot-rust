@@ -4,10 +4,9 @@ import { MESSAGES } from "./i18n.ts";
 import {
   abandonRound,
   activeRound,
-  courseProblemIds,
   currentProblemId,
   newRound,
-  pickProblems,
+  pickRound,
   recordRun,
   type Round,
   roundShareText,
@@ -35,35 +34,58 @@ function run(id: string, problemId: string, status: RunStatus, kinds: Verdict["k
   };
 }
 
-const start = (problemIds = ["a", "b"]) =>
-  newRound({ id: "r", course: 1, mode: "standard", problemIds, now: 0 });
+const start = (problemIds = ["a", "b"]) => newRound({ id: "r", problemIds, now: 0 });
 
 let seed = 1;
 const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
-test("courseProblemIds keeps the problems of one difficulty", () => {
-  const problems = [
-    { id: "a", difficulty: 1 as const },
-    { id: "b", difficulty: 2 as const },
-    { id: "c", difficulty: 1 as const },
-  ];
-  expect(courseProblemIds(problems, 1)).toEqual(["a", "c"]);
-});
+describe("pickRound", () => {
+  /** `count` problems of each difficulty, named like "2c" (difficulty 2, third problem). */
+  const problems = (count: number) =>
+    ([1, 2, 3] as const).flatMap((difficulty) =>
+      Array.from({ length: count }, (_, i) => ({
+        id: `${difficulty}${String.fromCharCode(97 + i)}`,
+        difficulty,
+      })),
+    );
+  const nothing = { solved: new Set<string>(), seen: new Set<string>() };
+  const difficulty = (id: string) => Number(id[0]);
 
-test("pickProblems returns distinct problems", () => {
-  const picked = pickProblems(["a", "b", "c", "d", "e", "f"], new Set(), 5, random);
-  expect(picked).toHaveLength(5);
-  expect(new Set(picked).size).toBe(5);
-});
+  test("climbs the ladder with distinct problems", () => {
+    const picked = pickRound(problems(4), nothing, random);
+    expect(picked.map(difficulty)).toEqual([1, 1, 2, 2, 3]);
+    expect(new Set(picked).size).toBe(5);
+  });
 
-test("pickProblems with fewer problems than requested returns all", () => {
-  expect(pickProblems(["a", "b"], new Set(), 5, () => 0).sort()).toEqual(["a", "b"]);
-});
+  test("prefers problems not seen yet, then unsolved ones, then solved ones", () => {
+    const played = {
+      solved: new Set(["1a", "2a"]),
+      seen: new Set(["1a", "1b", "2a", "3a"]),
+    };
+    for (let i = 0; i < 10; i++) {
+      const picked = pickRound(problems(3), played, random);
+      expect(picked.slice(0, 2)).toEqual(["1c", "1b"]);
+      expect(picked.slice(2, 4).sort()).toEqual(["2b", "2c"]);
+      expect(["3b", "3c"]).toContain(picked[4]);
+    }
+  });
 
-test("pickProblems puts unsolved problems first", () => {
-  const picked = pickProblems(["a", "b", "c", "d"], new Set(["a", "c"]), 3, random);
-  expect(picked.slice(0, 2).sort()).toEqual(["b", "d"]);
-  expect(["a", "c"]).toContain(picked[2]);
+  test("makes up for a missing difficulty with the others", () => {
+    const picked = pickRound(
+      problems(4).filter((p) => p.difficulty < 3),
+      nothing,
+      random,
+    );
+    const difficulties = picked.map(difficulty);
+    expect(difficulties).toHaveLength(5);
+    expect(difficulties).toEqual([...difficulties].sort((a, b) => a - b));
+    expect(difficulties.filter((d) => d === 1).length).toBeGreaterThanOrEqual(2);
+    expect(difficulties.filter((d) => d === 2).length).toBeGreaterThanOrEqual(2);
+  });
+
+  test("returns every problem when there are fewer than a round needs", () => {
+    expect(pickRound(problems(1), nothing, random)).toEqual(["1a", "2a", "3a"]);
+  });
 });
 
 test("activeRound finds the unfinished round", () => {
@@ -149,12 +171,8 @@ test("roundShareText", () => {
   let r = start();
   r = recordRun(r, run("r1", "a", "solved", ["CE", "AC"]));
   r = recordRun(r, run("r2", "b", "failed", []));
-  expect(roundShareText(r, MESSAGES.ja)).toBe(
-    "OneShot Rust 🦀 初級 [標準]\n🟥🟩\n— ✗\n合計 2 · 1/2 問正解",
-  );
-  expect(roundShareText(r, MESSAGES.en)).toBe(
-    "OneShot Rust 🦀 Beginner [Standard]\n🟥🟩\n— ✗\nTotal 2 · 1/2 solved",
-  );
+  expect(roundShareText(r, MESSAGES.ja)).toBe("OneShot Rust 🦀\n🟥🟩\n— ✗\n合計 2 · 1/2 問正解");
+  expect(roundShareText(r, MESSAGES.en)).toBe("OneShot Rust 🦀\n🟥🟩\n— ✗\nTotal 2 · 1/2 solved");
 });
 
 describe("seenProblemIds", () => {

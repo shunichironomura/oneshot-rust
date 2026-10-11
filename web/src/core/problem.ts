@@ -3,7 +3,7 @@ import type { Localized } from "./i18n.ts";
 export type ProblemKind = "implement" | "repair" | "signature";
 export type MiriChecks = "full" | "fast";
 
-/** Coarse difficulty tier. Each tier is one course of rounds. */
+/** Coarse difficulty tier. A round climbs from 1 to 3 (see `ROUND_LADDER`). */
 export type Difficulty = 1 | 2 | 3;
 
 export const DIFFICULTIES: readonly Difficulty[] = [1, 2, 3];

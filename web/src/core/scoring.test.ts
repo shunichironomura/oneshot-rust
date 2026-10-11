@@ -12,30 +12,24 @@ test.each([
 
 const solvedRun: ShareInput = {
   problemId: "lifetime-01",
-  mode: "standard",
   verdicts: ["CE", "WA", "AC"],
   solved: true,
 };
 
 test("shareText in Japanese", () => {
-  expect(shareText(solvedRun, MESSAGES.ja)).toBe("OneShot Rust 🦀 lifetime-01 [標準]\n🟥🟨🟩  3回");
+  expect(shareText(solvedRun, MESSAGES.ja)).toBe("OneShot Rust 🦀 lifetime-01\n🟥🟨🟩  3回");
 });
 
 test("shareText in English", () => {
-  expect(shareText(solvedRun, MESSAGES.en)).toBe(
-    "OneShot Rust 🦀 lifetime-01 [Standard]\n🟥🟨🟩  3 tries",
-  );
+  expect(shareText(solvedRun, MESSAGES.en)).toBe("OneShot Rust 🦀 lifetime-01\n🟥🟨🟩  3 tries");
 });
 
 test("shareText for an unsolved run", () => {
   const input: ShareInput = {
     problemId: "x",
-    mode: "oni",
     verdicts: ["CE", "CE", "UB"],
     solved: false,
   };
-  expect(shareText(input, MESSAGES.en)).toBe(
-    "OneShot Rust 🦀 x [Silent]\n🟥🟥🟨  3 tries (unsolved)",
-  );
-  expect(shareText(input, MESSAGES.ja)).toBe("OneShot Rust 🦀 x [鬼]\n🟥🟥🟨  3回 (未解決)");
+  expect(shareText(input, MESSAGES.en)).toBe("OneShot Rust 🦀 x\n🟥🟥🟨  3 tries (unsolved)");
+  expect(shareText(input, MESSAGES.ja)).toBe("OneShot Rust 🦀 x\n🟥🟥🟨  3回 (未解決)");
 });

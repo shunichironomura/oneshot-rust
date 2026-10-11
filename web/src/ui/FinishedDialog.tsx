@@ -1,11 +1,12 @@
 import { ArrowRight, BookOpen, X } from "lucide-preact";
-import { type Best, type Run, verdictsOf } from "../core/run.ts";
-import { titleFor, verdictEmoji } from "../core/scoring.ts";
+import { type Run, verdictsOf } from "../core/run.ts";
+import { titleFor } from "../core/scoring.ts";
 import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
+import { ShotMeter } from "./ShotMeter.tsx";
 
 interface Props {
-  finished: { run: Run; newBest: Best | undefined } | null;
+  finished: { run: Run; beatBest: boolean } | null;
   onClose: () => void;
   onShowSolution: () => void;
   /** What comes next: the next problem of the round, the scorecard, or another try. */
@@ -19,7 +20,7 @@ interface Props {
 export function FinishedDialog({ finished, onClose, onShowSolution, next }: Props) {
   const { t } = useApp();
   if (finished === null) return null;
-  const { run, newBest } = finished;
+  const { run, beatBest } = finished;
   const n = run.attempts.length;
   const solved = run.status === "solved";
 
@@ -36,10 +37,13 @@ export function FinishedDialog({ finished, onClose, onShowSolution, next }: Prop
       <h2 class={solved ? "solved" : "failed"}>
         {solved ? `${titleFor(n) ?? t.solvedHeadline}!` : t.unsolvedHeadline}
       </h2>
-      <p class="squares">
-        {verdictsOf(run).map(verdictEmoji).join("")} <span class="tries">{t.shareTries(n)}</span>
-      </p>
-      {newBest !== undefined && <p class="new-best">{t.newBest}</p>}
+      {n > 0 && (
+        <p class="finished-shots">
+          <ShotMeter shots={verdictsOf(run)} label={t.shareTries(n)} />
+          <span class="tries">{t.shareTries(n)}</span>
+        </p>
+      )}
+      {beatBest && <p class="new-best">{t.newBest}</p>}
       {run.assisted === true && <p class="practice-note">{t.assistedRun}</p>}
       <div class="actions">
         <button type="button" class="primary icon-button" onClick={next.action}>

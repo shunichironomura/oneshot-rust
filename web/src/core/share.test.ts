@@ -9,7 +9,6 @@ test("a solved run", () => {
     {
       problemId: "lifetime-01",
       problemTitle: "Longest word",
-      mode: "standard",
       verdicts: ["CE", "WA", "AC"],
       solved: true,
     },
@@ -19,7 +18,7 @@ test("a solved run", () => {
     headline: "Solved!",
     solved: true,
     title: "Longest word",
-    detail: "3 tries · Standard",
+    detail: "3 tries",
     rows: [
       [
         { label: "CE", tone: "ce" },
@@ -35,14 +34,13 @@ test("a hole in one", () => {
     {
       problemId: "iter-01",
       problemTitle: "Sum of even squares",
-      mode: "standard",
       verdicts: ["AC"],
       solved: true,
     },
     MESSAGES.en,
   );
   expect(card.headline).toBe("Hole in One!");
-  expect(card.detail).toBe("1 try · Standard");
+  expect(card.detail).toBe("1 try");
 });
 
 test("a failed run", () => {
@@ -50,14 +48,13 @@ test("a failed run", () => {
     {
       problemId: "lifetime-01",
       problemTitle: "最長の単語",
-      mode: "oni",
       verdicts: ["CE", "UB"],
       solved: false,
     },
     MESSAGES.ja,
   );
   expect(card.headline).toBe(MESSAGES.ja.unsolvedHeadline);
-  expect(card.detail).toBe("2回 · 鬼");
+  expect(card.detail).toBe("2回");
 });
 
 test("a round", () => {
@@ -65,20 +62,14 @@ test("a round", () => {
     ...newRunStub(id, problemId),
     status: solved ? "solved" : "failed",
   });
-  let round = newRound({
-    id: "r",
-    course: 2,
-    mode: "standard",
-    problemIds: ["a", "b"],
-    now: 0,
-  });
+  let round = newRound({ id: "r", problemIds: ["a", "b"], now: 0 });
   round = recordRun(round, run("1", "a", true));
   round = recordRun(round, run("2", "b", false));
-  expect(roundShareCard(round, MESSAGES.en)).toEqual({
+  expect(roundShareCard(round, "Oct 11, 2026", MESSAGES.en)).toEqual({
     headline: "Total 0",
     solved: false,
-    title: "Intermediate course",
-    detail: "1/2 solved · Standard",
+    title: "Oct 11, 2026",
+    detail: "1/2 solved",
     rows: [[], []],
   });
 });

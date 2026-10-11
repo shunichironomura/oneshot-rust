@@ -1,4 +1,4 @@
-// Draws the share card on a canvas, and hands the image to the Web Share API or a download.
+// Draws the share card on a canvas, and shares it with the Web Share API (or copies the text).
 import type { VerdictTone } from "../core/scoring.ts";
 import { layoutShots, type ShareCard, SITE_NAME } from "../core/share.ts";
 
@@ -130,33 +130,32 @@ export function renderShareImage(card: ShareCard): Promise<Blob> {
   );
 }
 
-export type ShareOutcome = "shared" | "cancelled" | "downloaded";
+export type ShareOutcome = "shared" | "cancelled" | "copied";
 
-function download(file: File): void {
-  const url = URL.createObjectURL(file);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = file.name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 0);
+/**
+ * Whether results are shared through the system's share sheet (with the image), which is
+ * the usual way on touch devices. Elsewhere the text is copied, ready to paste.
+ */
+export function sharesThroughSheet(): boolean {
+  return window.matchMedia("(pointer: coarse)").matches && navigator.canShare !== undefined;
 }
 
 /**
- * Opens the share sheet with the image where the browser can share files, and downloads
- * it otherwise (or when sharing is refused). Call it right from the click handler: the
- * share sheet needs the user's gesture.
+ * Opens the share sheet with the image and the text when `image` is given and the browser
+ * can share it, and copies the text otherwise (or when sharing is refused). Call it right
+ * from the click handler: the share sheet needs the user's gesture.
  */
-export async function shareImage(file: File, text: string): Promise<ShareOutcome> {
-  const data: ShareData = { files: [file], text };
-  if (navigator.canShare?.(data) === true) {
+export async function shareResult(image: File | undefined, text: string): Promise<ShareOutcome> {
+  const data: ShareData = { files: image === undefined ? [] : [image], text };
+  if (image !== undefined && navigator.canShare?.(data) === true) {
     try {
       await navigator.share(data);
       return "shared";
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return "cancelled";
-      // e.g. NotAllowedError: fall back to a download.
+      // e.g. NotAllowedError: fall back to copying.
     }
   }
-  download(file);
-  return "downloaded";
+  await navigator.clipboard.writeText(text);
+  return "copied";
 }

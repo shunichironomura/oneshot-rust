@@ -28,17 +28,17 @@ test("normalizeSettings fills defaults and rejects invalid values", () => {
   expect(normalizeSettings(undefined)).toEqual(DEFAULT_SETTINGS);
   expect(
     normalizeSettings({
-      mode: "oni",
       course: 4,
       locale: "fr",
-      // Stored by an older version, which had editor settings.
+      // Stored by older versions, which had editor settings, a feedback mode and a course.
       editor: { fontSize: 99, closeBrackets: false },
+      mode: "oni",
     }),
-  ).toEqual({ ...DEFAULT_SETTINGS, mode: "oni" });
+  ).toEqual(DEFAULT_SETTINGS);
 });
 
-test("normalizeSettings keeps a valid course", () => {
-  expect(normalizeSettings({ course: 3 }).course).toBe(3);
+test("normalizeSettings keeps a valid locale", () => {
+  expect(normalizeSettings({ locale: "ja", course: 3 })).toEqual({ locale: "ja" });
 });
 
 test("lineDiff", () => {

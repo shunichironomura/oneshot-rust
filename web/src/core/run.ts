@@ -1,6 +1,6 @@
 // A "run" is one attempt at solving a problem: submissions until AC (or giving up).
 import { isCounted, type Judgement, type VerdictKind } from "./classify.ts";
-import { MODES, type Mode } from "./mode.ts";
+import { MODES, type Mode, PLAY_MODE } from "./mode.ts";
 
 export interface Attempt {
   submittedAt: number;
@@ -39,7 +39,6 @@ export interface Best {
 export function newRun(params: {
   id: string;
   problemId: string;
-  mode: Mode;
   now: number;
   roundId?: string;
   assisted?: boolean;
@@ -47,7 +46,7 @@ export function newRun(params: {
   return {
     id: params.id,
     problemId: params.problemId,
-    mode: params.mode,
+    mode: PLAY_MODE,
     startedAt: params.now,
     attempts: [],
     status: "playing",
@@ -111,8 +110,8 @@ export function improvedBest(prev: Best | undefined, run: Run): Best | undefined
 }
 
 /**
- * The best of the per-mode records of a problem: fewest submissions, then the harder
- * mode, then the newer one.
+ * The best of the per-mode records of a problem (older versions kept one per mode):
+ * fewest submissions, then the harder mode, then the newer one.
  */
 export function bestOverall(bests: readonly Best[]): Best | undefined {
   const rank = (b: Best) => MODES.indexOf(b.mode);

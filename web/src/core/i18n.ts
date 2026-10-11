@@ -5,8 +5,7 @@ import type {
   RuntimeErrorReason,
   VerdictKind,
 } from "./classify.ts";
-import type { Mode } from "./mode.ts";
-import type { Difficulty, ProblemKind } from "./problem.ts";
+import type { Difficulty } from "./problem.ts";
 
 export type Locale = "en" | "ja";
 
@@ -43,16 +42,10 @@ export interface Messages {
   // Landing page
   heroTitle: string;
   heroTagline: string;
-  roundHeading: string;
-  roundIntro: (n: number) => string;
-  courseHeading: string;
-  /** e.g. "Beginner course" */
-  courseTitle: (name: string) => string;
-  /** The course of rounds from before courses existed. */
-  courseUnknown: string;
-  startRound: string;
+  play: string;
   continueRound: string;
-  continueRoundDetail: (course: string, position: string) => string;
+  /** e.g. "Problem 2 of 5" */
+  roundPosition: (i: number, n: number) => string;
   demoAccepted: (n: number) => string;
   demoWrongAnswer: (passed: number, n: number) => string;
   demoSubmitHint: string;
@@ -61,26 +54,17 @@ export interface Messages {
   // Records
   recordsHeading: string;
   problemsHeading: string;
-  practiceHint: string;
   noProblemsSeen: string;
-  columnProblem: string;
-  columnBest: string;
   roundsHeading: string;
   noRounds: string;
   bestTooltip: (ceCount: number) => string;
-  columnDifficulty: string;
   shotsTooltip: (tries: number) => string;
   difficulties: Record<Difficulty, string>;
-  modes: Record<Mode, string>;
-  modeDescriptions: Record<Mode, string>;
-  kinds: Record<ProblemKind, string>;
 
   // Play screen
-  modeChip: (mode: string) => string;
   submit: string;
   judging: string;
   history: string;
-  startOver: string;
   giveUp: string;
   nextProblem: string;
   tabStatement: string;
@@ -90,28 +74,16 @@ export interface Messages {
   practiceTooltip: string;
   assistedChip: string;
   assistedTooltip: string;
-  roundChip: (position: string) => string;
   toScorecard: string;
   backToRecords: string;
-  runModeNotice: (mode: string) => string;
   confirmSubmit: (n: number) => string;
   confirmSubmitYes: string;
   cancel: string;
-  confirmStartOver: string;
-  startOverAbandons: string;
-  confirmStartOverYes: string;
   confirmGiveUp: string;
   confirmGiveUpYes: string;
   problemNotFound: (id: string) => string;
 
   // Model solution
-  solutionLocked: string;
-  solutionGiveUpHint: string;
-  solutionGiveUp: string;
-  confirmRevealSolution: string;
-  confirmRevealSolutionYes: string;
-  solutionUnlocked: string;
-  showSolution: string;
   solutionLoading: string;
   solutionLoadError: (message: string) => string;
   solutionCode: string;
@@ -128,9 +100,6 @@ export interface Messages {
   hiddenCase: string;
   caseStatus: Record<CaseStatus, string>;
   verdicts: Record<VerdictKind, string>;
-  ceSummary: (count: number, locations: string) => string;
-  inHarness: string;
-  unknownLocation: string;
   hiddenHarnessNote: string;
   harnessInternalsNote: string;
   tleSummary: (caseId: string) => string;
@@ -140,14 +109,10 @@ export interface Messages {
   // End of a run
   solvedHeadline: string;
   unsolvedHeadline: string;
-  submissions: string;
-  compileErrors: string;
-  mode: string;
   newBest: string;
-  copyResult: string;
+  /** Shares a result (or copies it, where there is no share sheet). */
+  share: string;
   copied: string;
-  shareImage: string;
-  imageSaved: string;
   seeSolution: string;
   assistedRun: string;
   tryAgain: string;
@@ -156,20 +121,15 @@ export interface Messages {
   unsolved: string;
 
   // History
-  historyTitle: string;
+  /** Plays the problem on its own. */
+  practice: string;
   noSubmissions: string;
-  runSolved: (n: number) => string;
-  runFailed: string;
   runPlaying: string;
   attemptHeading: (i: number, verdict: string) => string;
   changesFromTemplate: string;
   changesFrom: (i: number) => string;
 
-  // Mode
-  modeHeading: string;
-
   // Rounds
-  scorecardTitle: string;
   roundTotal: (total: number) => string;
   roundOverPerfect: (n: number) => string;
   roundSolved: (solved: number, count: number) => string;
@@ -177,13 +137,10 @@ export interface Messages {
   abandonRound: string;
   confirmAbandonRound: string;
   confirmAbandonRoundYes: string;
-  columnTries: string;
   oneMoreRound: string;
-  changeCourse: string;
   roundUnfinished: string;
   roundNotFound: string;
   roundSkipDeleted: (id: string) => string;
-  roundShareHeader: (course: string, mode: string) => string;
 }
 
 const en: Messages = {
@@ -202,15 +159,9 @@ const en: Messages = {
 
   heroTitle: "Rust in one shot.",
   heroTagline: "No autocomplete. No IDE. Just you and the compiler — every compile counts.",
-  roundHeading: "Play a round",
-  roundIntro: (n) =>
-    `${n} problems from one course, back to back. Your score is the total number of submissions: ${n} is perfect.`,
-  courseHeading: "Course",
-  courseTitle: (name) => `${name} course`,
-  courseUnknown: "Random",
-  startRound: "Start round",
+  play: "Play",
   continueRound: "Continue",
-  continueRoundDetail: (course, position) => `${course} course · problem ${position}`,
+  roundPosition: (i, n) => `Problem ${i} of ${n}`,
   demoAccepted: (n) => `Accepted · ${n}/${n} tests passed`,
   demoWrongAnswer: (passed, n) => `Wrong answer · ${passed}/${n} tests passed`,
   demoSubmitHint: "Submit",
@@ -218,66 +169,34 @@ const en: Messages = {
 
   recordsHeading: "Records",
   problemsHeading: "Problems",
-  practiceHint:
-    "Pick a problem to practice it on its own. Practice counts toward your best, not toward a round.",
   noProblemsSeen: "Problems you meet in rounds will be listed here.",
-  columnProblem: "Problem",
-  columnBest: "Best",
   roundsHeading: "Rounds",
   noRounds: "No rounds played yet.",
   bestTooltip: (ce) => `${ce} compile error${ce === 1 ? "" : "s"}`,
-  columnDifficulty: "Difficulty",
   shotsTooltip: (tries) => `${tries} ${tries === 1 ? "try" : "tries"} so far · aim for one`,
   difficulties: { 1: "Beginner", 2: "Intermediate", 3: "Advanced" },
-  modes: { beginner: "Verbose", standard: "Standard", advanced: "Terse", oni: "Silent" },
-  modeDescriptions: {
-    beginner:
-      "Full compiler output, including help and suggestions. Errors are marked in the editor.",
-    standard: "Error messages, code snippets and notes. No help or suggested fixes.",
-    advanced: "Only the number of errors and their line numbers.",
-    oni: "Only the two-letter verdict.",
-  },
-  kinds: { implement: "Implement", repair: "Repair", signature: "Signature" },
 
-  modeChip: (mode) => mode,
   submit: "Submit",
   judging: "Judging…",
   history: "Submission history",
-  startOver: "Start over",
   giveUp: "Give up",
   nextProblem: "Next problem",
   tabStatement: "Problem",
-  tabHarness: "tests.rs (read-only)",
+  tabHarness: "tests.rs",
   tabSolution: "Solution",
   practiceChip: "Practice",
   practiceTooltip: "Played on its own: it counts toward your best, not toward a round.",
   assistedChip: "Solution seen",
   assistedTooltip: "You have seen the model solution, so this run does not update your best.",
-  roundChip: (p) => `Round ${p}`,
   toScorecard: "See the scorecard",
   backToRecords: "Back to records",
-  runModeNotice: (mode) =>
-    `This run started in ${mode} mode. A new mode applies from the next run.`,
-  confirmSubmit: (n) => `Submit this code? This will be submission #${n}.`,
+  confirmSubmit: (n) => `Submit #${n}?`,
   confirmSubmitYes: "Submit",
   cancel: "Cancel",
-  confirmStartOver: "Reset the code to the template and start a new run?",
-  startOverAbandons: "The current run will end unsolved.",
-  confirmStartOverYes: "Start over",
-  confirmGiveUp:
-    "Give up this problem? It is recorded as unsolved, and the model solution unlocks.",
+  confirmGiveUp: "Give up this problem?",
   confirmGiveUpYes: "Give up",
   problemNotFound: (id) => `Problem “${id}” was not found.`,
 
-  solutionLocked: "The model solution unlocks once you finish this problem: solve it or give up.",
-  solutionGiveUpHint: "Stuck? You can give up and look at it now.",
-  solutionGiveUp: "Give up and show",
-  confirmRevealSolution:
-    "Show the model solution? You can keep going, but from now on runs on this problem do not update your best.",
-  confirmRevealSolutionYes: "Show solution",
-  solutionUnlocked:
-    "Compare your code with the model solution. Once you look at it, later runs on this problem do not update your best.",
-  showSolution: "Show solution",
   solutionLoading: "Loading…",
   solutionLoadError: (m) => `Could not load the solution: ${m}`,
   solutionCode: "Code",
@@ -301,9 +220,6 @@ const en: Messages = {
     TLE: "Time limit exceeded",
     IE: "Internal error (not counted)",
   },
-  ceSummary: (n, locs) => `${n} error${n === 1 ? "" : "s"} (${locs})`,
-  inHarness: " (test harness)",
-  unknownLocation: "unknown location",
   hiddenHarnessNote: "(in the test harness; code hidden)",
   harnessInternalsNote: "(harness internals)",
   tleSummary: (id) => `Time limit exceeded while running ${id}`,
@@ -335,14 +251,9 @@ const en: Messages = {
 
   solvedHeadline: "Solved",
   unsolvedHeadline: "Unsolved",
-  submissions: "Submissions",
-  compileErrors: "Compile errors",
-  mode: "Mode",
   newBest: "New personal best!",
-  copyResult: "Copy result",
+  share: "Share",
   copied: "Copied!",
-  shareImage: "Share image",
-  imageSaved: "Image saved",
   seeSolution: "Model solution",
   assistedRun: "Solution seen: your best is not updated.",
   tryAgain: "Try again",
@@ -350,33 +261,24 @@ const en: Messages = {
   shareTries: (n) => `${n} ${n === 1 ? "try" : "tries"}`,
   unsolved: "unsolved",
 
-  historyTitle: "Submission history",
+  practice: "Practice",
   noSubmissions: "No submissions yet.",
-  runSolved: (n) => `Solved in ${n}`,
-  runFailed: "Ended unsolved",
   runPlaying: "In progress",
   attemptHeading: (i, v) => `Submission #${i} — ${v}`,
   changesFromTemplate: "Changes from the template",
   changesFrom: (i) => `Changes from submission #${i}`,
 
-  modeHeading: "Feedback mode",
-
-  scorecardTitle: "Scorecard",
   roundTotal: (t) => `Total ${t}`,
   roundOverPerfect: (n) => (n === 0 ? "Perfect!" : `+${n} over perfect`),
   roundSolved: (s, c) => `${s}/${c} solved`,
   roundAbandoned: (s, c) => `Abandoned (${s}/${c} solved)`,
   abandonRound: "Abandon this round",
-  confirmAbandonRound:
-    "Abandon this round? It ends now, with the problems not solved yet counted as unsolved.",
+  confirmAbandonRound: "Abandon this round? The remaining problems count as unsolved.",
   confirmAbandonRoundYes: "Abandon",
-  columnTries: "Tries",
   oneMoreRound: "One more round",
-  changeCourse: "Change course",
   roundUnfinished: "This round is not finished yet.",
   roundNotFound: "This round was not found.",
   roundSkipDeleted: (id) => `Problem “${id}” no longer exists and is skipped.`,
-  roundShareHeader: (course, mode) => `OneShot Rust 🦀 ${course} [${mode}]`,
 };
 
 const ja: Messages = {
@@ -397,15 +299,9 @@ const ja: Messages = {
   heroTitle: "Rust を、一発で。",
   heroTagline:
     "補完なし、IDE なし。あなたとコンパイラだけ。コンパイルは 1 回ごとにカウントされます。",
-  roundHeading: "ラウンドに挑戦",
-  roundIntro: (n) =>
-    `コースから ${n} 問を続けて解きます。スコアは合計の提出回数で、${n} 回なら完璧です。`,
-  courseHeading: "コース",
-  courseTitle: (name) => `${name}コース`,
-  courseUnknown: "ランダム",
-  startRound: "ラウンドを始める",
+  play: "プレイ",
   continueRound: "続きから",
-  continueRoundDetail: (course, position) => `${course}コース · ${position} 問目`,
+  roundPosition: (i, n) => `${n} 問中 ${i} 問目`,
   demoAccepted: (n) => `正解 · ${n}/${n} テスト通過`,
   demoWrongAnswer: (passed, n) => `不正解 · ${passed}/${n} テスト通過`,
   demoSubmitHint: "提出",
@@ -413,66 +309,34 @@ const ja: Messages = {
 
   recordsHeading: "記録",
   problemsHeading: "問題",
-  practiceHint:
-    "問題を選ぶと、その問題だけを練習できます。練習の結果はベストに残りますが、ラウンドにはなりません。",
   noProblemsSeen: "ラウンドで出会った問題がここに並びます。",
-  columnProblem: "問題",
-  columnBest: "ベスト",
   roundsHeading: "ラウンド",
   noRounds: "まだラウンドを遊んでいません。",
   bestTooltip: (ce) => `うち CE ${ce} 回`,
-  columnDifficulty: "難易度",
   shotsTooltip: (tries) => `現在 ${tries} 回（目標は 1 回）`,
   difficulties: { 1: "初級", 2: "中級", 3: "上級" },
-  modes: { beginner: "親切", standard: "標準", advanced: "簡潔", oni: "鬼" },
-  modeDescriptions: {
-    beginner: "rustc の出力をすべて表示（help・修正提案つき）。エディタにエラー行マーカーを表示",
-    standard: "エラーメッセージ、コード片、note を表示。help と修正提案は非表示",
-    advanced: "エラーの件数と行番号のみ",
-    oni: "判定の 2 文字のみ",
-  },
-  kinds: { implement: "実装", repair: "修理", signature: "シグネチャ" },
 
-  modeChip: (mode) => `${mode}モード`,
   submit: "提出",
   judging: "判定中…",
   history: "提出履歴",
-  startOver: "最初から",
   giveUp: "ギブアップ",
   nextProblem: "次の問題へ",
   tabStatement: "問題文",
-  tabHarness: "tests.rs（読み取り専用）",
+  tabHarness: "tests.rs",
   tabSolution: "模範解答",
   practiceChip: "練習",
   practiceTooltip: "単独の練習：ベストには残りますが、ラウンドにはなりません。",
   assistedChip: "解答閲覧済み",
   assistedTooltip: "模範解答を見たあとの挑戦なので、自己ベストは更新されません。",
-  roundChip: (p) => `ラウンド ${p}`,
   toScorecard: "スコアカードへ",
   backToRecords: "記録へ戻る",
-  runModeNotice: (mode) =>
-    `このランは「${mode}」モードで開始されています。モードの変更は次のランから反映されます。`,
-  confirmSubmit: (n) => `この内容で提出しますか？（${n} 回目の提出）`,
+  confirmSubmit: (n) => `${n} 回目の提出をしますか？`,
   confirmSubmitYes: "提出する",
   cancel: "やめる",
-  confirmStartOver: "コードをテンプレートに戻し、新しいランを始めますか？",
-  startOverAbandons: "進行中のランは未解決で終了します。",
-  confirmStartOverYes: "最初からやり直す",
-  confirmGiveUp:
-    "この問題をギブアップしますか？（未解決として記録され、模範解答を見られるようになります）",
+  confirmGiveUp: "この問題をギブアップしますか？",
   confirmGiveUpYes: "ギブアップする",
   problemNotFound: (id) => `問題「${id}」は見つかりませんでした。`,
 
-  solutionLocked:
-    "この問題を終える（正解するか、ギブアップする）と、模範解答を見られるようになります。",
-  solutionGiveUpHint: "どうしても解けないときは、ギブアップして今すぐ見ることもできます。",
-  solutionGiveUp: "ギブアップして見る",
-  confirmRevealSolution:
-    "模範解答を表示しますか？ 挑戦はこのまま続けられますが、以降この問題では自己ベストが更新されません。",
-  confirmRevealSolutionYes: "表示する",
-  solutionUnlocked:
-    "模範解答と見比べてみましょう。表示すると、以降この問題では自己ベストが更新されません。",
-  showSolution: "模範解答を表示",
   solutionLoading: "読み込み中…",
   solutionLoadError: (m) => `模範解答を読み込めませんでした: ${m}`,
   solutionCode: "コード",
@@ -496,9 +360,6 @@ const ja: Messages = {
     TLE: "時間切れ",
     IE: "内部エラー（カウントされません）",
   },
-  ceSummary: (n, locs) => `エラー ${n} 件（${locs}）`,
-  inHarness: "（ハーネス側）",
-  unknownLocation: "位置不明",
   hiddenHarnessNote: "（ハーネス側でエラー。コードは非公開）",
   harnessInternalsNote: "（ハーネス内部）",
   tleSummary: (id) => `ケース ${id} の実行中に制限時間を超えました`,
@@ -530,14 +391,9 @@ const ja: Messages = {
 
   solvedHeadline: "正解",
   unsolvedHeadline: "未解決",
-  submissions: "提出回数",
-  compileErrors: "うち CE",
-  mode: "モード",
   newBest: "自己ベスト更新！",
-  copyResult: "結果をコピー",
+  share: "シェア",
   copied: "コピーしました",
-  shareImage: "画像でシェア",
-  imageSaved: "画像を保存しました",
   seeSolution: "模範解答",
   assistedRun: "模範解答を閲覧済みのため、自己ベストは更新されません。",
   tryAgain: "もう一度",
@@ -545,33 +401,24 @@ const ja: Messages = {
   shareTries: (n) => `${n}回`,
   unsolved: "未解決",
 
-  historyTitle: "提出履歴",
+  practice: "練習する",
   noSubmissions: "まだ提出がありません。",
-  runSolved: (n) => `${n} 回で正解`,
-  runFailed: "未解決で終了",
   runPlaying: "挑戦中",
   attemptHeading: (i, v) => `${i} 回目の提出 — ${v}`,
   changesFromTemplate: "テンプレートからの変更",
   changesFrom: (i) => `${i} 回目からの変更`,
 
-  modeHeading: "診断表示モード",
-
-  scorecardTitle: "スコアカード",
   roundTotal: (t) => `合計 ${t}`,
   roundOverPerfect: (n) => (n === 0 ? "完璧！" : `完璧まで +${n}`),
   roundSolved: (s, c) => `${s}/${c} 問正解`,
   roundAbandoned: (s, c) => `棄権（${s}/${c} 問正解）`,
   abandonRound: "このラウンドを棄権",
-  confirmAbandonRound:
-    "このラウンドを棄権しますか？ラウンドはここで終了し、まだ解いていない問題は未解決として記録されます。",
+  confirmAbandonRound: "このラウンドを棄権しますか？残りの問題は未解決になります。",
   confirmAbandonRoundYes: "棄権する",
-  columnTries: "回数",
   oneMoreRound: "もう 1 ラウンド",
-  changeCourse: "コースを変える",
   roundUnfinished: "このラウンドはまだ終わっていません。",
   roundNotFound: "ラウンドが見つかりませんでした。",
   roundSkipDeleted: (id) => `問題「${id}」は削除されたため、スキップします。`,
-  roundShareHeader: (course, mode) => `OneShot Rust 🦀 ${course} [${mode}]`,
 };
 
 export const MESSAGES: Record<Locale, Messages> = { en, ja };

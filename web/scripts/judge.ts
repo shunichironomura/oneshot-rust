@@ -1,22 +1,17 @@
 // Judges a single source file against a problem and prints what the player would see.
 //
-// Usage: node scripts/judge.ts <problem-id> <user.rs> [--mode beginner|standard|advanced|oni]
+// Usage: node scripts/judge.ts <problem-id> <user.rs>
 import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { loadJudgeSources, loadProblems } from "../content/load.ts";
-import { MODES, type Mode } from "../src/core/mode.ts";
 import { MESSAGES } from "../src/core/i18n.ts";
 import { present } from "../src/core/present.ts";
 import { judge, loadToolchain } from "./node-runner.ts";
 
-const { positionals, values } = parseArgs({
-  allowPositionals: true,
-  options: { mode: { type: "string", default: "standard" } },
-});
+const { positionals } = parseArgs({ allowPositionals: true });
 const [problemId, file] = positionals;
-const mode = MODES.find((m) => m === values.mode);
-if (problemId === undefined || file === undefined || mode === undefined) {
-  console.error("usage: node scripts/judge.ts <problem-id> <user.rs> [--mode <mode>]");
+if (problemId === undefined || file === undefined) {
+  console.error("usage: node scripts/judge.ts <problem-id> <user.rs>");
   process.exit(2);
 }
 
@@ -34,7 +29,6 @@ if (entry === undefined) {
 const { problem } = entry;
 const { judgement, elapsedMs } = await judge(toolchain, problem, judgeSources, code);
 const view = present(judgement, {
-  mode: mode satisfies Mode,
   harnessVisible: problem.judge.harnessVisible,
   messages: MESSAGES.en,
 });

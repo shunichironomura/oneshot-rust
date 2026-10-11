@@ -25,7 +25,7 @@ function attempt(kind: Verdict["kind"], at = 1): Attempt {
   return { submittedAt: at, code: "", judgement };
 }
 
-const fresh = (): Run => newRun({ id: "r", problemId: "p", mode: "standard", now: 0 });
+const fresh = (): Run => newRun({ id: "r", problemId: "p", now: 0 });
 
 describe("recordAttempt", () => {
   test("AC solves the run", () => {
@@ -71,10 +71,7 @@ describe("improvedBest", () => {
   test("an assisted run is never a best", () => {
     const assisted = ["AC"]
       .map((k) => attempt(k as Verdict["kind"], 10))
-      .reduce(
-        recordAttempt,
-        newRun({ id: "r", problemId: "p", mode: "standard", now: 0, assisted: true }),
-      );
+      .reduce(recordAttempt, newRun({ id: "r", problemId: "p", now: 0, assisted: true }));
     expect(assisted.status).toBe("solved");
     expect(improvedBest(undefined, assisted)).toBeUndefined();
   });

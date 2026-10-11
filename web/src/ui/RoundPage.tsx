@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
-import { activeRound, type Round, recordRun, roundPosition, skipCurrent } from "../core/round.ts";
+import { activeRound, type Round, recordRun, skipCurrent } from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
 import type { Run } from "../core/run.ts";
 import { useApp } from "./context.ts";
 import { PlayView, type Session } from "./PlayPage.tsx";
-import { abandonActiveRound, RoundLauncher } from "./RoundLauncher.tsx";
+import { RoundLauncher } from "./RoundLauncher.tsx";
 
 function showScorecard(round: Round): void {
   window.location.hash = routeHref({ page: "scorecard", roundId: round.id });
@@ -53,16 +53,14 @@ export function RoundPage() {
     const last = shownIndex === round.problemIds.length - 1;
     return {
       kind: "round",
-      roundId: round.id,
-      rules: { mode: round.mode },
-      position: roundPosition(round, shownIndex),
+      round,
+      index: shownIndex,
       onRunFinished,
-      abandon: () => void abandonActiveRound(storage, round).then(() => showScorecard(round)),
       next: last
         ? { label: t.toScorecard, action: () => showScorecard(round) }
         : { label: t.nextProblem, action: () => setLingering(false) },
     };
-  }, [round, shownIndex, onRunFinished, storage, t]);
+  }, [round, shownIndex, onRunFinished, t]);
 
   if (round === undefined) return null;
   if (round === null || session === undefined) {

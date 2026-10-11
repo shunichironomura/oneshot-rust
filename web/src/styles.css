@@ -17,14 +17,10 @@
   --removed: #ffebe9;
   --focus: #0969da;
 
-  /* Difficulties (green → red) and modes (cyan → magenta). */
+  /* Difficulties (green → red). */
   --difficulty-1: #1a7f37;
   --difficulty-2: #9a6700;
   --difficulty-3: #cf222e;
-  --mode-beginner: #0e7490;
-  --mode-standard: #0969da;
-  --mode-advanced: #8250df;
-  --mode-oni: #bf3989;
 
   --editor-bg: #ffffff;
   --editor-active-line: #f6f8fa;
@@ -69,10 +65,6 @@
     --difficulty-1: #3fb950;
     --difficulty-2: #d29922;
     --difficulty-3: #f85149;
-    --mode-beginner: #39c5cf;
-    --mode-standard: #58a6ff;
-    --mode-advanced: #bc8cff;
-    --mode-oni: #f778ba;
 
     --editor-bg: #15181d;
     --editor-active-line: #1c2128;
@@ -254,11 +246,6 @@ button.chip:hover:not(:disabled) {
   font-weight: 600;
 }
 
-.chip.accent {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
 .badge {
   display: inline-flex;
   align-items: center;
@@ -292,38 +279,9 @@ button.chip:hover:not(:disabled) {
   --level: var(--difficulty-3);
 }
 
-.mode-beginner {
-  --level: var(--mode-beginner);
-}
-
-.mode-standard {
-  --level: var(--mode-standard);
-}
-
-.mode-advanced {
-  --level: var(--mode-advanced);
-}
-
-/* The harshest mode stands out as a filled badge. */
-.badge.level.mode-oni {
-  --level: var(--mode-oni);
-  color: var(--bg);
-  background: var(--level);
-}
-
 .dim {
   color: var(--muted);
   opacity: 0.6;
-}
-
-.hint {
-  color: var(--muted);
-  font-size: 0.9em;
-}
-
-.lead {
-  color: var(--muted);
-  font-size: 1.05em;
 }
 
 /* App header */
@@ -411,7 +369,8 @@ main > section {
 .section-head {
   display: flex;
   align-items: center;
-  gap: 0.8em;
+  flex-wrap: wrap;
+  gap: 0.6em 0.8em;
   margin: 2em 0 0.6em;
 }
 
@@ -424,10 +383,28 @@ main > section {
   margin-left: auto;
 }
 
+.section-head .badge {
+  margin-left: 0;
+}
+
+/* The page's action goes to the far end. */
+.section-head > .button:last-child {
+  margin-left: auto;
+}
+
 /* Home */
 
 main > section.home {
+  display: flex;
+  flex-direction: column;
   max-width: 68em;
+  min-height: 100%;
+}
+
+/* The hero fills the screen and centers itself vertically, with the credit at the bottom. */
+.home .hero {
+  flex: 1;
+  align-content: center;
 }
 
 .hero {
@@ -449,6 +426,11 @@ main > section.home {
   margin: 0;
   color: var(--muted);
   font-size: 1.15em;
+}
+
+/* Break Japanese between phrases, not in the middle of a word. */
+.hero-text {
+  word-break: auto-phrase;
 }
 
 .credit {
@@ -558,70 +540,30 @@ main > section.home {
 
 .launcher {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1em;
-  padding: 1.4em 1.6em;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--panel);
-}
-
-.launcher h2 {
-  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.4em;
-  margin: 0;
-  font-size: 1.2em;
+  gap: 0.9em 1.2em;
+  margin-top: 2em;
 }
 
-.launcher h2 svg {
-  color: var(--accent);
+.launcher .round-progress {
+  flex-basis: 100%;
+  font-size: 1.4em;
 }
 
-.launcher-text {
-  margin: 0;
-  color: var(--muted);
-}
-
-.abandon-round {
+.link-button.abandon-round {
   color: var(--muted);
   font-size: 0.9em;
+  text-decoration: none;
 }
 
-.course-options {
-  flex-wrap: wrap;
-}
-
-.course-options button {
-  min-width: 9em;
-  padding: 0.5em 1em;
-}
-
-.more-options {
-  width: 100%;
-}
-
-.more-options summary {
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.more-options .mode-options {
-  margin-top: 0.8em;
+.link-button.abandon-round:hover {
+  color: var(--ce);
+  text-decoration: underline;
 }
 
 main > section.round-start {
   max-width: 44em;
-}
-
-.subtle-link {
-  color: var(--muted);
-  font-size: 0.9em;
-}
-
-.subtle-link:hover {
-  color: var(--accent);
 }
 
 /* Static code */
@@ -696,6 +638,50 @@ main > section.round-start {
 
 .syn-meta {
   color: var(--syn-meta);
+}
+
+/* Round progress: one square per problem */
+
+.round-progress {
+  display: inline-flex;
+  gap: 0.3em;
+  vertical-align: middle;
+}
+
+.round-progress .hole {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75em;
+  height: 1.75em;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: var(--border);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.8em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.round-progress .hole.solved {
+  border-color: var(--ac);
+  background: var(--ac);
+  color: var(--panel);
+}
+
+.round-progress .hole.unsolved {
+  border-color: var(--border);
+  background: transparent;
+}
+
+.round-progress .hole.current {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.round-progress .hole.current:not(.solved) {
+  background: transparent;
 }
 
 /* Shot meter: one slot per submission */
@@ -780,7 +766,6 @@ main > section.round-start {
   overflow: hidden;
 }
 
-.problem-table th,
 .problem-table td {
   padding: 0.6em 0.8em;
   border-bottom: 1px solid var(--border);
@@ -796,19 +781,9 @@ main > section.round-start {
   background: var(--code-bg);
 }
 
-.problem-table th {
-  font-size: 0.8em;
-  font-weight: 600;
-  color: var(--muted);
-}
-
 .problem-table .status {
   width: 2.2em;
   text-align: center;
-}
-
-.problem-table .num {
-  font-variant-numeric: tabular-nums;
 }
 
 .problem-link {
@@ -866,13 +841,6 @@ main > section.round-start {
 
 .play-header .spacer {
   flex: 1;
-}
-
-.notice {
-  margin: 0;
-  padding: 0.3em 1.2em;
-  background: var(--accent-soft);
-  font-size: 0.85em;
 }
 
 .play-body {
@@ -1026,15 +994,13 @@ main > section.round-start {
 .cases li {
   display: flex;
   align-items: baseline;
-  gap: 0.8em;
+  gap: 0.6em;
   padding: 0.1em 0;
 }
 
 .case-status {
-  min-width: 4.5em;
-  font-family: var(--mono);
-  font-weight: 700;
-  font-size: 0.85em;
+  flex: none;
+  align-self: center;
 }
 
 .cases .pass .case-status {
@@ -1047,7 +1013,6 @@ main > section.round-start {
 
 .cases .not-run .case-status {
   color: var(--muted);
-  font-weight: 400;
 }
 
 .case-id {
@@ -1151,18 +1116,25 @@ dialog .actions {
   color: var(--accent);
 }
 
-.finished .squares {
-  font-size: 1.4em;
-  letter-spacing: 0.1em;
-  margin: 0.2em 0;
+.finished-shots {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  margin: 0.5em 0 0.2em;
 }
 
-.finished .tries {
-  margin-left: 0.4em;
+.finished-shots .shot-meter {
+  gap: 6px;
+}
+
+.finished-shots .shot-meter .slot {
+  width: 20px;
+  height: 20px;
+}
+
+.finished-shots .tries {
   color: var(--muted);
-  font-size: 0.7em;
   font-weight: 600;
-  letter-spacing: normal;
 }
 
 .new-best {
@@ -1184,8 +1156,45 @@ dialog .actions {
 .history summary {
   display: flex;
   align-items: center;
-  gap: 0.7em;
+  gap: 0.6em;
   cursor: pointer;
+}
+
+/* A flex summary loses its disclosure triangle: draw one. */
+.history summary::before {
+  content: "";
+  flex: none;
+  border-block: 0.3em solid transparent;
+  border-left: 0.45em solid var(--muted);
+  transition: transform 0.15s;
+}
+
+.history details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.history .model-solution summary {
+  font-weight: 600;
+}
+
+.history .model-solution[open] summary {
+  margin-bottom: 0.8em;
+}
+
+.history .model-solution .code-view {
+  font-size: 0.9em;
+}
+
+.history .model-solution .segmented {
+  margin-bottom: 0.6em;
+}
+
+.history .run-date {
+  margin-left: auto;
+}
+
+.history .failed {
+  color: var(--ce);
 }
 
 .run-date {
@@ -1219,6 +1228,11 @@ dialog .actions {
   margin-bottom: 0.3em;
   font-family: var(--mono);
   font-size: 0.85em;
+}
+
+.attempts .verdict {
+  min-width: 3.4em;
+  font-size: 0.9em;
 }
 
 .attempts button[aria-pressed="true"] {
@@ -1260,103 +1274,59 @@ dialog .actions {
   gap: 0.3em;
 }
 
-.segmented button[aria-pressed="true"],
-.mode-option.selected {
+.segmented button[aria-pressed="true"] {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
 
-.mode-options {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.6em;
-}
-
-.mode-option {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2em;
-  padding: 0.6em 0.9em;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-
-.mode-option input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.mode-option span {
-  color: var(--muted);
-  font-size: 0.85em;
-}
-
-.mode-option:focus-within {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-
 /* Scorecard */
-
-.scorecard-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.6em;
-  color: var(--muted);
-}
-
-.scorecard-meta .badge {
-  margin-left: 0;
-}
 
 .scorecard-total {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0.8em;
-  margin: 0.4em 0 1em;
-}
-
-.scorecard-total strong {
-  font-size: 2.2em;
+  gap: 0.2em 0.6em;
+  margin: 0.2em 0 0.8em;
   color: var(--accent);
+  font-size: 2.4em;
 }
 
 .scorecard-total span {
-  font-size: 1.15em;
+  color: var(--fg);
+  font-size: 0.45em;
   font-weight: 600;
 }
 
-.scorecard-table {
-  border-collapse: collapse;
-  margin-bottom: 1.2em;
+.scorecard-rows {
+  max-width: 34em;
+  margin: 0 0 1.4em;
+  padding: 0;
+  list-style: none;
 }
 
-.scorecard-table th,
-.scorecard-table td {
-  padding: 0.35em 0.9em 0.35em 0;
-  text-align: left;
+.scorecard-rows li {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.45em 0;
+  border-bottom: 1px solid var(--border);
 }
 
-.scorecard-table th {
+.row-number {
+  min-width: 1em;
   color: var(--muted);
-  font-size: 0.85em;
-  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.scorecard-table .squares {
-  letter-spacing: 0.1em;
+.scorecard-shots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  margin-left: auto;
 }
 
-.scorecard .share {
-  display: inline-block;
-  padding: 0.8em 1.1em;
-  background: var(--code-bg);
-  border-radius: var(--radius);
+.unsolved-mark {
+  color: var(--muted);
 }
 
 .scorecard .actions {
@@ -1369,24 +1339,34 @@ dialog .actions {
 /* Records */
 
 .problems h2 {
-  margin: 1.6em 0 0.3em;
+  margin: 1.6em 0 0.4em;
 }
 
 .round-history {
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.round-history li {
+.round-history a {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.7em;
-  padding: 0.3em 0;
+  gap: 0.8em;
+  padding: 0.35em 0.5em;
+  border-radius: var(--radius);
+  color: var(--fg);
+  text-decoration: none;
 }
 
-.round-history .badge {
-  margin-left: 0;
+.round-history a:hover {
+  background: var(--code-bg);
+}
+
+.round-total {
+  min-width: 1.6em;
+  font-size: 1.15em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Narrow screens */
@@ -1427,13 +1407,12 @@ dialog .actions {
     display: none;
   }
 
-  .problem-table th:nth-child(4),
-  .problem-table td:nth-child(4) {
-    display: none;
-  }
-
   .run-detail {
     grid-template-columns: 1fr;
+  }
+
+  .section-head h1 {
+    font-size: 1.5em;
   }
 }
 
@@ -1449,20 +1428,6 @@ dialog .actions {
   flex-direction: column;
   gap: 0.8em;
   padding-top: 0.8em;
-}
-
-.solution-gate {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.6em;
-  padding: 1em;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-}
-
-.solution-gate p {
-  margin: 0;
 }
 
 .solution-note,

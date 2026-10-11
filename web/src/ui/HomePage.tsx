@@ -17,11 +17,10 @@ export function HomePage() {
         <div class="hero-text">
           <h1>{t.heroTitle}</h1>
           <p class="tagline">{t.heroTagline}</p>
+          <RoundLauncher onStarted={openRound} />
         </div>
         <HeroDemo />
       </div>
-
-      <RoundLauncher onStarted={openRound} />
 
       <footer class="credit">
         {t.madeBy} <a href={AUTHOR.url}>{AUTHOR.name}</a>

@@ -1,9 +1,9 @@
 import { expect, test } from "vite-plus/test";
 import { newRun, type Run, type RunStatus } from "./run.ts";
-import { hasFinishedRun, solutionAccess } from "./solution.ts";
+import { hasFinishedRun } from "./solution.ts";
 
 const run = (status: RunStatus): Run => ({
-  ...newRun({ id: status, problemId: "p", mode: "standard", now: 0 }),
+  ...newRun({ id: status, problemId: "p", now: 0 }),
   status,
 });
 
@@ -14,13 +14,4 @@ test.each([
   [[run("failed")], true],
 ])("hasFinishedRun(%j) = %s", (runs, expected) => {
   expect(hasFinishedRun(runs)).toBe(expected);
-});
-
-test.each([
-  [{ revealed: true, finished: false }, "revealed"],
-  [{ revealed: true, finished: true }, "revealed"],
-  [{ revealed: false, finished: true }, "unlocked"],
-  [{ revealed: false, finished: false }, "locked"],
-] as const)("solutionAccess(%j) = %s", (params, expected) => {
-  expect(solutionAccess(params)).toBe(expected);
 });

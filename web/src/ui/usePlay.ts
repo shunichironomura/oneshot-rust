@@ -2,11 +2,9 @@
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { classify, type Judgement } from "../core/classify.ts";
 import { buildSubmission, precheck } from "../core/harness.ts";
-import type { Mode } from "../core/mode.ts";
 import type { JudgeSources, Problem } from "../core/problem.ts";
 import { parseStdout, type RunProgress, runProgress } from "../core/protocol.ts";
-import { type Best, improvedBest, newRun, recordAttempt, type Run } from "../core/run.ts";
-import { hasFinishedRun } from "../core/solution.ts";
+import { bestOverall, improvedBest, newRun, recordAttempt, type Run } from "../core/run.ts";
 import type { RunnerPool } from "../runner/pool.ts";
 import { draftKey, type Storage } from "../storage/db.ts";
 
@@ -18,7 +16,7 @@ export type SubmitPhase =
 
 /** What the result panel shows: the latest judgement, or a rejected pre-check. */
 export type LastResult =
-  | { kind: "judged"; judgement: Judgement; mode: Mode }
+  | { kind: "judged"; judgement: Judgement }
   | { kind: "rejected"; forbiddenMacro: string }
   | { kind: "error"; message: string };
 
@@ -30,24 +28,19 @@ export interface PlayState {
   run: Run | null;
   phase: SubmitPhase;
   last: LastResult | null;
-  /** Set when the latest submission finished the run (solved). */
-  finished: { run: Run; newBest: Best | undefined } | null;
-  /** Some run of this problem has ended (which unlocks the model solution). */
-  hasFinished: boolean;
+  /**
+   * Set when the run has just ended, to report it. `beatBest` is set when it beat an
+   * earlier best record (a first solve sets a best, but does not beat one).
+   */
+  finished: { run: Run; beatBest: boolean } | null;
   /** The model solution has been seen: runs from then on are assisted. */
   revealed: boolean;
-}
-
-/** Rules fixed when a run starts. */
-export interface RunRules {
-  mode: Mode;
 }
 
 interface Params {
   problem: Problem;
   judgeSources: JudgeSources;
   storage: Storage;
-  rules: RunRules;
   pool: Promise<RunnerPool>;
   /** The round being played; runs and drafts of a round are kept apart from practice. */
   roundId?: string;
@@ -65,15 +58,7 @@ function errorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
-export function usePlay({
-  problem,
-  judgeSources,
-  storage,
-  rules,
-  pool,
-  roundId,
-  onRunFinished,
-}: Params) {
+export function usePlay({ problem, judgeSources, storage, pool, roundId, onRunFinished }: Params) {
   const draft = draftKey(problem.id, roundId);
   const [state, setState] = useState<PlayState>({
     loaded: false,
@@ -83,7 +68,6 @@ export function usePlay({
     phase: { kind: "idle" },
     last: null,
     finished: null,
-    hasFinished: false,
     revealed: false,
   });
   const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -107,10 +91,9 @@ export function usePlay({
         phase: { kind: "idle" },
         last:
           playing !== null && lastAttempt !== undefined
-            ? { kind: "judged", judgement: lastAttempt.judgement, mode: playing.mode }
+            ? { kind: "judged", judgement: lastAttempt.judgement }
             : null,
         finished: null,
-        hasFinished: hasFinishedRun(runs),
         revealed,
       }));
     });
@@ -147,7 +130,6 @@ export function usePlay({
         : newRun({
             id: crypto.randomUUID(),
             problemId: problem.id,
-            mode: rules.mode,
             now: Date.now(),
             roundId,
             assisted: state.revealed,
@@ -185,20 +167,21 @@ export function usePlay({
       });
       const submittedAt = Date.now();
       const next = recordAttempt(run, { submittedAt, code, judgement });
-      let newBest: Best | undefined;
+      let beatBest = false;
       if (next !== run) {
         await storage.saveRun(next);
-        newBest = improvedBest(await storage.bestOf(problem.id, next.mode), next);
+        const previous = bestOverall(await storage.bestsOf(problem.id));
+        const newBest = improvedBest(previous, next);
         if (newBest !== undefined) await storage.saveBest(newBest);
+        beatBest = previous !== undefined && newBest !== undefined;
       }
       setState((s) => ({
         ...s,
         // An uncounted first submission does not start a run.
         run: next.attempts.length > 0 ? next : previousRun,
         phase: { kind: "idle" },
-        last: { kind: "judged", judgement, mode: run.mode },
-        finished: next.status !== "playing" ? { run: next, newBest } : null,
-        hasFinished: s.hasFinished || next.status !== "playing",
+        last: { kind: "judged", judgement },
+        finished: next.status !== "playing" ? { run: next, beatBest } : null,
       }));
       if (next.status !== "playing") onRunFinished?.(next);
     } catch (e) {
@@ -208,9 +191,9 @@ export function usePlay({
         last: { kind: "error", message: errorMessage(e) },
       }));
     }
-  }, [pool, state, problem, judgeSources, rules, storage, roundId, onRunFinished]);
+  }, [pool, state, problem, judgeSources, storage, roundId, onRunFinished]);
 
-  /** Practice: abandons the current run (if any) and starts over with the template. */
+  /** Practice: starts over with the template (after the run has ended). */
   const restart = useCallback(async () => {
     if (state.run?.status === "playing") {
       await storage.saveRun({ ...state.run, status: "failed", finishedAt: Date.now() });
@@ -224,7 +207,6 @@ export function usePlay({
       run: null,
       last: null,
       finished: null,
-      hasFinished: s.hasFinished || s.run?.status === "playing",
     }));
   }, [state.run, storage, problem, draft]);
 
@@ -240,7 +222,6 @@ export function usePlay({
         : newRun({
             id: crypto.randomUUID(),
             problemId: problem.id,
-            ...rules,
             now,
             roundId,
             assisted: state.revealed,
@@ -250,19 +231,16 @@ export function usePlay({
     setState((s) => ({
       ...s,
       run: abandoned,
-      finished: { run: abandoned, newBest: undefined },
-      hasFinished: true,
+      finished: { run: abandoned, beatBest: false },
     }));
     onRunFinished?.(abandoned);
-  }, [state.run, state.revealed, storage, problem, rules, roundId, onRunFinished]);
+  }, [state.run, state.revealed, storage, problem, roundId, onRunFinished]);
 
-  /** Marks the model solution as seen. A run in progress goes on as an assisted run. */
+  /** Marks the model solution as seen (once the run has ended): later runs are assisted. */
   const revealSolution = useCallback(async () => {
-    const run = state.run?.status === "playing" ? { ...state.run, assisted: true } : state.run;
-    if (run !== null && run !== state.run) await storage.saveRun(run);
     await storage.saveReveal(problem.id, Date.now());
-    setState((s) => ({ ...s, run, revealed: true }));
-  }, [state.run, storage, problem]);
+    setState((s) => ({ ...s, revealed: true }));
+  }, [storage, problem]);
 
   const dismissFinished = useCallback(() => setState((s) => ({ ...s, finished: null })), []);
 
