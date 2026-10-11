@@ -104,6 +104,11 @@ export function ResultPanel({ phase, last, presentation }: Props) {
       <div class="verdict-line">
         <span class={`verdict ${presentation.kind}`}>{presentation.kind}</span>
         <span>{t.verdicts[presentation.kind]}</span>
+        {!last.scored && (
+          <span class="chip" title={t.tryRunTooltip}>
+            {t.unscoredResult}
+          </span>
+        )}
       </div>
       {presentation.summary !== undefined && <p class="summary">{presentation.summary}</p>}
       {presentation.diagnostics.map((d, i) => (

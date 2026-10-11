@@ -16,7 +16,8 @@ export type SubmitPhase =
 
 /** What the result panel shows: the latest judgement, or a rejected pre-check. */
 export type LastResult =
-  | { kind: "judged"; judgement: Judgement }
+  /** `scored` is false for a trial run after the run has ended: it is not recorded. */
+  | { kind: "judged"; judgement: Judgement; scored: boolean }
   | { kind: "rejected"; forbiddenMacro: string }
   | { kind: "error"; message: string };
 
@@ -54,8 +55,8 @@ function randomNonce(): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : String(e);
+function failed(e: unknown): LastResult {
+  return { kind: "error", message: e instanceof Error ? e.message : String(e) };
 }
 
 export function usePlay({ problem, judgeSources, storage, pool, roundId, onRunFinished }: Params) {
@@ -91,7 +92,7 @@ export function usePlay({ problem, judgeSources, storage, pool, roundId, onRunFi
         phase: { kind: "idle" },
         last:
           playing !== null && lastAttempt !== undefined
-            ? { kind: "judged", judgement: lastAttempt.judgement }
+            ? { kind: "judged", judgement: lastAttempt.judgement, scored: true }
             : null,
         finished: null,
         revealed,
@@ -115,15 +116,52 @@ export function usePlay({ problem, judgeSources, storage, pool, roundId, onRunFi
     [storage, draft],
   );
 
+  /**
+   * Judges `code`, showing the progress meanwhile. Rejects code that fails the pre-check
+   * (and shows why) by returning `null`. The caller shows a failure.
+   */
+  const judge = useCallback(
+    async (code: string): Promise<Judgement | null> => {
+      const forbiddenMacro = precheck(code);
+      if (forbiddenMacro !== null) {
+        setState((s) => ({ ...s, last: { kind: "rejected", forbiddenMacro } }));
+        return null;
+      }
+      const nonce = randomNonce();
+      const submission = buildSubmission(problem, judgeSources, code, nonce);
+      let stdout = "";
+      const update = () =>
+        setState((s) => ({
+          ...s,
+          finished: null,
+          phase: {
+            kind: "running",
+            output: parseStdout(stdout, nonce).userOutput,
+            progress: runProgress(stdout, nonce, problem.caseIds.length),
+          },
+        }));
+      setState((s) => ({ ...s, finished: null, phase: { kind: "waiting" } }));
+      const runner = await pool;
+      update();
+      const out = await runner.run(submission, {
+        onStdout: (chunk) => {
+          stdout += chunk;
+          update();
+        },
+        onStderr: () => {},
+      });
+      return classify(out, {
+        nonce,
+        caseIds: problem.caseIds,
+        stdoutLimitBytes: problem.judge.stdoutLimitBytes,
+      });
+    },
+    [pool, problem, judgeSources],
+  );
+
   const submit = useCallback(async () => {
     if (state.phase.kind !== "idle" || !state.loaded) return;
     const code = state.code;
-    const forbiddenMacro = precheck(code);
-    if (forbiddenMacro !== null) {
-      setState((s) => ({ ...s, last: { kind: "rejected", forbiddenMacro } }));
-      return;
-    }
-
     const run =
       state.run !== null && state.run.status === "playing"
         ? state.run
@@ -135,36 +173,10 @@ export function usePlay({ problem, judgeSources, storage, pool, roundId, onRunFi
             assisted: state.revealed,
           });
     const previousRun = state.run;
-    const nonce = randomNonce();
-    const submission = buildSubmission(problem, judgeSources, code, nonce);
-    let stdout = "";
-    const update = () =>
-      setState((s) => ({
-        ...s,
-        finished: null,
-        phase: {
-          kind: "running",
-          output: parseStdout(stdout, nonce).userOutput,
-          progress: runProgress(stdout, nonce, problem.caseIds.length),
-        },
-      }));
-    setState((s) => ({ ...s, finished: null, phase: { kind: "waiting" } }));
 
     try {
-      const runner = await pool;
-      update();
-      const out = await runner.run(submission, {
-        onStdout: (chunk) => {
-          stdout += chunk;
-          update();
-        },
-        onStderr: () => {},
-      });
-      const judgement = classify(out, {
-        nonce,
-        caseIds: problem.caseIds,
-        stdoutLimitBytes: problem.judge.stdoutLimitBytes,
-      });
+      const judgement = await judge(code);
+      if (judgement === null) return;
       const submittedAt = Date.now();
       const next = recordAttempt(run, { submittedAt, code, judgement });
       let beatBest = false;
@@ -180,18 +192,34 @@ export function usePlay({ problem, judgeSources, storage, pool, roundId, onRunFi
         // An uncounted first submission does not start a run.
         run: next.attempts.length > 0 ? next : previousRun,
         phase: { kind: "idle" },
-        last: { kind: "judged", judgement },
+        last: { kind: "judged", judgement, scored: true },
         finished: next.status !== "playing" ? { run: next, beatBest } : null,
       }));
       if (next.status !== "playing") onRunFinished?.(next);
     } catch (e) {
+      setState((s) => ({ ...s, phase: { kind: "idle" }, last: failed(e) }));
+    }
+  }, [state, judge, problem, storage, roundId, onRunFinished]);
+
+  /**
+   * Runs the code without scoring (once the run has ended): to learn from the model
+   * solution by trying changes. Nothing is recorded.
+   */
+  const tryRun = useCallback(async () => {
+    if (state.phase.kind !== "idle" || !state.loaded) return;
+    if (state.run === null || state.run.status === "playing") return;
+    try {
+      const judgement = await judge(state.code);
+      if (judgement === null) return;
       setState((s) => ({
         ...s,
         phase: { kind: "idle" },
-        last: { kind: "error", message: errorMessage(e) },
+        last: { kind: "judged", judgement, scored: false },
       }));
+    } catch (e) {
+      setState((s) => ({ ...s, phase: { kind: "idle" }, last: failed(e) }));
     }
-  }, [pool, state, problem, judgeSources, storage, roundId, onRunFinished]);
+  }, [state, judge]);
 
   /** Practice: starts over with the template (after the run has ended). */
   const restart = useCallback(async () => {
@@ -244,5 +272,5 @@ export function usePlay({ problem, judgeSources, storage, pool, roundId, onRunFi
 
   const dismissFinished = useCallback(() => setState((s) => ({ ...s, finished: null })), []);
 
-  return { state, setCode, submit, restart, giveUp, dismissFinished, revealSolution };
+  return { state, setCode, submit, tryRun, restart, giveUp, dismissFinished, revealSolution };
 }
