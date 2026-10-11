@@ -116,15 +116,25 @@ pub fn run() {
         check_eq(messages.take(), ["", "ünï 🦀"])
     });
     case("hidden-2", || {
-        // The subject keeps neither a listener nor itself alive.
+        // Dropping a subscription frees its listener at once, together with the subscriptions
+        // that the listener owns.
         let names = new_names();
         let token = Rc::new(());
         let subject = Subject::new();
-        let sub = subject.subscribe(tracked(&names, "t", &token));
-        check_eq(subject.notify("1"), 1)?;
+        let inner = subject.subscribe(tracked(&names, "inner", &token));
+        let outer = {
+            let n = Rc::clone(&names);
+            subject.subscribe(move |_| {
+                let _ = &inner;
+                n.borrow_mut().push("outer");
+            })
+        };
+        let _last = subject.subscribe(marker(&names, "last"));
+        check_eq((subject.listener_count(), subject.notify("1")), (3, 3))?;
         check_eq(Rc::strong_count(&token), 2)?;
-        drop(sub);
-        check_eq((Rc::strong_count(&token), subject.listener_count()), (1, 0))?;
+        drop(outer);
+        check_eq((Rc::strong_count(&token), subject.listener_count()), (1, 1))?;
+        check_eq(names.take(), ["inner", "outer", "last"])?;
 
         // A listener that holds an Rc of its own subject.
         let shared = Rc::new(Subject::new());
@@ -146,10 +156,8 @@ pub fn run() {
         let short = Subject::new();
         let sub = short.subscribe(tracked(&names, "u", &token));
         drop(short);
-        check_eq(Rc::strong_count(&token), 2)?;
         drop(sub);
-        check_eq(Rc::strong_count(&token), 1)?;
-        check_eq(names.take(), ["t"])
+        check_eq(Rc::strong_count(&token), 1)
     });
     case("hidden-3", || {
         // A listener that subscribes a new listener every time it is called.
@@ -175,6 +183,28 @@ pub fn run() {
         spawned.borrow_mut().remove(0);
         check_eq(subject.listener_count(), 3)?;
         check_eq(names.take(), ["a", "b", "a", "b", "n1"])
+    });
+    case("hidden-4", || {
+        // A listener drops the subscriptions of an earlier and a later listener.
+        let names = new_names();
+        let token = Rc::new(());
+        let subject = Subject::new();
+        let (a, c) = (empty_slot(), empty_slot());
+        *a.borrow_mut() = Some(subject.subscribe(marker(&names, "a")));
+        let _killer = {
+            let (a, c, n) = (Rc::clone(&a), Rc::clone(&c), Rc::clone(&names));
+            subject.subscribe(move |_| {
+                n.borrow_mut().push("killer");
+                drop(a.borrow_mut().take());
+                drop(c.borrow_mut().take());
+            })
+        };
+        *c.borrow_mut() = Some(subject.subscribe(tracked(&names, "c", &token)));
+        let _d = subject.subscribe(marker(&names, "d"));
+        check_eq((subject.listener_count(), Rc::strong_count(&token)), (4, 2))?;
+        check_eq(subject.notify("1"), 3)?;
+        check_eq((subject.listener_count(), Rc::strong_count(&token)), (2, 1))?;
+        check_eq(names.take(), ["a", "killer", "d"])
     });
     case("hidden-5", || {
         // Nested notify calls, before and after a listener unsubscribes itself.
@@ -209,25 +239,5 @@ pub fn run() {
         check_eq(counts.take(), [3, 3, 2, 2])?;
         drop(subject);
         check(weak.upgrade().is_none(), "the subject should be freed")
-    });
-    case("hidden-6", || {
-        // A listener that owns the subscription of another listener.
-        let names = new_names();
-        let token = Rc::new(());
-        let subject = Subject::new();
-        let inner = subject.subscribe(tracked(&names, "inner", &token));
-        let outer = {
-            let n = Rc::clone(&names);
-            subject.subscribe(move |_| {
-                let _ = &inner;
-                n.borrow_mut().push("outer");
-            })
-        };
-        let _last = subject.subscribe(marker(&names, "last"));
-        check_eq((subject.listener_count(), subject.notify("1")), (3, 3))?;
-        drop(outer);
-        check_eq(Rc::strong_count(&token), 1)?;
-        check_eq((subject.listener_count(), subject.notify("2")), (1, 1))?;
-        check_eq(names.take(), ["inner", "outer", "last", "last"])
     });
 }

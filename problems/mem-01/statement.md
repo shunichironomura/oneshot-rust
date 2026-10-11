@@ -58,7 +58,8 @@ impl Client {
 - `take_closed` returns the closed sessions in the order they were closed and empties the list, so
   each session is returned only once.
 
-Do not change the type definitions (including their derives) or the public signatures.
+Do not change the type definitions (including their derives) or the public signatures, and do not
+implement more traits for these types.
 
 ### Examples
 

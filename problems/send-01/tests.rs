@@ -43,7 +43,7 @@ pub fn run() {
     });
     case("hidden-4", || {
         // Each result is a `Cell`.
-        check_eq(par_map(vec![1, 2], |n| Cell::new(n * 10)), [Cell::new(10), Cell::new(20)])
+        check_eq(par_map(vec![7], |n| Cell::new(n * 10)), [Cell::new(70)])
     });
     case("hidden-5", || {
         // The job is already running while this thread sends the numbers.

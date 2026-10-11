@@ -48,15 +48,16 @@ impl Client {
     - そうでなく `attempts < 3`（`MAX_ATTEMPTS`）なら、キューはそのままで
       `Connecting { attempts: attempts + 1, queue }` になります。
     - どちらでもなければ（3 回目の試行も失敗したら）`Failed { unsent: queue }` になります。
-  - `Online(session)` は、`ok` なら変わりません。そうでなければ接続が切れたので `Offline` になり、
-    `session` をクライアントの閉じたセッションの末尾に加えます。
+  - `Online(session)` は、`ok` なら変わりません。そうでなければ接続が切れたことになり、
+    状態は `Offline` になって、`session` はクライアントの閉じたセッションの末尾に加わります。
   - `Failed { .. }` は最終状態で、`step` を呼んでも変わりません。
 - `send(msg)` は、`Connecting` なら `msg` を `queue` の末尾に、`Online` ならセッションの `sent` の
   末尾に加えて、`true` を返します。`Offline` か `Failed` なら何も変えずに `false` を返します。
 - `take_closed` は、閉じたセッションを閉じた順に返し、一覧を空にします。
-  同じセッションが返るのは 1 回だけです。
+  そのため、同じセッションが返るのは 1 回だけです。
 
-型の定義（derive を含む）と公開されているシグネチャは変えないでください。
+型の定義（derive を含む）と公開されているシグネチャは変えず、
+これらの型にトレイトを追加で実装することもしないでください。
 
 ### 例
 
