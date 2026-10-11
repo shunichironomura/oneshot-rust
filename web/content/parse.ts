@@ -1,12 +1,13 @@
 import { marked } from "marked";
 import { parse as parseToml } from "smol-toml";
 import type { Localized } from "../src/core/i18n.ts";
-import type {
-  JudgeConfig,
-  MiriChecks,
-  ModelSolution,
-  Problem,
-  ProblemKind,
+import {
+  DIFFICULTIES,
+  type JudgeConfig,
+  type MiriChecks,
+  type ModelSolution,
+  type Problem,
+  type ProblemKind,
 } from "../src/core/problem.ts";
 
 /** Raw files of one problem directory (`problems/<id>/`). */
@@ -107,7 +108,7 @@ class FieldReader {
       : this.fail(key, "an array of strings");
   }
 
-  oneOf<T extends string>(key: string, options: readonly T[], fallback?: T): T {
+  oneOf<T extends string | number>(key: string, options: readonly T[], fallback?: T): T {
     const v = this.table[key] ?? fallback;
     return options.find((o) => o === v) ?? this.fail(key, `one of ${options.join(", ")}`);
   }
@@ -172,7 +173,7 @@ export function parseProblem(files: ProblemFiles): ProblemWithSolution {
   const problem: Problem = {
     id,
     title: r.localized("title"),
-    par: r.int("par", 1, 20),
+    difficulty: r.oneOf("difficulty", DIFFICULTIES),
     concepts: r.stringArray("concepts"),
     kind: r.oneOf("kind", KINDS),
     statementHtml: renderMarkdown(files.statementMd, files.statementJaMd),
@@ -187,7 +188,7 @@ export function parseProblem(files: ProblemFiles): ProblemWithSolution {
   return { problem, solution: parseSolution(files) };
 }
 
-/** Problems are ordered by par (the expected number of submissions), then by id. */
+/** Problems are ordered by difficulty, then by id. */
 export function compareProblems(a: Problem, b: Problem): number {
-  return a.par - b.par || a.id.localeCompare(b.id);
+  return a.difficulty - b.difficulty || a.id.localeCompare(b.id);
 }

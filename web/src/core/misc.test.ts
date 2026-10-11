@@ -7,25 +7,41 @@ test.each([
   ["", { page: "home" }],
   ["#/", { page: "home" }],
   ["#/problems", { page: "problems" }],
-  ["#/p/lifetime-01", { page: "play", problemId: "lifetime-01" }],
+  ["#/p/lifetime-01", { page: "practice", problemId: "lifetime-01" }],
   ["#/p/lifetime-01/history", { page: "history", problemId: "lifetime-01" }],
-  ["#/challenge", { page: "challenge" }],
-  ["#/challenge/new", { page: "challenge", start: true }],
+  ["#/round", { page: "round" }],
+  ["#/round/abc", { page: "scorecard", roundId: "abc" }],
   ["#/unknown", { page: "home" }],
 ] as const)("parseRoute(%j)", (hash, route) => {
   expect(parseRoute(hash)).toEqual(route);
   expect(parseRoute(routeHref(route))).toEqual(route);
 });
 
+test.each(["#/challenge", "#/challenge/new"])(
+  "the old challenge link %s opens the round",
+  (hash) => {
+    expect(parseRoute(hash)).toEqual({ page: "round" });
+  },
+);
+
 test("normalizeSettings fills defaults and rejects invalid values", () => {
   expect(normalizeSettings(undefined)).toEqual(DEFAULT_SETTINGS);
   expect(
-    normalizeSettings({ mode: "oni", lives: 7, editor: { fontSize: 99, closeBrackets: false } }),
+    normalizeSettings({
+      mode: "oni",
+      course: 4,
+      lives: 7,
+      editor: { fontSize: 99, closeBrackets: false },
+    }),
   ).toEqual({
     ...DEFAULT_SETTINGS,
     mode: "oni",
     editor: { ...DEFAULT_SETTINGS.editor, closeBrackets: false },
   });
+});
+
+test("normalizeSettings keeps a valid course", () => {
+  expect(normalizeSettings({ course: 3 }).course).toBe(3);
 });
 
 test("notepadEditor turns every aid off", () => {

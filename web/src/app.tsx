@@ -1,17 +1,18 @@
-import { LayoutList, Languages, Settings as SettingsIcon, Trophy } from "lucide-preact";
+import { LayoutList, Languages, Settings as SettingsIcon } from "lucide-preact";
 import content from "virtual:oneshot-content";
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { type Locale, MESSAGES } from "./core/i18n.ts";
 import { parseRoute, type Route, routeHref } from "./core/route.ts";
 import { DEFAULT_SETTINGS, type Settings } from "./core/settings.ts";
 import { Storage } from "./storage/db.ts";
-import { ChallengePage } from "./ui/ChallengePage.tsx";
 import { AppContext } from "./ui/context.ts";
 import { HistoryPage } from "./ui/HistoryPage.tsx";
 import { HomePage } from "./ui/HomePage.tsx";
 import { IconButton } from "./ui/IconButton.tsx";
-import { PlayPage } from "./ui/PlayPage.tsx";
+import { PracticePage } from "./ui/PlayPage.tsx";
 import { ProblemsPage } from "./ui/ProblemsPage.tsx";
+import { RoundPage } from "./ui/RoundPage.tsx";
+import { ScorecardPage } from "./ui/ScorecardPage.tsx";
 import { SettingsPanel } from "./ui/SettingsPanel.tsx";
 import { ToolchainStatus } from "./ui/ToolchainStatus.tsx";
 import { useToolchain } from "./ui/useToolchain.ts";
@@ -32,12 +33,14 @@ function Page({ route }: { route: Route }) {
       return <HomePage />;
     case "problems":
       return <ProblemsPage />;
-    case "play":
-      return <PlayPage problemId={route.problemId} />;
+    case "round":
+      return <RoundPage />;
+    case "scorecard":
+      return <ScorecardPage roundId={route.roundId} />;
+    case "practice":
+      return <PracticePage problemId={route.problemId} />;
     case "history":
       return <HistoryPage problemId={route.problemId} />;
-    case "challenge":
-      return <ChallengePage startRequested={route.start === true} />;
   }
 }
 
@@ -110,15 +113,8 @@ export function App() {
           OneShot Rust
         </a>
         <nav>
-          <IconButton
-            icon={LayoutList}
-            label={t.navProblems}
-            href={routeHref({ page: "problems" })}
-          >
-            <span class="nav-text">{t.navProblems}</span>
-          </IconButton>
-          <IconButton icon={Trophy} label={t.navChallenge} href={routeHref({ page: "challenge" })}>
-            <span class="nav-text">{t.navChallenge}</span>
+          <IconButton icon={LayoutList} label={t.navRecords} href={routeHref({ page: "problems" })}>
+            <span class="nav-text">{t.navRecords}</span>
           </IconButton>
           <IconButton
             icon={Languages}

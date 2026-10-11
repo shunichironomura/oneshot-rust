@@ -1,5 +1,6 @@
 import { LOCALES, type Locale } from "./i18n.ts";
 import { MODES, type Mode } from "./mode.ts";
+import { DIFFICULTIES, type Difficulty } from "./problem.ts";
 
 export interface EditorSettings {
   syntaxHighlight: boolean;
@@ -9,8 +10,11 @@ export interface EditorSettings {
   fontFamily: string;
 }
 
+/** Defaults for the next round (and for practice). A round keeps the rules it started with. */
 export interface Settings {
   locale: Locale;
+  /** The course of the next round. */
+  course: Difficulty;
   mode: Mode;
   /** Maximum submissions per run (残機制), or `null` for unlimited. */
   lives: number | null;
@@ -29,6 +33,7 @@ export const FONT_FAMILIES: readonly string[] = [
 
 export const DEFAULT_SETTINGS: Settings = {
   locale: "en",
+  course: 1,
   mode: "standard",
   lives: null,
   confirmSubmit: true,
@@ -56,6 +61,7 @@ export function normalizeSettings(stored: unknown): Settings {
   const bool = (v: unknown, fallback: boolean) => (typeof v === "boolean" ? v : fallback);
   return {
     locale: LOCALES.find((l) => l === s.locale) ?? d.locale,
+    course: DIFFICULTIES.find((c) => c === s.course) ?? d.course,
     mode: MODES.find((m) => m === s.mode) ?? d.mode,
     lives: LIVES_OPTIONS.includes(s.lives ?? null) ? (s.lives ?? null) : d.lives,
     confirmSubmit: bool(s.confirmSubmit, d.confirmSubmit),

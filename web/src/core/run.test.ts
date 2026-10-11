@@ -3,6 +3,8 @@ import type { Judgement, Verdict } from "./classify.ts";
 import {
   type Attempt,
   type Best,
+  bestOverall,
+  bestsByProblem,
   bestVerdicts,
   ceCount,
   improvedBest,
@@ -130,5 +132,39 @@ describe("bestVerdicts", () => {
     ["the run does not match the record", { ...best, submissions: 2 }, solved],
   ])("is undefined when %s", (_, b, run) => {
     expect(bestVerdicts(b, run)).toBeUndefined();
+  });
+});
+
+describe("bestOverall", () => {
+  const best = (mode: Best["mode"], submissions: number, achievedAt: number, problemId = "p") => ({
+    problemId,
+    mode,
+    submissions,
+    ceCount: 0,
+    achievedAt,
+    runId: `${mode}-${submissions}-${achievedAt}`,
+  });
+
+  test("prefers fewer submissions", () => {
+    expect(bestOverall([best("oni", 3, 1), best("beginner", 2, 1)])?.mode).toBe("beginner");
+  });
+
+  test("breaks ties by the harder mode, then the newer record", () => {
+    expect(bestOverall([best("standard", 2, 1), best("advanced", 2, 1)])?.mode).toBe("advanced");
+    expect(bestOverall([best("standard", 2, 1), best("standard", 2, 5)])?.achievedAt).toBe(5);
+  });
+
+  test("no records", () => {
+    expect(bestOverall([])).toBeUndefined();
+  });
+
+  test("bestsByProblem picks one record per problem", () => {
+    const map = bestsByProblem([
+      best("standard", 2, 1, "a"),
+      best("oni", 1, 1, "a"),
+      best("standard", 4, 1, "b"),
+    ]);
+    expect(map.get("a")?.mode).toBe("oni");
+    expect(map.get("b")?.submissions).toBe(4);
   });
 });

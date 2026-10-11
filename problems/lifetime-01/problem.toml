@@ -1,6 +1,6 @@
 id = "lifetime-01"
 title = { en = "Longest word", ja = "最長の単語" }
-par = 2
+difficulty = 2
 concepts = ["lifetimes", "iterators"]
 kind = "implement"
 

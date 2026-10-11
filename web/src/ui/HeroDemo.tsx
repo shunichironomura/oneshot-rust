@@ -1,9 +1,8 @@
 import { Play } from "lucide-preact";
 import { useEffect, useState } from "preact/hooks";
-import { titleFor } from "../core/scoring.ts";
 import { CodeView } from "./CodeView.tsx";
 import { useApp } from "./context.ts";
-import { ParChip, type Shot } from "./ParMeter.tsx";
+import { type Shot, ShotChip } from "./ShotMeter.tsx";
 
 const BUGGY = `fn longest(a: &str, b: &str) -> &str {
     if a.len() < b.len() { a } else { b }
@@ -17,7 +16,6 @@ const FIXED = `fn longest<'a>(a: &'a str, b: &'a str) -> &'a str {
     if a.len() > b.len() { a } else { b }
 }`;
 
-const PAR = 3;
 const TESTS = 4;
 /** Tests that the wrong comparison still passes (strings of equal length). */
 const PASSED_WITH_BUG = 1;
@@ -68,7 +66,7 @@ export function HeroDemo() {
           <span />
         </span>
         <span class="demo-file">longest.rs</span>
-        <ParChip par={PAR} shots={frame.shots} label="" />
+        <ShotChip shots={frame.shots} label="" />
       </div>
       <CodeView code={frame.code} errorLines={last === "CE" && frame.code === BUGGY ? [1] : []} />
       <div class={`demo-result${last === undefined ? "" : ` ${last}`}`} key={index}>
@@ -90,7 +88,7 @@ export function HeroDemo() {
         {last === "AC" && (
           <span>
             <span class="verdict AC">AC</span> {t.demoAccepted(TESTS)}
-            <strong class="demo-title">{titleFor(tries, PAR)}!</strong>
+            <strong class="demo-title">{t.shareTries(tries)}</strong>
           </span>
         )}
       </div>

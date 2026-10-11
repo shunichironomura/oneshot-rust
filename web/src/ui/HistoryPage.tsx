@@ -5,20 +5,49 @@ import { present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
 import { type Run, verdictsOf } from "../core/run.ts";
-import { titleFor, verdictEmoji } from "../core/scoring.ts";
+import { shareText, verdictEmoji } from "../core/scoring.ts";
+import { shareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
 import { DiffView } from "./DiffView.tsx";
 import { IconButton } from "./IconButton.tsx";
+import { ShareButtons } from "./ShareButtons.tsx";
 
-function runStatus(run: Run, problem: Problem, t: Messages): string {
+function runStatus(run: Run, t: Messages): string {
   switch (run.status) {
     case "solved":
-      return t.runSolved(run.attempts.length, titleFor(run.attempts.length, problem.par));
+      return t.runSolved(run.attempts.length);
     case "failed":
       return t.runFailed;
     case "playing":
       return t.runPlaying;
   }
+}
+
+/** Copy and image sharing for a finished run. */
+function RunShare({ run, problem }: { run: Run; problem: Problem }) {
+  const { locale, t } = useApp();
+  const input = useMemo(
+    () => ({
+      problemId: problem.id,
+      mode: run.mode,
+      verdicts: verdictsOf(run),
+      solved: run.status === "solved",
+    }),
+    [run, problem],
+  );
+  const card = useMemo(
+    () => shareCard({ ...input, problemTitle: localize(problem.title, locale) }, t),
+    [input, problem, locale, t],
+  );
+  return (
+    <div class="actions">
+      <ShareButtons
+        text={shareText(input, t)}
+        card={card}
+        fileName={`oneshot-rust-${problem.id}`}
+      />
+    </div>
+  );
 }
 
 function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
@@ -34,6 +63,7 @@ function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
   });
   return (
     <div class="run-detail">
+      {run.status !== "playing" && <RunShare run={run} problem={problem} />}
       <ol class="attempts">
         {run.attempts.map((a, i) => (
           <li key={i}>
@@ -82,7 +112,7 @@ export function HistoryPage({ problemId }: { problemId: string }) {
         <IconButton
           icon={ArrowLeft}
           label={localize(problem.title, locale)}
-          href={routeHref({ page: "play", problemId })}
+          href={routeHref({ page: "practice", problemId })}
         />
         <h1>
           {t.historyTitle}: {localize(problem.title, locale)}
@@ -98,11 +128,11 @@ export function HistoryPage({ problemId }: { problemId: string }) {
           }}
         >
           <summary>
-            <span class="run-date">{dateFormat.format(run.startedAt)}</span>
-            <span class="chip">{t.modes[run.mode]}</span>
             <span>{verdictsOf(run).map(verdictEmoji).join("")}</span>
-            <span>{runStatus(run, problem, t)}</span>
-            {run.assisted === true && <span class="chip">{t.runPractice}</span>}
+            <span>{runStatus(run, t)}</span>
+            <span class="badge">{t.modes[run.mode]}</span>
+            {run.assisted === true && <span class="badge">{t.assistedChip}</span>}
+            <span class="run-date">{dateFormat.format(run.startedAt)}</span>
           </summary>
           {run.id === openRun && <RunDetail run={run} problem={problem} />}
         </details>

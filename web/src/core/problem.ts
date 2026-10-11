@@ -3,6 +3,11 @@ import type { Localized } from "./i18n.ts";
 export type ProblemKind = "implement" | "repair" | "signature";
 export type MiriChecks = "full" | "fast";
 
+/** Coarse difficulty tier. Each tier is one course of rounds. */
+export type Difficulty = 1 | 2 | 3;
+
+export const DIFFICULTIES: readonly Difficulty[] = [1, 2, 3];
+
 export interface JudgeConfig {
   forbidUnsafe: boolean;
   miriChecks: MiriChecks;
@@ -14,7 +19,7 @@ export interface JudgeConfig {
 export interface Problem {
   id: string;
   title: Localized;
-  par: number;
+  difficulty: Difficulty;
   concepts: string[];
   kind: ProblemKind;
   /** Problem statement, already rendered from Markdown to HTML at build time. */
