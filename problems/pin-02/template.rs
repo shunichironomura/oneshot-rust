@@ -1,11 +1,12 @@
-use std::marker::PhantomData;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
 /// A future that polls its inner future at most a given number of times.
 pub struct Budget<F> {
-    // Replace this placeholder with the fields you need.
-    _todo: PhantomData<F>,
+    /// The inner future, stored inline. `None` once it has been dropped.
+    inner: Option<F>,
+    /// How many more times the inner future may be polled.
+    left: u32,
 }
 
 /// Wraps `fut` in a `Budget` that polls it at most `polls` times.

@@ -1,9 +1,11 @@
 use std::marker::PhantomData;
-use std::ops::Add;
+use std::ops::{Add, Div, Mul};
 
 /// Millimeters.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Mm;
 /// Inches.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Inch;
 
 /// A length in the unit `U`. The unit exists only in the type.
@@ -23,6 +25,7 @@ impl<U> Length<U> {
     }
 }
 
+/// `a + b`: the sum of two lengths in the same unit.
 impl<U> Add for Length<U> {
     type Output = Length<U>;
 
@@ -31,14 +34,36 @@ impl<U> Add for Length<U> {
     }
 }
 
-/// The perimeter of a `w` x `h` rectangle.
-pub fn perimeter<U>(w: Length<U>, h: Length<U>) -> Length<U> {
-    w + w + h + h
+/// `a / b`: how many times `b` fits into `a`, a plain number.
+impl<U> Div for Length<U> {
+    type Output = f64;
+
+    fn div(self, other: Length<U>) -> f64 {
+        self.value / other.value
+    }
 }
 
-/// A copy of the longest length, or `None` if there is none.
-pub fn longest<U>(items: &[Length<U>]) -> Option<Length<U>> {
-    items.iter().copied().max_by(|a, b| a.value.total_cmp(&b.value))
+/// `l * k`: the length scaled by the number `k`.
+impl<U, K: Into<f64>> Mul<K> for Length<U> {
+    type Output = Length<U>;
+
+    fn mul(self, k: K) -> Length<U> {
+        Length::new(self.value * k.into())
+    }
+}
+
+/// `k * l`: the same, with the number on the left.
+impl<U, K: Into<f64>> Mul<Length<U>> for K {
+    type Output = Length<U>;
+
+    fn mul(self, l: Length<U>) -> Length<U> {
+        l * self
+    }
+}
+
+/// The perimeter of a `w` x `h` rectangle.
+pub fn perimeter<U>(w: Length<U>, h: Length<U>) -> Length<U> {
+    2 * (w + h)
 }
 
 pub fn to_mm(l: Length<Inch>) -> Length<Mm> {

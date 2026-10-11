@@ -1,5 +1,6 @@
 use std::cell::Cell;
-use std::marker::PhantomPinned;
+use std::future::Ready;
+use std::marker::{PhantomData, PhantomPinned};
 use std::pin::{Pin, pin};
 use std::rc::Rc;
 use std::sync::Arc;
@@ -9,11 +10,13 @@ use std::task::{Context, Poll, Wake, Waker};
 use crate::judge::{case, check, check_eq};
 use crate::user::{Budget, with_budget};
 
-/// Counts the polls and the drops of the `Ticks` futures created with it.
+/// Counts the polls and the drops of the `Ticks` futures created with it, and notes whether one
+/// of them was moved after it had been polled.
 #[derive(Default)]
 struct Stats {
     polls: Cell<u32>,
     drops: Cell<u32>,
+    moved: Cell<bool>,
 }
 
 impl Stats {
@@ -21,20 +24,24 @@ impl Stats {
         Rc::new(Stats::default())
     }
 
-    /// `(polls, drops)` so far.
+    /// `(polls, drops)` so far. Panics if a `Ticks` future was moved after it had been polled.
     fn get(&self) -> (u32, u32) {
+        assert!(!self.moved.get(), "the inner future was moved after it had been polled");
         (self.polls.get(), self.drops.get())
     }
 }
 
 /// `ticks(n, out)` of the statement: a future that is not `Unpin`. It returns `Pending` on its
 /// first `n` polls, waking the waker of the current poll each time, and `Ready(out)` on the next
-/// one. It records its polls and its drop in `stats`. Unlike an `async` block, which drops its
-/// captures as soon as it completes, it holds on to `stats` until it is dropped.
+/// one. It records its polls and its drop in `stats`, and checks that it stays where it was first
+/// polled, as `Pin` requires. Unlike an `async` block, which drops its captures as soon as it
+/// completes, it holds on to `stats` until it is dropped.
 struct Ticks<T> {
     left: Cell<u32>,
     out: Cell<Option<T>>,
     stats: Rc<Stats>,
+    /// The address of the first poll, `0` before it.
+    pinned_at: Cell<usize>,
     _pinned: PhantomPinned,
 }
 
@@ -43,7 +50,20 @@ fn ticks<T>(stats: &Rc<Stats>, n: u32, out: T) -> Ticks<T> {
         left: Cell::new(n),
         out: Cell::new(Some(out)),
         stats: Rc::clone(stats),
+        pinned_at: Cell::new(0),
         _pinned: PhantomPinned,
+    }
+}
+
+impl<T> Ticks<T> {
+    /// Notes a move if `self` is no longer where it was first polled.
+    fn check_place(&self) {
+        let here = (self as *const Self).addr();
+        match self.pinned_at.get() {
+            0 => {}
+            at if at != here => self.stats.moved.set(true),
+            _ => {}
+        }
     }
 }
 
@@ -53,6 +73,8 @@ impl<T> Future for Ticks<T> {
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<T> {
         // The state is in `Cell`s, so a shared reference is enough.
         let this = self.into_ref().get_ref();
+        this.check_place();
+        this.pinned_at.set((this as *const Self).addr());
         this.stats.polls.set(this.stats.polls.get() + 1);
         match this.left.get() {
             0 => Poll::Ready(this.out.take().expect("a ticks future was polled after it was ready")),
@@ -67,6 +89,7 @@ impl<T> Future for Ticks<T> {
 
 impl<T> Drop for Ticks<T> {
     fn drop(&mut self) {
+        self.check_place();
         self.stats.drops.set(self.stats.drops.get() + 1);
     }
 }
@@ -138,6 +161,32 @@ fn block_on<F: Future>(fut: F) -> (F::Output, usize) {
 fn poll_budget<F: Future>(fut: Pin<&mut Budget<F>>, waker: &Waker) -> Poll<Option<F::Output>> {
     fut.poll(&mut Context::from_waker(waker))
 }
+
+/// Tells whether `T` is `Unpin`, without requiring it: `(&Probe::<T>::new()).is_unpin()` calls
+/// `ViaUnpin::is_unpin` when `T: Unpin`, and `ViaAny::is_unpin` (one more auto-ref away) otherwise.
+struct Probe<T>(PhantomData<T>);
+
+impl<T> Probe<T> {
+    fn new() -> Self {
+        Probe(PhantomData)
+    }
+}
+
+trait ViaUnpin {
+    fn is_unpin(&self) -> bool {
+        true
+    }
+}
+
+impl<T: Unpin> ViaUnpin for Probe<T> {}
+
+trait ViaAny {
+    fn is_unpin(&self) -> bool {
+        false
+    }
+}
+
+impl<T> ViaAny for &Probe<T> {}
 
 pub fn run() {
     case("sample-1", || {
@@ -252,17 +301,20 @@ pub fn run() {
         check_eq((a.get(), b.get()), (3, 4))
     });
     case("hidden-5", || {
-        // Async blocks that borrow locals and output a value that is not Unpin.
-        let words = vec![String::from("ab"), String::from("cde")];
+        // Async blocks that borrow their own local variables across an `.await`, so they must not
+        // move once polled, and that output a value that is not Unpin.
         let stats = Stats::new();
         let task = || async {
+            let lens = [2, 3];
             let mut total = 0;
-            for word in &words {
-                total += ticks(&stats, word.len() as u32, word.len()).await;
+            // The iterator points into `lens`, inside the async block, while it awaits.
+            for len in &lens {
+                total += ticks(&stats, *len as u32, *len).await;
             }
             ticket(total)
         };
-        // The block needs 6 polls: 3 for "ab", the third of which starts "cde", and 3 more.
+        // The block needs 6 polls: 3 for the first ticks, the third of which starts the second
+        // one, and 3 more.
         check_eq(block_on(with_budget(task(), 6)), (Some(ticket(5)), 6))?;
         check_eq(stats.get(), (7, 2))?;
         // Cancelled while it awaits the second ticks future, which is dropped with the block.
@@ -298,5 +350,16 @@ pub fn run() {
         };
         check_eq(block_on(fut), (20, 3))?;
         check_eq(stats.get(), (4, 2))
+    });
+    case("hidden-7", || {
+        // The inner future is stored inside the Budget, and `Budget<F>` is `Unpin` exactly when
+        // `F` is.
+        type Big = Ticks<[u64; 16]>;
+        check(
+            size_of::<Budget<Big>>() >= size_of::<Big>(),
+            "the inner future is not stored inside the Budget",
+        )?;
+        check(!(&Probe::<Budget<Ticks<u8>>>::new()).is_unpin(), "Budget<F> is Unpin, but F is not")?;
+        check((&Probe::<Budget<Ready<u8>>>::new()).is_unpin(), "Budget<F> is not Unpin, but F is")
     });
 }

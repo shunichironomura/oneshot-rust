@@ -26,9 +26,11 @@ little as its body needs.
   (no `mut f` needed), and passing `f` where a `&mut` parameter is expected reborrows it (as
   `&mut *f`) instead of moving it, so `f` is still there afterwards. `FnMut` is again the right
   bound, because the closures push to a `Vec` or add to a sum. The compiler's hint
-  `each_digit(n / 10, &mut f)` would change the body, and it does not work in a generic function
-  anyway: each level of recursion would call `each_digit` with a new type `&mut &mut ... F`, and
-  rustc gives up with "reached the recursion limit while instantiating".
+  `each_digit(n / 10, &mut f)` would change the body, and a normal build of this generic function
+  rejects it anyway: each level of recursion would call `each_digit` with a new type
+  `&mut &mut ... F`, and rustc gives up with "reached the recursion limit while instantiating".
+  (The judge does not catch this: Miri instantiates a function only when a call reaches it, and a
+  `u64` has at most 20 digits.)
 
 ### Alternatives
 

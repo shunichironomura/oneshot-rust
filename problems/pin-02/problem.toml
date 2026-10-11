@@ -5,7 +5,7 @@ concepts = ["future combinators", "Pin<&mut Self> with !Unpin inner futures", "U
 kind = "implement"
 
 [judge]
-forbid_unsafe = true
+forbid_unsafe = false
 miri_checks = "full"
 time_limit_ms = 15000
 stdout_limit_bytes = 65536
