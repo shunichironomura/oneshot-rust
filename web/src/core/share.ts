@@ -1,5 +1,6 @@
-// The result images offered for sharing: their content and the layout of the verdict grid.
+// The result images offered for sharing: their content.
 import type { Messages } from "./i18n.ts";
+import type { Score } from "./marks.ts";
 import { type Round, roundResult, solvedCount, totalSubmissions } from "./round.ts";
 import { type ShareInput, titleFor, type VerdictTone, verdictTone } from "./scoring.ts";
 
@@ -8,6 +9,16 @@ export const SITE_NAME = "oneshotrust.dev";
 export interface ShareShot {
   label: string;
   tone: VerdictTone;
+}
+
+/** One hole of the card. */
+export interface ShareRow {
+  /** The verdicts, in order. */
+  shots: ShareShot[];
+  /** The count as it is marked on the card. */
+  score: Score;
+  /** Decides the wobble of the mark's lines. */
+  seed: string;
 }
 
 export interface ShareCard {
@@ -19,12 +30,16 @@ export interface ShareCard {
   title: string;
   /** e.g. "3 tries" or "+2 over perfect" */
   detail: string;
-  /** One row of squares per problem. */
-  rows: ShareShot[][];
+  /** One per problem. */
+  rows: ShareRow[];
 }
 
-function shots(verdicts: ShareInput["verdicts"]): ShareShot[] {
-  return verdicts.map((kind) => ({ label: kind, tone: verdictTone(kind) }));
+function row(verdicts: ShareInput["verdicts"], solved: boolean, seed: string): ShareRow {
+  return {
+    shots: verdicts.map((kind) => ({ label: kind, tone: verdictTone(kind) })),
+    score: solved ? { kind: "solved", shots: verdicts.length } : { kind: "unsolved" },
+    seed,
+  };
 }
 
 /** The card for one run of a problem. */
@@ -40,7 +55,7 @@ export function shareCard(
     solved: input.solved,
     title: input.problemTitle,
     detail: messages.shareTries(n),
-    rows: [shots(input.verdicts)],
+    rows: [row(input.verdicts, input.solved, input.problemId)],
   };
 }
 
@@ -51,29 +66,6 @@ export function roundShareCard(round: Round, date: string, messages: Messages): 
     solved: solvedCount(round) === round.problemIds.length,
     title: date,
     detail: roundResult(round, messages),
-    rows: round.entries.map((e) => shots(e.verdicts)),
+    rows: round.entries.map((e, i) => row(e.verdicts, e.solved, `${round.id}:${i}`)),
   };
-}
-
-export interface ShotGrid {
-  /** Side of each square. */
-  size: number;
-  /** Distance between the left (or top) edges of neighboring squares. */
-  step: number;
-}
-
-/**
- * Lays out rows of squares (`counts[i]` squares in row `i`) in a box of `width` × `height`:
- * all squares share one size, at most `maxSize`, with gaps of a quarter of it.
- */
-export function layoutShots(
-  counts: readonly number[],
-  width: number,
-  height: number,
-  maxSize: number,
-): ShotGrid {
-  // n squares and (n - 1) gaps of size / 4 fill `length` exactly when size = 4l / (5n - 1).
-  const fit = (length: number, n: number) => (n === 0 ? maxSize : (4 * length) / (5 * n - 1));
-  const size = Math.min(maxSize, fit(width, Math.max(0, ...counts)), fit(height, counts.length));
-  return { size, step: size * 1.25 };
 }
