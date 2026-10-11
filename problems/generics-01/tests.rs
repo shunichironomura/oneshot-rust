@@ -69,7 +69,11 @@ pub fn run() {
     case("hidden-5", || {
         check_eq(Point::new(Grade(2), Grade(5)).larger(), "y = grade 5")?;
         let p = Point::new(Grade(7), "seven").mixup(Point::new(0u8, Grade(3)));
-        check_eq(p.larger(), "x = grade 7")
+        check_eq(p.larger(), "x = grade 7")?;
+        // `swap` and `convert` also accept coordinates that are neither Copy nor Clone.
+        check_eq(Point::new(Grade(1), Grade(2)).swap().larger(), "x = grade 2")?;
+        let q = Point::new(Grade(3), Grade(9)).convert::<Grade, Grade>();
+        check_eq(q.larger(), "y = grade 9")
     });
     case("hidden-6", || {
         check_eq(Point::new(1u8, -2i16).convert::<f32, i64>(), Point { x: 1.0, y: -2 })?;

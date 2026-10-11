@@ -1,3 +1,4 @@
+use std::cell::Cell;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Mutex, mpsc};
 
@@ -41,6 +42,10 @@ pub fn run() {
         check_eq(table.lock().unwrap().len(), 4)
     });
     case("hidden-4", || {
+        // Each result is a `Cell`.
+        check_eq(par_map(vec![1, 2], |n| Cell::new(n * 10)), [Cell::new(10), Cell::new(20)])
+    });
+    case("hidden-5", || {
         // The job is already running while this thread sends the numbers.
         let (tx, rx) = mpsc::channel();
         let job = spawn_job(rx, |rx: mpsc::Receiver<i32>| rx.iter().sum::<i32>());
@@ -50,13 +55,15 @@ pub fn run() {
         drop(tx);
         check_eq(job.join().unwrap(), 6)
     });
-    case("hidden-5", || {
-        // The closure takes the receiver with it.
+    case("hidden-6", || {
+        // The closure takes the receiver with it and gives it back.
         let (tx, rx) = mpsc::channel();
-        let job = spawn_job(10, move |k: i32| rx.iter().map(|n| n * k).collect::<Vec<i32>>());
+        let job = spawn_job(10, move |k: i32| (rx.recv().unwrap() * k, rx));
         tx.send(4).unwrap();
         tx.send(5).unwrap();
         drop(tx);
-        check_eq(job.join().unwrap(), [40, 50])
+        let (first, rx) = job.join().unwrap();
+        check_eq(first, 40)?;
+        check_eq(rx.iter().collect::<Vec<i32>>(), [5])
     });
 }

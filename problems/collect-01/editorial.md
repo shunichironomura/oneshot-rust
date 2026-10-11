@@ -6,8 +6,10 @@ because `copied()` yields `T`.
 
 The real work is in the iterator types. `type IntoIter` must be a type you can write down, and an
 adapter such as `map` or `flat_map` that holds a closure has a type nobody can name (`impl Trait` is
-not allowed for associated types in stable Rust). So `Iter` and `IntoIter` are structs that wrap the
-map's own iterators.
+not allowed for associated types in stable Rust). Boxing the adapter does not help either: in
+`IntoIter<T>`, a `Box<dyn DoubleEndedIterator<Item = T>>` is `'static` by default and would need
+`T: 'static`, which the given impls do not have (E0310). So `Iter` and `IntoIter` are structs that
+wrap the map's own iterators.
 
 - `Iter` wraps `btree_map::Iter<'a, T, usize>`, which yields `(&T, &usize)`; `|(x, &n)| (x, n)`
   turns each item into `(&T, usize)`, and `next_back` comes from the map as well. Write the path

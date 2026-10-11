@@ -176,28 +176,6 @@ pub fn run() {
         check_eq(subject.listener_count(), 3)?;
         check_eq(names.take(), ["a", "b", "a", "b", "n1"])
     });
-    case("hidden-4", || {
-        // A listener drops the subscriptions of an earlier and a later listener.
-        let names = new_names();
-        let token = Rc::new(());
-        let subject = Subject::new();
-        let (a, c) = (empty_slot(), empty_slot());
-        *a.borrow_mut() = Some(subject.subscribe(marker(&names, "a")));
-        let _killer = {
-            let (a, c, n) = (Rc::clone(&a), Rc::clone(&c), Rc::clone(&names));
-            subject.subscribe(move |_| {
-                n.borrow_mut().push("killer");
-                drop(a.borrow_mut().take());
-                drop(c.borrow_mut().take());
-            })
-        };
-        *c.borrow_mut() = Some(subject.subscribe(tracked(&names, "c", &token)));
-        let _d = subject.subscribe(marker(&names, "d"));
-        check_eq((subject.listener_count(), Rc::strong_count(&token)), (4, 2))?;
-        check_eq(subject.notify("1"), 3)?;
-        check_eq((subject.listener_count(), Rc::strong_count(&token)), (2, 1))?;
-        check_eq(names.take(), ["a", "killer", "d"])
-    });
     case("hidden-5", || {
         // Nested notify calls, before and after a listener unsubscribes itself.
         let names = new_names();

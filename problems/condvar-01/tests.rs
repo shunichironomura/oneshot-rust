@@ -185,4 +185,22 @@ pub fn run() {
         check_eq(theirs, (Ok(()), Some(2)))?;
         check_eq(q.len(), 0)
     });
+    case("hidden-6", || {
+        // Pops and a push wait at the same time. Two pops wait on an empty queue with room for 1
+        // item, and the main thread pushes 1 and 2 right away, so its second push usually waits
+        // for room while the other pop still waits for an item. The pop that takes 1 must wake the
+        // waiting push (waking only the other pop loses the wakeup), and 2 must reach that pop.
+        let q = BoundedQueue::new(1);
+        let (pushed, mut got) = thread::scope(|s| {
+            let a = s.spawn(|| q.pop());
+            let b = s.spawn(|| q.pop());
+            let_others_run();
+            let pushed = [q.push(1), q.push(2)];
+            (pushed, [a.join().unwrap(), b.join().unwrap()])
+        });
+        check_eq(pushed, [Ok(()), Ok(())])?;
+        got.sort();
+        check_eq(got, [Some(1), Some(2)])?;
+        check_eq(q.len(), 0)
+    });
 }

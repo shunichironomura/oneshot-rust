@@ -58,10 +58,12 @@ impl<X: PartialOrd<Y> + Display, Y: Display> Point<X, Y> {
 }
 ```
 
-With those bounds in a method `where` clause, `larger` can even move into the first block, next to
-`convert`; the separate block is then not needed.
+Like those of `convert`, these bounds can also go in a `where` clause on the method itself. The
+third block then has the same header as the first (and `larger` would work just as well inside the
+first block, next to `convert`).
 
 ```rust
+impl<X, Y> Point<X, Y> {
     pub fn larger(&self) -> String
     where
         X: PartialOrd<Y> + Display,
@@ -73,6 +75,7 @@ With those bounds in a method `where` clause, `larger` can even move into the fi
             format!("y = {}", self.y)
         }
     }
+}
 ```
 
 `convert` can ask for `From` instead of `Into`. The standard library implements `Into<U> for T`

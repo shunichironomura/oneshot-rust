@@ -58,10 +58,12 @@ impl<X: PartialOrd<Y> + Display, Y: Display> Point<X, Y> {
 }
 ```
 
-この境界をメソッドの `where` 節に書けば、`larger` を最初のブロックの `convert` の隣に移すことも
-できます。その場合、別のブロックは要りません。
+`convert` の境界と同じように、この境界もメソッド自身の `where` 節に書けます。そうすると、
+3 つ目のブロックのヘッダは最初のブロックと同じになります（`larger` を最初のブロックの `convert` の
+隣に入れても、同じように動きます）。
 
 ```rust
+impl<X, Y> Point<X, Y> {
     pub fn larger(&self) -> String
     where
         X: PartialOrd<Y> + Display,
@@ -73,6 +75,7 @@ impl<X: PartialOrd<Y> + Display, Y: Display> Point<X, Y> {
             format!("y = {}", self.y)
         }
     }
+}
 ```
 
 `convert` は `Into` の代わりに `From` を要求しても書けます。標準ライブラリは `U: From<T>` なら
