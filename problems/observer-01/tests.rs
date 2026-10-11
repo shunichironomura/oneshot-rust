@@ -247,4 +247,31 @@ pub fn run() {
         drop(subject);
         check(weak.upgrade().is_none(), "the subject should be freed")
     });
+    case("hidden-6", || {
+        // A listener subscribed during a notify is subscribed at once: it is counted right away,
+        // and a notify started after it from inside the same listener calls it.
+        let names = new_names();
+        let subject = Rc::new(Subject::new());
+        let spawned: Rc<RefCell<Vec<Subscription>>> = Rc::new(RefCell::new(Vec::new()));
+        let counts = Rc::new(RefCell::new(Vec::new()));
+        let _a = {
+            let (s, n, spawned, counts) =
+                (Rc::clone(&subject), Rc::clone(&names), Rc::clone(&spawned), Rc::clone(&counts));
+            subject.subscribe(move |msg| {
+                n.borrow_mut().push("a");
+                if msg == "outer" {
+                    spawned.borrow_mut().push(s.subscribe(marker(&n, "late")));
+                    let count = s.listener_count();
+                    let called = s.notify("inner");
+                    counts.borrow_mut().extend([count, called]);
+                }
+            })
+        };
+        let _b = subject.subscribe(marker(&names, "b"));
+        check_eq(subject.notify("outer"), 2)?;
+        check_eq(counts.take(), [3, 3])?;
+        check_eq(names.take(), ["a", "a", "b", "late", "b"])?;
+        check_eq((subject.listener_count(), subject.notify("again")), (3, 3))?;
+        check_eq(names.take(), ["a", "b", "late"])
+    });
 }

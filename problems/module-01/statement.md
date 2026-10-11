@@ -1,5 +1,5 @@
-The code in the editor does not compile. **Without looking at the error message**, predict where
-the compiler complains and fix it.
+The code below does not compile. **Without looking at the error message**, predict where the compiler
+complains and fix it.
 
 A small shop is split into modules: `shop` has the items, `shop::cart` the shopping cart and
 `shop::pricing` the price calculations. Your code is the module `crate::user`. The test harness is

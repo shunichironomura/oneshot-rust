@@ -1,5 +1,5 @@
 use crate::judge::{case, check, check_eq};
-use crate::user::{apply_n, call_shared, consume, map_pair, ops_table};
+use crate::user::{apply_n, call_shared, consume, each_digit, map_pair};
 
 fn seven() -> u32 {
     7
@@ -23,11 +23,9 @@ pub fn run() {
         check_eq(call_shared(|| k + 1), 12)
     });
     case("sample-3", || {
-        let mut results = Vec::new();
-        for (op, f) in ops_table() {
-            results.push((op, f(7, 3)));
-        }
-        check_eq(results, [('+', 10), ('-', 4), ('*', 21)])
+        let mut digits = Vec::new();
+        each_digit(4096, &mut |d| digits.push(d));
+        check_eq(digits, [4, 0, 9, 6])
     });
     case("hidden-1", || {
         // n = 0 never calls `f`, and a `&mut` to an FnMut closure is an FnMut too.
@@ -73,13 +71,31 @@ pub fn run() {
         check_eq(word, "closure")
     });
     case("hidden-5", || {
-        let table = ops_table();
-        let symbols = table.map(|(op, _)| op);
-        check_eq(symbols, ['+', '-', '*'])?;
-        let (_, sub) = table[1];
-        let (_, mul) = table[2];
-        check_eq(sub(3, 10), -7i32)?;
-        check_eq(mul(3, 4), 12)?;
-        check_eq(table.map(|(_, f)| f(-2, 5)), [3, -7, -10])
+        // 0 has one digit, and zeros inside a number are digits too.
+        let mut digits = Vec::new();
+        each_digit(0, &mut |d| digits.push(d));
+        check_eq(&digits, &[0])?;
+        digits.clear();
+        each_digit(100, &mut |d| digits.push(d));
+        check_eq(&digits, &[1, 0, 0])?;
+        let mut calls = 0;
+        each_digit(u64::MAX, &mut |_| calls += 1);
+        check_eq(calls, 20)?;
+        digits.clear();
+        each_digit(u64::MAX, &mut |d| digits.push(d));
+        check_eq(digits.iter().fold(0, |n, &d| n * 10 + d), u64::MAX)
+    });
+    case("hidden-6", || {
+        // The same closure can be passed again, and what it captured is usable afterwards.
+        let mut sum = 0;
+        let mut max = 0;
+        let mut add = |d: u64| {
+            sum += d;
+            max = max.max(d);
+        };
+        each_digit(1234, &mut add);
+        each_digit(907, &mut add);
+        each_digit(5, &mut add);
+        check_eq((sum, max), (31, 9))
     });
 }

@@ -1,4 +1,4 @@
-pub fn longest<'a>(words: &[&'a str]) -> Option<&'a str> {
+pub fn last_long(words: &[&str], min: usize) -> Option<usize> {
     todo!()
 }
 

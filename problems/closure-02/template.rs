@@ -17,6 +17,9 @@ pub fn call_shared(f: impl Fn() -> u32) -> u32 {
     g() + g()
 }
 
-pub fn ops_table() -> [(char, impl Fn(i32, i32) -> i32); 3] {
-    [('+', |a, b| a + b), ('-', |a, b| a - b), ('*', |a, b| a * b)]
+pub fn each_digit(n: u64, f: impl Fn(u64)) {
+    if n >= 10 {
+        each_digit(n / 10, f);
+    }
+    f(n % 10);
 }

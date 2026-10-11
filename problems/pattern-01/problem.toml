@@ -1,5 +1,5 @@
 id = "pattern-01"
-title = { en = "Refutable or not", ja = "外れうるパターン" }
+title = { en = "Taking it apart", ja = "分解して取り出す" }
 difficulty = 1
 concepts = [
     "refutable vs irrefutable patterns",

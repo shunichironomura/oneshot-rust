@@ -6,7 +6,7 @@ concepts = [
     "mut binding for an FnMut parameter",
     "generic closure inputs and outputs",
     "calling through &F requires Fn",
-    "fn pointer types for non-capturing closures",
+    "passing an FnMut on through recursion as &mut F (implicit reborrow, &mut F is FnMut)",
 ]
 kind = "signature"
 

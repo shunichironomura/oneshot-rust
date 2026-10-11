@@ -3,7 +3,7 @@ pub enum Token {
     Tiny(u64),
     Small(u64),
     Large(u64),
-    Hex(u32),
+    Quoted(String),
     Pair(String, String),
     Word(String),
 }
@@ -16,13 +16,13 @@ pub fn classify(tok: &str) -> Token {
             1000.. => Token::Large(n),
         };
     }
-    // `from_str_radix` alone would also accept "+12345", so check every digit first.
-    if let Some(digits) = tok.strip_prefix('#')
-        && digits.len() == 6
-        && digits.bytes().all(|b| b.is_ascii_hexdigit())
-        && let Ok(value) = u32::from_str_radix(digits, 16)
+    // Look for the closing quote only after the opening one: a lone `'` is both the first and the
+    // last character of the token, but it is not a pair of quotes.
+    if let Some(rest) = tok.strip_prefix('\'')
+        && let Some(text) = rest.strip_suffix('\'')
+        && !text.contains('\'')
     {
-        return Token::Hex(value);
+        return Token::Quoted(text.to_string());
     }
     if let Some((before, after)) = tok.split_once(':')
         && !before.is_empty()

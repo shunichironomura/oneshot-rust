@@ -1,9 +1,8 @@
 use std::iter;
 
-pub fn longest<'a>(words: &[&'a str]) -> Option<&'a str> {
-    // `max_by_key` returns the last of several maximums.
-    // Searching from the back makes that the first one in `words`.
-    words.iter().rev().max_by_key(|w| w.chars().count()).copied()
+pub fn last_long(words: &[&str], min: usize) -> Option<usize> {
+    // `rposition` searches from the back but counts the index from the front.
+    words.iter().rposition(|w| w.chars().count() >= min)
 }
 
 pub fn split_header<'a>(lines: &[&'a str]) -> (Vec<&'a str>, Vec<&'a str>) {

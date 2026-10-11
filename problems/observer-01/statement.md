@@ -33,7 +33,8 @@ impl Subject {
   subject, and drop any `Subscription`. None of this may panic. A `notify` started from inside a
   listener follows the same rules: it calls the listeners subscribed at that moment, including
   running ones that are still subscribed. A listener subscribed during a `notify` is therefore not
-  called by that `notify`, but by the ones started after it.
+  called by that `notify`, but it is subscribed right away: `listener_count` counts it, and every
+  `notify` started after it calls it, even one started from inside a listener.
 - The subject must not keep listeners alive. When a `Subscription` is dropped, its listener and
   everything the listener captured are freed right away. If this happens while a `notify` is
   running, the listener may instead stay alive until the outermost running `notify` returns.

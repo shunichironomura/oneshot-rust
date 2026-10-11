@@ -1,6 +1,10 @@
 use crate::judge::{case, check_eq};
 use crate::user::{Token, classify, sum_first_two};
 
+fn quoted(text: &str) -> Token {
+    Token::Quoted(text.to_string())
+}
+
 fn pair(before: &str, after: &str) -> Token {
     Token::Pair(before.to_string(), after.to_string())
 }
@@ -15,8 +19,8 @@ pub fn run() {
         check_eq(classify("+250"), Token::Small(250))
     });
     case("sample-2", || {
-        check_eq(classify("#C0ffee"), Token::Hex(0xC0FFEE))?;
-        check_eq(classify("#coffee"), word("#coffee"))?;
+        check_eq(classify("'a:b'"), quoted("a:b"))?;
+        check_eq(classify("'it's'"), word("'it's'"))?;
         check_eq(classify("a:b:c"), pair("a", "b:c"))
     });
     case("sample-3", || {
@@ -44,31 +48,34 @@ pub fn run() {
         check_eq(classify(""), word(""))
     });
     case("hidden-3", || {
-        // A sign is not a hexadecimal digit (u32::from_str_radix would accept a '+').
-        check_eq(classify("#+12345"), word("#+12345"))?;
-        check_eq(classify("#+c0fee"), word("#+c0fee"))?;
-        check_eq(classify("#-12345"), word("#-12345"))
+        // A lone quote is not a pair of quotes, and a run of quotes has one inside.
+        check_eq(classify("'"), word("'"))?;
+        check_eq(classify("''"), quoted(""))?;
+        check_eq(classify("'''"), word("'''"))?;
+        check_eq(classify("''''"), word("''''"))?;
+        check_eq(classify("'x"), word("'x"))?;
+        check_eq(classify("x'"), word("x'"))
     });
     case("hidden-4", || {
-        // Exactly six ASCII hexadecimal digits after the '#'.
-        check_eq(classify("#000000"), Token::Hex(0))?;
-        check_eq(classify("#FFFFFF"), Token::Hex(0xFFFFFF))?;
-        check_eq(classify("#abcDEF"), Token::Hex(0xABCDEF))?;
-        check_eq(classify("#12345"), word("#12345"))?;
-        check_eq(classify("#1234567"), word("#1234567"))?;
-        check_eq(classify("#"), word("#"))?;
-        check_eq(classify("$C0FFEE"), word("$C0FFEE"))?;
-        check_eq(classify("123456"), Token::Large(123456))
+        // The text between the quotes is kept as it is, whatever it contains.
+        check_eq(classify("'hello'"), quoted("hello"))?;
+        check_eq(classify("'7'"), quoted("7"))?;
+        check_eq(classify("' a  b '"), quoted(" a  b "))?;
+        check_eq(classify("'日本語'"), quoted("日本語"))?;
+        check_eq(classify("':'"), quoted(":"))?;
+        check_eq(classify("\"hi\""), word("\"hi\""))
     });
     case("hidden-5", || {
         // Split at the first ':'; both parts must be non-empty.
         check_eq(classify("a::b"), pair("a", ":b"))?;
         check_eq(classify("12:30"), pair("12", "30"))?;
-        check_eq(classify("#12:456"), pair("#12", "456"))?;
+        check_eq(classify("'a:b"), pair("'a", "b"))?;
+        check_eq(classify("'it's:x'"), pair("'it's", "x'"))?;
         check_eq(classify("名前:値"), pair("名前", "値"))?;
         check_eq(classify(":b"), word(":b"))?;
         check_eq(classify("a:"), word("a:"))?;
         check_eq(classify("é:"), word("é:"))?;
+        check_eq(classify("':"), word("':"))?;
         check_eq(classify(":"), word(":"))?;
         check_eq(classify("::b"), word("::b"))
     });
@@ -76,6 +83,7 @@ pub fn run() {
         // Everything else is a word, including tokens that start with a multi-byte character.
         check_eq(classify("hello"), word("hello"))?;
         check_eq(classify("1_000"), word("1_000"))?;
+        check_eq(classify("é'"), word("é'"))?;
         check_eq(classify("é12345"), word("é12345"))
     });
     case("hidden-7", || {

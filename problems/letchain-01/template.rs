@@ -3,7 +3,7 @@ pub enum Token {
     Tiny(u64),
     Small(u64),
     Large(u64),
-    Hex(u32),
+    Quoted(String),
     Pair(String, String),
     Word(String),
 }

@@ -8,7 +8,7 @@ pub enum Token {
     Tiny(u64),
     Small(u64),
     Large(u64),
-    Hex(u32),
+    Quoted(String),
     Pair(String, String),
     Word(String),
 }
@@ -23,9 +23,9 @@ pub fn sum_first_two(nums: &[u8]) -> Option<u8>
 1. `tok.parse::<u64>()` が成功して値 `n` が得られたら、トークンは数です。`n < 10` なら `Tiny(n)`、
    `10 <= n < 1000` なら `Small(n)`、`n >= 1000` なら `Large(n)` です。先頭の `+` や 0 は受け付けます
    （`"+7"` も `"007"` も 7 です）が、`"-7"`、`" 7"`、`"7.0"` や `u64::MAX` より大きい数は受け付けません。
-2. `tok` が `#` とそれに続くちょうど 6 文字からなり、その 6 文字がすべて ASCII の 16 進数字
-   （`0`-`9`、`a`-`f`、`A`-`F`。大文字と小文字は混ざっていても構いません）なら、トークンは `Hex(value)` です。
-   `value` は、その 6 桁を 16 進数として読んだ値です。
+2. `tok` が、開きのシングルクォート `'`、`'` を含まないテキスト `text`、閉じの `'` をこの順に
+   つなげたものなら、トークンは `Quoted(text)` です。`text` はそのまま使います。空でもよく
+   （`''` は `Quoted("")`）、`:` を含めてほかのどんな文字を含んでいても構いません。
 3. `tok` に `:` が含まれていたら、**最初の** `:` で 2 つに分けます。`:` より前の部分と後ろの部分が
    どちらも空でなければ、トークンは `Pair(before, after)` です。`:` 自体はどちらの部分にも含めません。
 4. どれにも当てはまらなければ、トークンは `Word(tok)` です。空文字列もこれに当たります。
@@ -40,8 +40,8 @@ pub fn sum_first_two(nums: &[u8]) -> Option<u8>
 | --- | --- |
 | `classify("7")` | `Tiny(7)` |
 | `classify("+250")` | `Small(250)` |
-| `classify("#C0ffee")` | `Hex(0xC0FFEE)` |
-| `classify("#coffee")` | `Word("#coffee")`（`o` は 16 進数字ではありません） |
+| `classify("'a:b'")` | `Quoted("a:b")` |
+| `classify("'it's'")` | `Word("'it's'")`（3 つ目の `'` がある） |
 | `classify("a:b:c")` | `Pair("a", "b:c")` |
 | `sum_first_two(&[200, 55, 9])` | `Some(255)` |
 | `sum_first_two(&[200, 56])` | `None`（`256` は `u8` に収まりません） |

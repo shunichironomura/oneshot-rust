@@ -1,10 +1,10 @@
 use crate::judge::{case, check_eq};
-use crate::user::{longest, powers_of, running_balance, split_header};
+use crate::user::{last_long, powers_of, running_balance, split_header};
 
 pub fn run() {
     case("sample-1", || {
-        check_eq(longest(&["hi", "hello", "world"]), Some("hello"))?;
-        check_eq(longest(&["éé", "abc"]), Some("abc"))
+        check_eq(last_long(&["tea", "coffee", "milk", "juice"], 5), Some(3))?;
+        check_eq(last_long(&["abc", "日本"], 3), Some(0))
     });
     case("sample-2", || {
         check_eq(
@@ -21,14 +21,16 @@ pub fn run() {
         check_eq(powers_of(2).last(), Some(&(1 << 63)))
     });
     case("hidden-1", || {
-        // Characters, not bytes; the first of equally long words wins.
-        check_eq(longest(&["ab", "日本"]), Some("ab"))?;
-        check_eq(longest(&["x", "abc", "日本語", "def"]), Some("abc"))?;
-        check_eq(longest(&["🦀", "ab"]), Some("ab"))?;
-        check_eq(longest(&["", "é", "a"]), Some("é"))?;
-        check_eq(longest(&["solo"]), Some("solo"))?;
-        check_eq(longest(&[""]), Some(""))?;
-        check_eq(longest(&[]), None)
+        // The index of the last match, counted from the front; characters, not bytes.
+        check_eq(last_long(&["long", "x", "longer", "y"], 4), Some(2))?;
+        check_eq(last_long(&["ab", "abcd", "a", "b", "c"], 2), Some(1))?;
+        check_eq(last_long(&["日本語", "abcd", "日本"], 3), Some(1))?;
+        check_eq(last_long(&["abc", "🦀🦀", "é"], 2), Some(1))?;
+        check_eq(last_long(&["a", "", "b"], 0), Some(2))?;
+        check_eq(last_long(&["solo"], 4), Some(0))?;
+        check_eq(last_long(&["solo"], 5), None)?;
+        check_eq(last_long(&["a", "bb", "日本"], 3), None)?;
+        check_eq(last_long(&[], 0), None)
     });
     case("hidden-2", || {
         // Only headers, no header, nothing at all.

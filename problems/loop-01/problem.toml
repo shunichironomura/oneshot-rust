@@ -1,5 +1,5 @@
 id = "loop-01"
-title = { en = "Breaking out right", ja = "正しく抜け出す" }
+title = { en = "Stop as soon as you know", ja = "わかった時点でやめる" }
 difficulty = 1
 concepts = [
     "break with a value only from loop and labeled blocks",

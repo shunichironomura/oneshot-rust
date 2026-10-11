@@ -16,7 +16,7 @@ pub fn first_multiple_above(step: u64, limit: u64) -> u64
 - `first_multiple_above(step, limit)` は、`step` の倍数のうち `limit` より**大きい**最小のものを返します
   （`limit` と等しいものは含みません）。`step` は 1 以上で、答えは必ず `u64` に収まります。
 
-3 つの関数の名前、引数の型、戻り値の型は変えないでください。
+シグネチャは変えないでください。
 
 ### 例
 

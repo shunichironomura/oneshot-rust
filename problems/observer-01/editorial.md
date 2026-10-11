@@ -26,7 +26,10 @@ borrowing rules at run time, and a callback that calls back into its caller brea
 first copies the list (a `Vec` of `Weak`s, cheap to clone) and releases the borrow before calling
 anyone. The copy also makes sure that listeners subscribed during a `notify` are not called by it.
 Looping over indices and borrowing again for each one avoids the panic, but it calls the new
-listeners too, and the indices shift when `subscribe` removes dead entries.
+listeners too, and the indices shift when `subscribe` removes dead entries. Keeping the borrow and
+having `subscribe` queue new listeners until `notify` returns also avoids it, but a listener
+subscribed during a `notify` is subscribed at once: `listener_count` must count it, and a `notify`
+started after it, even from inside a listener, must call it.
 
 **Upgrade each `Weak` only when its turn comes.** A listener that was unsubscribed earlier in the
 same `notify` then fails to upgrade and is skipped. Upgrading the whole copy at the start would keep

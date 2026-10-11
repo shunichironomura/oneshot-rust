@@ -1,8 +1,8 @@
-A `macro_rules!` rule is a matcher and a transcriber. `$($key:expr => $value:expr),+` matches one or
-more `key => value` pairs separated by commas, and `$(,)?` accepts an optional trailing comma. In the
-transcriber, `$( map.insert($key, $value); )+` repeats once per matched pair. A repetition must
-contain a metavariable from the matcher, which is why `0usize $(+ 1)*` is rejected ("attempted to
-repeat an expression containing no syntax variables").
+A `macro_rules!` rule is a matcher and a transcriber. `$($key:expr => $value:expr),+` matches one
+or more `key => value` pairs separated by commas, and `$(,)?` accepts an optional trailing comma.
+In the transcriber, `$( map.insert($key, $value); )+` repeats once per matched pair. A repetition
+must contain a metavariable from the matcher, which is why `0usize $(+ 1)*` is rejected
+("attempted to repeat an expression containing no syntax variables").
 
 A macro used as an expression must expand to one expression. To run several statements, expand to a
 block: in `=> {{ ... }}`, the outer braces delimit the transcriber and the inner ones are the block.

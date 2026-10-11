@@ -18,7 +18,7 @@ pub fn first_multiple_above(step: u64, limit: u64) -> u64
 - `first_multiple_above(step, limit)` returns the smallest multiple of `step` that is **strictly
   greater** than `limit`. `step` is at least 1, and the answer always fits in a `u64`.
 
-Keep the names, parameter types and return types of the three functions.
+Do not change the signatures.
 
 ### Examples
 

@@ -19,11 +19,16 @@ little as its body needs.
   is callable only when `F: Fn`. With `FnMut`, the body fails with "cannot borrow `*g` as mutable,
   as it is behind a `&` reference". A plain `fn() -> u32` does not work either, because the harness
   passes closures that capture variables, such as `|| k + 1`.
-- In `ops_table`, every closure has its own anonymous type, even when two closures look the same, so
-  `impl Fn(i32, i32) -> i32`, which stands for one single type, cannot describe all three. Closures
-  that capture nothing, however, coerce to the function pointer type `fn(i32, i32) -> i32`, which
-  all three share. The return type also tells `|a, b|` that its parameters are `i32`. The compiler's
-  hint to box the closures would mean changing the body.
+- `each_digit` uses `f` twice: it passes `f` on to the recursive call for the leading digits, then
+  calls it for the last digit. Taken by value, `f` is moved into the recursive call, and the call
+  after it fails with "borrow of moved value: `f`" (E0382). The harness passes `&mut` references to
+  its closures, so take one: `f: &mut impl FnMut(u64)`. A `&mut F` can be called like `F` itself
+  (no `mut f` needed), and passing `f` where a `&mut` parameter is expected reborrows it (as
+  `&mut *f`) instead of moving it, so `f` is still there afterwards. `FnMut` is again the right
+  bound, because the closures push to a `Vec` or add to a sum. The compiler's hint
+  `each_digit(n / 10, &mut f)` would change the body, and it does not work in a generic function
+  anyway: each level of recursion would call `each_digit` with a new type `&mut &mut ... F`, and
+  rustc gives up with "reached the recursion limit while instantiating".
 
 ### Alternatives
 
@@ -61,7 +66,26 @@ where
     let g = &f;
     g() + g()
 }
+
+pub fn each_digit<F>(n: u64, f: &mut F)
+where
+    F: FnMut(u64),
+{
+    if n >= 10 {
+        each_digit(n / 10, f);
+    }
+    f(n % 10);
+}
 ```
 
-`ops_table` has no alternative: without changing the body, `fn(i32, i32) -> i32` is the only return
-type that the harness accepts.
+`each_digit` can also take a trait object. There is then a single compiled copy of the function for
+all closures, and every call of `f` goes through the vtable.
+
+```rust
+pub fn each_digit(n: u64, f: &mut dyn FnMut(u64)) {
+    if n >= 10 {
+        each_digit(n / 10, f);
+    }
+    f(n % 10);
+}
+```

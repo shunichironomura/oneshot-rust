@@ -6,8 +6,8 @@ compiles and passes. Do not change the bodies.
 - `consume(f)` calls `f` once and returns its result.
 - `map_pair(f, (x, y))` returns `(f(x), f(y))`, calling `f(x)` first.
 - `call_shared(f)` calls `f` twice and returns the sum of the two results, a `u32`.
-- `ops_table()` returns the symbols `'+'`, `'-'` and `'*'`, in this order, each paired with a
-  function that adds, subtracts or multiplies two `i32` values.
+- `each_digit(n, f)` calls `f` once for each decimal digit of `n`, from the most significant digit
+  to the least significant one. `0` has a single digit, `0`.
 
 The harness calls them with many different closures and a few ordinary functions. Every one of
 these calls has to compile.
@@ -29,7 +29,7 @@ map_pair(|n: i32| n * n, (3, -4))                // (9, 16)
 let k = 5;
 call_shared(|| k + 1)      // 12
 
-for (op, f) in ops_table() {
-    // f(7, 3) is 10 for '+', 4 for '-' and 21 for '*'
-}
+let mut digits = Vec::new();
+each_digit(4096, &mut |d| digits.push(d));
+// digits is now [4, 0, 9, 6]
 ```

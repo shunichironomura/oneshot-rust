@@ -1,29 +1,33 @@
-The trap is writing `Debug` like a `Display`, with `write!`. For `{:?}` it looks right, and
-everything else breaks. `write!(f, "Rgb({:?}, {:?}, {:?})", self.r, self.g, self.b)` formats each
-`{:?}` with the spec written in that string, not with the caller's: `{:x?}` still prints
-`Rgb(255, 0, 16)`, and `{:#?}` stays on one line. The caller's flags are stored in `f`, and only
-code that formats the fields **with `f`** sees them.
+The output of `#[derive(Debug)]` is written by the debug builders of `Formatter`, and the way to
+print exactly the same thing is to use them too. Start with `f.debug_struct(name)` (or
+`f.debug_tuple(name)` for the tuple-like form), add each field with `.field(...)` and end with
+`.finish()`. The builder writes the punctuation itself, on one line or in the pretty form depending
+on `f.alternate()`, and in the pretty form it indents every line that a field writes, which is why
+nested lists and maps come out right, and why the whole value is indented correctly inside a
+`Vec`. It also formats each field with the settings of `f`, so `u8` and `u32` fields print in hex
+under `{:x?}`, with `0x` when `#` is set too.
 
-That is what the debug builders do, and what `#[derive(Debug)]` expands to. Start with
-`f.debug_struct(name)` (or `f.debug_tuple(name)` for the tuple-like form), add each field with
-`.field(...)` and end with `.finish()`: the builder writes the punctuation itself, on one line or in
-the pretty form depending on `f.alternate()`. It calls the `Debug` of each field with a formatter
-that has the same settings as `f`, so the field sees the same flags: `u8` and `u32` print in hex
-under `{:x?}`, with `0x` when `#` is set too. In the pretty form the builder also indents every
-line the field writes, which is why nested lists and maps come out right, and why the whole value is
-indented correctly inside a `Vec`.
+The redacted password is where the obvious code goes wrong. A field is printed with the `Debug` of
+its value, and in `.field("password", &"<redacted>")` the value is a `&str`, whose `Debug` adds
+quotes (and escapes special characters): `password: "<redacted>"`. The value has to be one whose
+`Debug` writes the bare text. `format_args!("<redacted>")` builds a `fmt::Arguments`, whose
+`Debug` writes the text as is; a small type with a hand-written `Debug` works too (see the
+alternatives).
 
-Three details:
+Two more details of the builders:
 
-- A field is printed with the `Debug` of its value. `&"<redacted>"` is a `&str`, so it would appear
-  as `"<redacted>"`, quotes included. `format_args!("<redacted>")` builds a `fmt::Arguments`,
-  whose `Debug` writes the text as is.
 - `finish_non_exhaustive()` ends a struct with `..`: `, .. }` on one line, and a `..` line of its
   own in the pretty form.
 - `field` returns `&mut DebugTuple`, a borrow of the builder. To add a field only sometimes, keep
   the builder itself in a `let mut` variable. `let t = f.debug_tuple("Rgba").field(&self.r);` does
-  not compile (E0716): the builder is a temporary that is dropped at the end of that statement,
-  while `t` still borrows it.
+  not compile (E0716) once `t` is used in a later statement: the builder is a temporary that is
+  dropped at the end of the `let` statement, while `t` still borrows it.
+
+Writing `Debug` like a `Display`, with
+`write!(f, "Rgb({:?}, {:?}, {:?})", self.r, self.g, self.b)`, looks right only for `{:?}`. Each
+`{:?}` in that string is formatted with the spec written there, not with the caller's: `{:x?}`
+still prints `Rgb(255, 0, 16)`, and `{:#?}` stays on one line. The caller's flags are stored in
+`f`, and only code that formats the fields with `f`, as the builders do, sees them.
 
 ### Alternatives
 

@@ -1,5 +1,5 @@
 id = "match-03"
-title = { en = "Cover every case", ja = "もれなく場合分け" }
+title = { en = "Case by case", ja = "場合分け" }
 difficulty = 1
 concepts = [
     "match exhaustiveness",

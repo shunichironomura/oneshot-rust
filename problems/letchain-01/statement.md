@@ -8,7 +8,7 @@ pub enum Token {
     Tiny(u64),
     Small(u64),
     Large(u64),
-    Hex(u32),
+    Quoted(String),
     Pair(String, String),
     Word(String),
 }
@@ -24,9 +24,9 @@ as it is: it is not trimmed.
    `Small(n)` if `10 <= n < 1000`, and `Large(n)` if `n >= 1000`. This accepts a leading `+` and
    leading zeros (`"+7"` and `"007"` are both 7), but not `"-7"`, `" 7"`, `"7.0"`, or a number
    larger than `u64::MAX`.
-2. If `tok` is a `#` followed by exactly six characters, each of which is an ASCII hexadecimal digit
-   (`0`-`9`, `a`-`f` or `A`-`F`, in any mix of cases), the token is `Hex(value)`, where `value` is
-   the number those six digits spell in base 16.
+2. If `tok` consists of an opening single quote `'`, then a `text` that contains no `'`, then a
+   closing `'`, the token is `Quoted(text)`. The `text` is kept as it is. It may be empty (`''` is
+   `Quoted("")`) and may contain any other character, `:` included.
 3. If `tok` contains a `:`, split it at its **first** `:`. If the part before it and the part after
    it are both non-empty, the token is `Pair(before, after)`. The `:` itself belongs to neither
    part.
@@ -42,8 +42,8 @@ It returns `None` if `nums` has fewer than two elements, or if `a + b` is larger
 | --- | --- |
 | `classify("7")` | `Tiny(7)` |
 | `classify("+250")` | `Small(250)` |
-| `classify("#C0ffee")` | `Hex(0xC0FFEE)` |
-| `classify("#coffee")` | `Word("#coffee")` (`o` is not a hexadecimal digit) |
+| `classify("'a:b'")` | `Quoted("a:b")` |
+| `classify("'it's'")` | `Word("'it's'")` (a third `'`) |
 | `classify("a:b:c")` | `Pair("a", "b:c")` |
 | `sum_first_two(&[200, 55, 9])` | `Some(255)` |
 | `sum_first_two(&[200, 56])` | `None` (`256` does not fit in a `u8`) |
