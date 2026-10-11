@@ -7,8 +7,7 @@
 export type Score =
   /** Marked against par, which is one shot unless given (a total has the holes' sum). */
   | { kind: "solved"; shots: number; par?: number }
-  /** A number with no mark: a total of a round not finished. */
-  | { kind: "plain"; shots: number }
+  /** A hole not finished, or the total of a round with such a hole: there is no count. */
   | { kind: "unsolved" }
   /** Not played yet: an empty cell. */
   | { kind: "empty" };
@@ -120,7 +119,7 @@ function cross(random: () => number): string {
 
 /** The digit written in the cell, if any. */
 export function digitOf(score: Score): number | undefined {
-  return score.kind === "solved" || score.kind === "plain" ? score.shots : undefined;
+  return score.kind === "solved" ? score.shots : undefined;
 }
 
 /** The marks around the digit as SVG path data, in the order they are drawn. */
@@ -128,7 +127,6 @@ export function marksFor(score: Score, seed: string): string[] {
   const random = generator(hash(seed));
   switch (score.kind) {
     case "empty":
-    case "plain":
       return [];
     case "unsolved":
       return [cross(random)];

@@ -1,13 +1,7 @@
 import { ArrowLeft, RotateCcw } from "lucide-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
-import {
-  type Round,
-  roundResult,
-  roundShareText,
-  solvedCount,
-  totalSubmissions,
-} from "../core/round.ts";
+import { type Round, roundResult, roundShareText, totalScore } from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
 import { roundShareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
@@ -51,11 +45,6 @@ function Scorecard({ round, fresh }: { round: Round; fresh: boolean }) {
     return { key: `${i}:${problemId}`, seed: `${round.id}:${i}`, problemId, problem, entry, score };
   });
   const count = round.problemIds.length;
-  const total = totalSubmissions(round);
-  const totalScore: Score =
-    solvedCount(round) === count
-      ? { kind: "solved", shots: total, par: count }
-      : { kind: "plain", shots: total };
 
   return (
     <section class="scorecard">
@@ -133,7 +122,7 @@ function Scorecard({ round, fresh }: { round: Round; fresh: boolean }) {
                 </td>
               ))}
               <td class="score total">
-                <ScoreMark score={totalScore} seed={round.id} />
+                <ScoreMark score={totalScore(round)} seed={round.id} />
               </td>
             </tr>
           </tbody>

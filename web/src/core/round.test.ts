@@ -5,6 +5,7 @@ import {
   abandonRound,
   activeRound,
   currentProblemId,
+  isComplete,
   newRound,
   pickRound,
   recordRun,
@@ -13,6 +14,7 @@ import {
   roundSummary,
   seenProblemIds,
   skipCurrent,
+  totalScore,
   totalSubmissions,
 } from "./round.ts";
 import type { Run, RunStatus } from "./run.ts";
@@ -134,8 +136,8 @@ describe("abandonRound", () => {
     expect(r.abandoned).toBe(true);
     expect(r.entries.map((e) => e.problemId)).toEqual(["a", "b"]);
     expect(activeRound([r])).toBeUndefined();
-    expect(roundSummary(r, MESSAGES.en)).toBe("Total 3 · Abandoned (1/3 solved)");
-    expect(roundSummary(r, MESSAGES.ja)).toBe("合計 3 · 棄権（1/3 問正解）");
+    expect(roundSummary(r, MESSAGES.en)).toBe("Abandoned (1/3 solved)");
+    expect(roundSummary(r, MESSAGES.ja)).toBe("棄権（1/3 問正解）");
   });
 
   test("leaves a problem without submissions unrecorded", () => {
@@ -167,12 +169,46 @@ describe("roundSummary", () => {
   });
 });
 
+describe("totalScore", () => {
+  test("is the submissions against par when every problem was solved", () => {
+    let r = start();
+    r = recordRun(r, run("r1", "a", "solved", ["CE", "AC"]));
+    r = recordRun(r, run("r2", "b", "solved", ["AC"]));
+    expect(isComplete(r)).toBe(true);
+    expect(totalScore(r)).toEqual({ kind: "solved", shots: 3, par: 2 });
+    expect(roundSummary(r, MESSAGES.en)).toBe("Total 3 · +1 over perfect");
+  });
+
+  test("is a cross when a problem was given up, however few submissions it took", () => {
+    let r = start();
+    r = recordRun(r, run("r1", "a", "solved", ["AC"]));
+    r = recordRun(r, run("r2", "b", "failed", []));
+    expect(isComplete(r)).toBe(false);
+    expect(totalScore(r)).toEqual({ kind: "unsolved" });
+    expect(roundSummary(r, MESSAGES.en)).toBe("1/2 solved");
+  });
+
+  test("is a cross when the round was abandoned", () => {
+    let r = start();
+    r = recordRun(r, run("r1", "a", "solved", ["AC"]));
+    r = abandonRound(r, undefined, 9);
+    expect(totalScore(r)).toEqual({ kind: "unsolved" });
+    expect(roundSummary(r, MESSAGES.en)).toBe("Abandoned (1/2 solved)");
+  });
+});
+
 test("roundShareText", () => {
   let r = start();
   r = recordRun(r, run("r1", "a", "solved", ["CE", "AC"]));
   r = recordRun(r, run("r2", "b", "failed", []));
-  expect(roundShareText(r, MESSAGES.ja)).toBe("OneShot Rust 🦀\n🟥🟩\n— ✗\n合計 2 · 1/2 問正解");
-  expect(roundShareText(r, MESSAGES.en)).toBe("OneShot Rust 🦀\n🟥🟩\n— ✗\nTotal 2 · 1/2 solved");
+  expect(roundShareText(r, MESSAGES.ja)).toBe("OneShot Rust 🦀\n🟥🟩\n— ✗\n1/2 問正解");
+  expect(roundShareText(r, MESSAGES.en)).toBe("OneShot Rust 🦀\n🟥🟩\n— ✗\n1/2 solved");
+  r = start();
+  r = recordRun(r, run("r1", "a", "solved", ["CE", "AC"]));
+  r = recordRun(r, run("r2", "b", "solved", ["AC"]));
+  expect(roundShareText(r, MESSAGES.en)).toBe(
+    "OneShot Rust 🦀\n🟥🟩\n🟩\nTotal 3 · +1 over perfect",
+  );
 });
 
 describe("seenProblemIds", () => {

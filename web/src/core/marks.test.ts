@@ -21,7 +21,6 @@ test("a total is marked against the round's par", () => {
 
 test("a hole not finished gets a cross, the rest nothing", () => {
   expect(strokes(marksFor({ kind: "unsolved" }, "a")[0])).toBe(2);
-  expect(marksFor({ kind: "plain", shots: 4 }, "a")).toEqual([]);
   expect(marksFor({ kind: "empty" }, "a")).toEqual([]);
 });
 
@@ -49,7 +48,6 @@ test("the marks stay around the box", () => {
 
 test("the digit is the count, when there is one", () => {
   expect(digitOf({ kind: "solved", shots: 2 })).toBe(2);
-  expect(digitOf({ kind: "plain", shots: 4 })).toBe(4);
   expect(digitOf({ kind: "unsolved" })).toBeUndefined();
   expect(digitOf({ kind: "empty" })).toBeUndefined();
 });

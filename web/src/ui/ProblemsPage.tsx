@@ -6,7 +6,7 @@ import {
   type Round,
   roundSummary,
   seenProblemIds,
-  totalSubmissions,
+  totalScore,
 } from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
 import { type Best, bestsByProblem, bestVerdicts, type Run } from "../core/run.ts";
@@ -114,7 +114,9 @@ export function ProblemsPage() {
             <li key={r.id}>
               <a href={routeHref({ page: "scorecard", roundId: r.id })}>
                 <RoundProgress round={r} label={roundSummary(r, t)} />
-                <strong class="round-total hand">{totalSubmissions(r)}</strong>
+                <span class="round-total">
+                  <ScoreMark score={totalScore(r)} seed={r.id} />
+                </span>
                 <span class="run-date">{dateFormat.format(r.startedAt)}</span>
               </a>
             </li>

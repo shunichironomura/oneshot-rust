@@ -2,6 +2,7 @@
 // submissions. Every round has the same make-up, so scores can be compared.
 import type { VerdictKind } from "./classify.ts";
 import type { Messages } from "./i18n.ts";
+import type { Score } from "./marks.ts";
 import { type Mode, PLAY_MODE } from "./mode.ts";
 import { DIFFICULTIES, type Difficulty, type Problem } from "./problem.ts";
 import { type Run, verdictsOf } from "./run.ts";
@@ -150,6 +151,23 @@ export function solvedCount(round: Round): number {
   return round.entries.filter((e) => e.solved).length;
 }
 
+/** Whether every problem of the round was solved: only then does it have a total. */
+export function isComplete(round: Round): boolean {
+  return solvedCount(round) === round.problemIds.length;
+}
+
+/**
+ * The total as it is marked on the card: the number of submissions against par (one per
+ * problem) when every problem was solved. A problem given up has no count, so a round with
+ * one has no total either, only a cross: as in golf, a hole not finished means no score for
+ * the round. Summing the submissions made before giving up would reward giving up early.
+ */
+export function totalScore(round: Round): Score {
+  return isComplete(round)
+    ? { kind: "solved", shots: totalSubmissions(round), par: round.problemIds.length }
+    : { kind: "unsolved" };
+}
+
 /**
  * How the round went: "+2 over perfect" when every problem was solved (a perfect round
  * takes one submission per problem), "2/5 solved" otherwise, and "Abandoned (2/5 solved)"
@@ -159,14 +177,17 @@ export function roundResult(round: Round, messages: Messages): string {
   const solved = solvedCount(round);
   const count = round.problemIds.length;
   if (round.abandoned === true) return messages.roundAbandoned(solved, count);
-  return solved === count
+  return isComplete(round)
     ? messages.roundOverPerfect(totalSubmissions(round) - count)
     : messages.roundSolved(solved, count);
 }
 
-/** e.g. "Total 7 · +2 over perfect" */
+/** e.g. "Total 7 · +2 over perfect", or just "2/5 solved" when there is no total. */
 export function roundSummary(round: Round, messages: Messages): string {
-  return [messages.roundTotal(totalSubmissions(round)), roundResult(round, messages)].join(" · ");
+  const result = roundResult(round, messages);
+  return isComplete(round)
+    ? [messages.roundTotal(totalSubmissions(round)), result].join(" · ")
+    : result;
 }
 
 /** Wordle-style result text: one row of squares per problem. Problems are not named. */
