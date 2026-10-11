@@ -2,7 +2,8 @@
 a bound to every type parameter and generates `impl<T: Clone> Clone for Handle<T>`, although the
 only field, `Rc<RefCell<T>>`, can be cloned for any `T`: cloning an `Rc` copies the pointer and
 increments the count. Inside `impl<T> Handle<T>` nothing is known about `T`, so there `Handle<T>`
-is not `Clone`.
+is not `Clone`. Every built-in derive works this way (it is known as "imperfect derive"): on a
+struct with a `PhantomData<U>` field, `#[derive(PartialEq)]` requires `U: PartialEq` too.
 
 The surprise is that `self.clone()` still finds a `clone` method. Method lookup tries the receiver
 with an extra `&` too, and `&Handle<T>` is `Clone` for any `T` (every shared reference is `Copy`).

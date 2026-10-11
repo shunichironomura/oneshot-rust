@@ -1,12 +1,12 @@
 id = "trait-04"
 title = { en = "Describe everything", ja = "なんでも説明" }
-difficulty = 2
+difficulty = 1
 concepts = [
     "implementing a local trait for std types (orphan rule)",
     "generic impls for containers (Vec<T>, [T], Option<T>, tuples)",
-    "implicit Sized bound and ?Sized",
-    "blanket impl for &T",
-    "coherence (E0119)",
+    "impls chain for nested types",
+    "an impl's bounds must cover what its body calls (the Vec impl needs [T]: Describe)",
+    "?Sized on a blanket impl for &T (given)",
 ]
 kind = "signature"
 

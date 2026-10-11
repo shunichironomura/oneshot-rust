@@ -15,7 +15,7 @@
 （「`F` cannot be unpinned」）になります。`F: Unpin` の境界を足しても解決しません。`async` ブロックは
 `Unpin` ではない（`.await` をまたいで自分のローカル変数への参照を持つことがある）ので、`async` ブロックを
 渡すテストがコンパイルできなくなります。代わりに `std::pin::pin!` を使うと、値をその場（スタック上）で
-固定できます。
+ピン留めできます。
 
 `Future::poll` は `Pin<&mut F>` を値で受け取るので、ループの中で `fut.poll(&mut cx)` と書くと、最初の繰り返しで
 `fut` がムーブされてしまいます。`fut.as_mut()` を使えば、1 回の呼び出しの間だけ借用し直せます。
@@ -37,7 +37,7 @@ fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<u32> {
 }
 ```
 
-`Box::pin` を使うと、Future をヒープ上で固定できます。また `Waker::noop` ができる前は、`Wake` を実装した型の
+`Box::pin` を使うと、Future をヒープ上でピン留めできます。また `Waker::noop` ができる前は、`Wake` を実装した型の
 `Arc` から何もしないウェイカーを作っていました。
 
 ```rust

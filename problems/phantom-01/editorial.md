@@ -1,77 +1,63 @@
-`#[derive]` does not check which bounds the fields really need. On a generic struct it puts a bound
-on every type parameter, so `#[derive(Debug, Clone, Copy, PartialEq)]` generates
-`impl<U: Copy> Copy for Length<U>`, `impl<U: PartialEq> PartialEq for Length<U>` and so on. `U`
-only appears in `PhantomData<U>`, which is `Copy`, `PartialEq` and `Debug` for any `U`, but the
-bounds are there anyway. Inside the generic `perimeter<U>` and `longest<U>` nothing is known about
-`U`, so `Length<U>` is not `Copy`: `w + w` moves `w` and then uses it again (E0382), and `copied()`
-requires `Length<U>: Copy` (E0277). Even `Length<Mm>` is neither `Copy` nor comparable, because
-`Mm` implements nothing. This limitation of `#[derive]` is known as "imperfect derive".
+The impl for a number on the left, `impl<U, K: Into<f64>> Mul<Length<U>> for K`, breaks the
+**orphan rule** (E0210: "type parameter `K` must be covered by another type when it appears before
+the first local type"). `Mul` comes from the standard library, so an impl of it needs a local type,
+and the types of `impl<..> Mul<T1> for T0` are checked in the order `T0`, `T1`: no bare type
+parameter may appear before the first local type. Here `T0` is `K` itself, which may be any type at
+all, and only `T1 = Length<U>` is local. The rule keeps crates from stepping on each other: a crate
+that defines a type `Meters` is allowed to write `impl<T> Mul<T> for Meters`, and then
+`Meters * Length<U>` would have two impls, one in each crate.
 
-The fix is to write the four impls by hand, without bounds on `U`:
+So write one impl per number type:
 
 ```rust
-impl<U> Clone for Length<U> {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
+impl<U> Mul<Length<U>> for f64 {
+    type Output = Length<U>;
 
-impl<U> Copy for Length<U> {}
-
-impl<U> PartialEq for Length<U> {
-    fn eq(&self, other: &Self) -> bool {
-        self.value == other.value
-    }
-}
-
-impl<U> fmt::Debug for Length<U> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("Length").field(&self.value).finish()
+    fn mul(self, l: Length<U>) -> Length<U> {
+        l * self
     }
 }
 ```
 
-`Copy` has no methods, but it requires `Clone`. Since `Length<U>` is `Copy` for every `U`, `clone`
-can simply return `*self`. `debug_tuple` prints `Length(...)` with the field formatted by `{:?}`, so
-`10.0` appears as `10.0`, not `10` as with `{}`. With these impls, `perimeter`, `longest` and
-`to_mm` compile unchanged.
+and the same for `f32`, `i32` and `u32`. These impls are allowed even though `Mul` and `f64` both
+come from the standard library: `T0 = f64` contains no type parameter, and `T1 = Length<U>` is a
+local type (the `U` inside it is "covered" by `Length`). Keep `U` generic: impls for
+`Length<Mm>` and `Length<Inch>` only would not cover the tests' own units. The body simply reuses
+`l * k`, and `perimeter`, whose `2 * (w + h)` multiplies by an `i32` from the left, now compiles
+unchanged.
 
-Fixes that only make the editor code compile are not enough:
+The other direction needs no such care. In `impl<U, K: Into<f64>> Mul<K> for Length<U>`, `T0` is
+the local `Length<U>`, so the type parameter `K` after it is fine: one impl makes `l * k` work for
+every `K: Into<f64>`, while `k * l` needs one impl per type. (Deleting the generic impl and writing
+`(w + h) * 2` in `perimeter` compiles too, but the tests write `3 * a` and `2.5 * l`.)
 
-- Adding `U: Copy` to `perimeter` and `longest` (and deriving the traits on `Mm` and `Inch` so that
-  the examples compile) changes the signatures, and `Length<Cubit>` in the tests is still neither
-  `Copy`, comparable nor printable, so the tests do not compile.
-- Avoiding the copies, for example with `Length::new(2.0 * (w.value + h.value))`, has the same
-  problem: the tests themselves copy, compare and print lengths.
-- Writing `Clone` by hand but keeping `#[derive(Copy)]` does not compile: `Length<U>` is then only
-  `Copy` when `U: Copy`, so `*self` cannot move out of the reference.
-- Changing the field to something like `PhantomData<fn() -> U>` does not help either, because the
-  derive bounds the type parameters, not the fields.
+With several impls for numbers on the left, a literal such as `2` in `2 * (w + h)` could be an
+`i32` or a `u32`. The compiler settles it with the default type, `i32` (and `f64` for `2.5`), but
+only at the end of type checking, so a method call directly on the result, as in
+`(2 * l).value()`, fails with "type annotations needed". Write `2i32 * l` there, or give the result
+a type first.
+
+The units derive `Debug`, `Clone`, `Copy` and `PartialEq` because the derives on `Length<U>`
+require each of these traits of `U` as well, even though `U` only appears in `PhantomData<U>`.
 
 ### Alternatives
 
-The impls can be written in other ways. `clone` can build a new length, `eq` can call `value()`
-(which copies `*self`, since `Length<U>` is `Copy`), and `Debug` can use `write!`. Unlike
-`debug_tuple`, `write!` ignores `{:#?}` (pretty printing), which the tests do not use.
+A macro writes the four impls. `f64::from(self)` converts each number type without loss.
 
 ```rust
-impl<U> Clone for Length<U> {
-    fn clone(&self) -> Self {
-        Length::new(self.value)
-    }
+macro_rules! scalar_times_length {
+    ($($t:ty),*) => {
+        $(
+            impl<U> Mul<Length<U>> for $t {
+                type Output = Length<U>;
+
+                fn mul(self, l: Length<U>) -> Length<U> {
+                    Length::new(f64::from(self) * l.value)
+                }
+            }
+        )*
+    };
 }
 
-impl<U> Copy for Length<U> {}
-
-impl<U> PartialEq for Length<U> {
-    fn eq(&self, other: &Self) -> bool {
-        self.value() == other.value()
-    }
-}
-
-impl<U> fmt::Debug for Length<U> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Length({:?})", self.value)
-    }
-}
+scalar_times_length!(f64, f32, i32, u32);
 ```

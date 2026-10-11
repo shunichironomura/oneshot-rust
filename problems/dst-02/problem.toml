@@ -1,5 +1,5 @@
 id = "dst-02"
-title = { en = "Unsized packets", ja = "サイズ不定のパケット" }
+title = { en = "Packets in one piece", ja = "ひとかたまりのパケット" }
 difficulty = 3
 concepts = [
     "custom dynamically sized types (a struct whose last field is unsized)",

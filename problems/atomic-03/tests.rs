@@ -41,9 +41,8 @@ fn record_in_buckets() -> Result<(), String> {
             let (buckets, together) = (&buckets, &together);
             s.spawn(move || {
                 for (i, bucket) in buckets.iter().enumerate() {
-                    if i % BUCKETS_PER_ROUND == 0 {
-                        together.wait();
-                    }
+                    let _ = i;
+                    together.wait();
                     bucket.record(base(i) + f64::from(ORDERS[i % 6][t]) / 4.0);
                 }
             });

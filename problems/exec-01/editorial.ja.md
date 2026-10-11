@@ -4,11 +4,11 @@
 `Rc` を持っていて `Send` ではないので、ウェイカーを `Arc<Task>` にして Future を `Mutex` に
 入れておく定番の設計はコンパイルできません。`Waker::from` のところで、
 `dyn Future<Output = ()>` はスレッド間で安全に送れない（cannot be sent between threads safely）
-というエラーになります。箱に入れた Future に `+ Send` を付けてもエラーが `spawn` に移るだけで、
+というエラーになります。Box に入れた Future に `+ Send` を付けてもエラーが `spawn` に移るだけで、
 キューを `Rc<RefCell<VecDeque<_>>>` にしても同じ理由で失敗します。
 そこで、タスクを 2 つに分けます。
 
-- Future は実行器が `Pin<Box<dyn Future<Output = ()>>>` として持ち、タスクの ID で引けるように
+- Future はエグゼキュータが `Pin<Box<dyn Future<Output = ()>>>` として持ち、タスクの ID で引けるように
   します。ポーリングにはピン留めされた Future が必要です。`Box::pin` はどんな Future でも
   ピン留めでき、`as_mut()` でポーリングのたびにピンを再借用できます。
 - ウェイカーが知っているのは、自分のタスクの ID と実行可能キュー
@@ -42,7 +42,7 @@
 ### 別解
 
 `mpsc::Sender` は `Send + Sync` なので（Rust 1.72 から）、ウェイカーにタスク ID の送信側を
-持たせ、`run` で受信側から `try_recv` で取り出すこともできます。実行器（と受信側）が破棄された後は
+持たせ、`run` で受信側から `try_recv` で取り出すこともできます。エグゼキュータ（と受信側）が破棄された後は
 送信が失敗します。そのエラーは `unwrap` せずに無視してください。
 
 ```rust

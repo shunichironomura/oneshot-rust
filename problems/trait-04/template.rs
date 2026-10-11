@@ -55,7 +55,7 @@ impl Describe for (i32, i32) {
     }
 }
 
-impl<T: Describe> Describe for &T {
+impl<T: Describe + ?Sized> Describe for &T {
     fn describe(&self) -> String {
         (**self).describe()
     }

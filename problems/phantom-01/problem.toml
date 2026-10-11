@@ -1,7 +1,13 @@
 id = "phantom-01"
 title = { en = "Millimeters and inches", ja = "ミリとインチ" }
 difficulty = 2
-concepts = ["#[derive] adds bounds on every type parameter", "PhantomData<U> markers", "manual Clone / Copy / PartialEq / Debug impls without bounds", "operator overloading that keeps the unit"]
+concepts = [
+    "orphan rule: uncovered type parameters (E0210)",
+    "impl<U> Mul<Length<U>> for f64 is allowed (local type as a trait parameter)",
+    "operator overloading with a scalar on either side",
+    "PhantomData<U> unit markers",
+    "integer literal fallback with several impls (E0282 on method calls)",
+]
 kind = "repair"
 
 [judge]

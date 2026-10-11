@@ -1,5 +1,5 @@
 **`next`。** `std::future::poll_fn` は、クロージャ `FnMut(&mut Context<'_>) -> Poll<T>` を Future に変えます。
-`next` に必要なのはこれだけで、Future が poll されるたびにストリームを 1 回 poll します。
+`next` に必要なのはこれだけで、Future がポーリングされるたびにストリームを 1 回ポーリングします。
 コンパイルを通すには 2 つの点に注意が必要です。
 
 - `poll_next` は `Pin<&mut Self>` を受け取ります。メソッド呼び出しは `&mut Self` を自動で `Pin` に
@@ -11,7 +11,7 @@
   返り値の型の `+ '_` はそのことを表しています。
 
 `collect` は `mut s` にして、`while let Some(item) = s.next().await` で回します。`next` がすぐに完了したときは、
-同じ poll の中で次の要素に進むので、`collect` の Future が `Pending` を返すのは `s` が `Pending` を返したときだけです。
+同じポーリングの中で次の要素に進むので、`collect` の Future が `Pending` を返すのは `s` が `Pending` を返したときだけです。
 
 **`Iter` と `Zip` の `Unpin`。** `self: Pin<&mut Self>` のフィールドを変更するには `get_mut`
 （または `mut self` にして `DerefMut`）が必要で、どちらも `Self: Unpin` を要求します。`Unpin` は自動トレイトです。
@@ -31,16 +31,16 @@ impl<A: Stream, B: Stream> Unpin for Zip<A, B> {}
 
 `Unpin` は安全なトレイトです。このコードは `Pin<&mut I>` も `Pin<&mut A::Item>` も作らない
 （「構造的ピン留め」をしない）ので、この impl は正しいものです。イテレータは普通の `&mut I` で使い、
-保持する要素はムーブして出し入れするだけです。`a` と `b` は `Pin` を通して poll しますが、
+保持する要素はムーブして出し入れするだけです。`a` と `b` は `Pin` を通してポーリングしますが、
 `Pin::new(&mut this.a)` に必要な `A: Unpin` は impl ブロックが保証しています。`futures` クレートのストリームも
 同じようにしています。impl には構造体の境界を書く必要があります。`Zip<A, B>` には `A: Stream` と
 `B: Stream` が必要なので、`impl<A, B> Unpin for Zip<A, B> {}` はエラーになります。
 
 **`zip` で要素を持っておく。** `a` の要素を取り出したら、`b` が `Pending` を返してもその要素を失ってはいけません。
 つい書きたくなる `match ready!(Pin::new(&mut this.b).poll_next(cx)) { ... }` は、`b` が `Pending` のときに
-`poll_next` から戻り、`a` の要素を捨ててしまいます。すると次の poll では、`a` の*次の*要素が `b` の要素と組になります。
-模範解答のように、`Pending` を返す前に要素を `held` に戻してください。要素を持っている間は `a` を poll せず、
-要素を持つまでは `b` を poll しないことも大切です。ハーネスは poll の回数を数えています。
+`poll_next` から戻り、`a` の要素を捨ててしまいます。すると次のポーリングでは、`a` の*次の*要素が `b` の要素と組になります。
+模範解答のように、`Pending` を返す前に要素を `held` に戻してください。要素を持っている間は `a` をポーリングせず、
+要素を持つまでは `b` をポーリングしないことも大切です。ハーネスはポーリングの回数を数えています。
 
 ### 別解
 
@@ -74,7 +74,7 @@ impl<S: Stream + Unpin + ?Sized> Future for Next<'_, S> {
 ```
 
 `impl Unpin` を書く代わりに、`Unpin` でないかもしれないものを `Box` に入れる方法もあります。`Box<T>` は
-どんな `T` でも `Unpin` です。箱をムーブしても中身はムーブされないからです。ただし `Iter` ごと、
+どんな `T` でも `Unpin` です。Box をムーブしても中身はムーブされないからです。ただし `Iter` ごと、
 保持する要素ごとにメモリ確保が必要になります。
 
 ```rust

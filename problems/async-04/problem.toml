@@ -1,5 +1,5 @@
 id = "async-04"
-title = { en = "Lock across await", ja = "await をまたぐロック" }
+title = { en = "A shared log", ja = "共有のログ" }
 difficulty = 3
 concepts = ["Send-ness of async fn futures", "MutexGuard is !Send", "drop() before await is not enough: borrowed locals count as held until the end of their scope", "block scopes in async fns", "temporaries live until the end of the statement, across an .await in it"]
 kind = "repair"

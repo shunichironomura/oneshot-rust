@@ -49,6 +49,8 @@ pub fn run() {
         check_eq((u32::MAX * l).value(), 4_294_967_295.0 * 0.25)?;
         check_eq(i32::MIN * l, Length::new(-536_870_912.0))?;
         check_eq(1.25f32 * l, l * 1.25f32)?;
+        // The product is computed in f64, not in f32.
+        check_eq(0.1f32 * Length::<Cubit>::new(3.0), Length::new(f64::from(0.1f32) * 3.0))?;
         check_eq(-2.0 * l, l * -2.0)?;
         // On the right, any number type that converts into `f64` works.
         check_eq(l * 2u8, Length::new(0.5))?;

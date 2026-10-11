@@ -32,10 +32,10 @@ pub fn to_mm(l: Length<Inch>) -> Length<Mm>
 - For two lengths `a` and `b` of the same unit, `a + b` is the length whose value is the sum of
   their values, and `a / b` is the quotient of their values, a plain `f64` (how many times `b` fits
   into `a`).
-- `l * k` and `k * l` multiply the value of the length `l` by the number `k`, and the result is a
-  length of the same unit. With `k` on the right, `k` can be of any number type that converts into
-  an `f64` with `Into`, such as `u8` or `i16`. With `k` on the left, the tests use `f64`, `f32`,
-  `i32` and `u32`.
+- `l * k` and `k * l` multiply the value of the length `l` by the number `k` converted into an
+  `f64`, and the result is a length of the same unit. With `k` on the right, `k` can be of any
+  number type that converts into an `f64` with `Into`, such as `u8` or `i16`. With `k` on the
+  left, the tests use `f64`, `f32`, `i32` and `u32`.
 - `perimeter(w, h)` returns the perimeter of a `w` × `h` rectangle, `2 * (w + h)`.
 - `to_mm(l)` converts inches to millimeters: the value is multiplied by `25.4`.
 - All of this must hold for **every** unit type `U`. Besides `Mm` and `Inch`, the tests define

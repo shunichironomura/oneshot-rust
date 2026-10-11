@@ -7,10 +7,10 @@
 ムーブされるからです。ブロックの中で `name.clone()` と書いても解決しません。クローンが実行されるのは
 Future がポーリングされたときなので、ブロックは結局 `name` を借用します。
 
-**`sum_all`**：`.await` が使えるのは、`async fn`、`async` ブロック、非同期クロージャの本体の中に
+**`sum_all`**：`.await` が使えるのは、`async fn`、`async` ブロック、async クロージャの本体の中に
 直接書いたときだけです。クロージャ `|f| f.await` は、async 関数の中に書かれていても普通の
 クロージャです（E0728）。`map` や `sum` はこのクロージャを同期的に呼ぶので、途中で中断する
-場所がありません。非同期クロージャ（`async |f| f.await`）にしても解決しません。`map` が
+場所がありません。async クロージャ（`async |f| f.await`）にしても解決しません。`map` が
 Future を返すようになり、`sum` ではそれを足し合わせられないからです。`for` ループには
 クロージャがないので、その本体は async 関数の一部です。また、`for` ループは Future を 1 つずつ
 順番に `await` します。（`futs` を可変にして）`while let Some(f) = futs.pop()` で取り出す方法も
@@ -35,7 +35,7 @@ pub fn greet(name: String) -> impl Future<Output = String> {
 }
 ```
 
-Rust 1.77 より前は、再帰する非同期関数は、ボックス化した Future を明示的に返す必要がありました。
+Rust 1.77 より前は、再帰する async 関数は、ボックス化した Future を明示的に返す必要がありました。
 公開する `async fn` はそのままにして、そのような非公開のヘルパーを呼ぶ形にします。ボックス化した
 `dyn Future` は既定で `'static` になりますが、この Future は `t` を借用するので `+ '_` が必要です。
 

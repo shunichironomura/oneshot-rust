@@ -1,5 +1,5 @@
 id = "dst-01"
-title = { en = "Unsized arguments", ja = "サイズ不定の引数" }
+title = { en = "Strings, slices and trait objects", ja = "文字列、スライス、トレイトオブジェクト" }
 difficulty = 2
 concepts = [
     "?Sized",

@@ -18,7 +18,7 @@ impl Describe for [i32] { /* ... */ }
 impl Describe for Vec<i32> { /* ... */ }
 impl Describe for Option<i32> { /* ... */ }
 impl Describe for (i32, i32) { /* ... */ }
-impl<T: Describe> Describe for &T { /* ... */ }
+impl<T: Describe + ?Sized> Describe for &T { /* ... */ }
 ```
 
 The bodies describe values as follows.

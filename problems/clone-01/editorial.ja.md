@@ -3,6 +3,8 @@
 フィールドである `Rc<RefCell<T>>` は、どんな `T` でも複製できるにもかかわらずです（`Rc` の複製は
 ポインタをコピーしてカウントを増やすだけです）。
 `impl<T> Handle<T>` の中では `T` について何もわからないので、そこでは `Handle<T>` は `Clone` ではありません。
+組み込みの derive はどれもこのように動きます（「imperfect derive」と呼ばれています）。`PhantomData<U>` の
+フィールドを持つ構造体でも、`#[derive(PartialEq)]` は `U: PartialEq` を要求します。
 
 意外なのは、それでも `self.clone()` が `clone` メソッドを見つけてしまうことです。メソッドの探索では
 レシーバに `&` を 1 つ足した型も試され、`&Handle<T>` はどんな `T` でも `Clone` です（共有参照はすべて

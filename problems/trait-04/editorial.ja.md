@@ -11,39 +11,33 @@ impl<T: Describe> Describe for [T]
 impl<T: Describe> Describe for Vec<T>
 impl<T: Describe> Describe for Option<T>
 impl<A: Describe, B: Describe> Describe for (A, B)
-impl<T: Describe + ?Sized> Describe for &T
 ```
 
 入れ子の型では、コンパイラがこれらの `impl` を連鎖させます。`Vec<Option<i32>>` が `Describe` を
 実装するのは `Option<i32>` が実装するからで、それは `i32` が実装するからです。
 
-- `Vec` の本体は `self.as_slice().describe()` を呼ぶので、`[T]: Describe` が必要です。スライスの
-  `impl` もジェネリックにしなければならず、`impl Describe for [i32]` のままでは、ジェネリックにした
-  `Vec` の `impl` のコンパイルが通りません。
+- `Vec` の本体は `self.as_slice().describe()` を呼ぶので、`[T]: Describe` が必要です。ハーネスは
+  スライスも直接説明しますが、そうでなくてもスライスの `impl` はジェネリックにしなければなりません。
+  `impl Describe for [i32]` のままでは、ジェネリックにした `Vec` の `impl` のコンパイルが通りません。
 - 組には型引数が 2 つ必要です。`(T, T)` では `(true, vec!["a", "b"])` に合いません。要素が `bool` と
   `Vec<&str>` だからです。
-- 本当の罠は、すでにジェネリックに見える `&T` の `impl` です。型引数にはすべて暗黙の `Sized` 境界が
-  付いているので、`impl<T: Describe> Describe for &T` は `&i32` や `&String` には当てはまりますが、
-  `&str`、`&[i32]`、`&dyn Describe` には当てはまりません。`str`、`[i32]`、`dyn Describe` は
-  動的サイズ型だからです。`vec!["a", "b"]` は `Vec<&str>` なので、説明するには `&str: Describe` が
-  必要で、これは `T = str` としたときの `&T` の `impl` です。`T: ?Sized` と書くと暗黙の境界が外れます。
-  本体は `T` を参照越しにしか使わないので、これが許されます。`**self` は型 `T` の場所で、
-  `.describe()` がそれをもう一度借用します。
-- `Describe` のようにトレイトオブジェクトにできるトレイトでは、`dyn Describe` に対する `Describe` の
-  実装をコンパイラ自身が用意します。`?Sized` があれば `&dyn Describe` も `Describe` になるので、
-  `Vec<&dyn Describe>` に型の違う値を入れられます。
+- 本体が要素の `describe` を呼べるのは境界があるからです。`impl<T> Describe for Option<T>` では
+  `T` について何もわからないので、`value.describe()` がエラー（E0599）になります。
+- 型引数は `impl` の直後で宣言しなければなりません。`impl Describe for Vec<T>` とだけ書くと
+  「cannot find type `T` in this scope」になります。
+
+`&T` の `impl` は最初からジェネリックです。型引数にはすべて暗黙の `Sized` 境界が付いていますが、
+`?Sized` がそれを外しているので、`&str`、`&[i32]`、`&dyn Describe` にも当てはまります。`str`、
+`[i32]`、`dyn Describe` は動的サイズ型です。`vec!["a", "b"]` は `Vec<&str>` なので、説明するときは
+`T = str` とした `&T` の `impl` を使います。`Describe` のようにトレイトオブジェクトにできるトレイトでは、
+`dyn Describe` に対する `Describe` の実装をコンパイラ自身が用意します。そのため `Vec<&dyn Describe>` に
+型の違う値を入れられます。
 
 ほかの `impl` には `?Sized` は合いません。スライスと `Vec<T>` は `T` の値を隙間なく並べて格納し、
 `Option<T>` は `T` の値をそのまま中に持つので、`T` の大きさはコンパイル時にわかっていなければ
 なりません。そのため `impl<T: Describe + ?Sized> Describe for Vec<T>` はエラー（E0277）になります
 （タプルでは最後の要素だけがサイズ不定になれるので、`B: ?Sized` は通りますが `A: ?Sized` は
 通りません。どちらも不要です）。
-
-代わりに `impl Describe for &str` を追加するのはルール違反ですし、それでは `&str` しか扱えず、
-`&[i32]` や `&dyn Describe` には効きません。`&T` に `?Sized` を付けると `&str` もそれに含まれるので、
-`&str` 用の 2 つ目の `impl` は実装の衝突（E0119）としてエラーになります。コヒーレンスにより、
-1 つの型に対するトレイトの `impl` は 1 つまでだからです（テンプレートの `?Sized` のない `&T` の
-`impl` と並べた場合は通ります。`str` は決して `Sized` にならないので、2 つの `impl` は重ならないからです）。
 
 ### 別解
 
@@ -60,12 +54,13 @@ where
     }
 }
 
-impl<T> Describe for &T
+impl<A, B> Describe for (A, B)
 where
-    T: Describe + ?Sized,
+    A: Describe,
+    B: Describe,
 {
     fn describe(&self) -> String {
-        (**self).describe()
+        format!("({}, {})", self.0.describe(), self.1.describe())
     }
 }
 ```

@@ -1,5 +1,5 @@
 id = "exec-01"
-title = { en = "A tiny executor", ja = "小さな実行器" }
+title = { en = "A tiny executor", ja = "小さなエグゼキュータ" }
 difficulty = 3
 concepts = ["Wake trait and Waker::from(Arc<W>)", "Wake requires Send + Sync even for !Send futures", "task ids and a shared ready queue", "Pin<Box<dyn Future<Output = ()>>>", "deduplicating wakes, never re-polling finished tasks", "lock guard temporaries in while let / let else"]
 kind = "implement"

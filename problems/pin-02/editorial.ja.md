@@ -1,107 +1,111 @@
 `poll` が受け取るのは `self: Pin<&mut Self>` ですが、フィールド（予算や、破棄するときの内側の Future）を
-変更するには `&mut Self` が必要です。`Pin` がそれを渡してくれるのは `Self: Unpin` のときだけです
-（`get_mut` や、`mut self` にしたときの `DerefMut` で）。`Unpin` は自動トレイトで、構造体はすべてのフィールドが
-`Unpin` のときに `Unpin` になります。`inner: Option<F>` のように内側の Future を直接持つと、`Budget<F>` が
-`Unpin` になるのは `F` が `Unpin` のときだけで、ハーネスの `async` ブロックや `ticks` の Future は `Unpin` では
-ありません。そのため、`self.inner = None` は「cannot assign to data in dereference of `Pin<&mut Budget<F>>`」
-（E0594）で、`self.get_mut()` や内側の Future への `Pin::new(&mut ...)` は「`F` cannot be unpinned」（E0277）で
-拒否されます。コンパイラの提案どおり `F: Unpin` を付けても、エラーがハーネス側に移るだけです。
+変更するには可変のアクセスが必要です。`Pin` が `&mut Self` を渡してくれるのは `Self: Unpin` のときだけです
+（`get_mut` や、`mut self` にしたときの `DerefMut` で）。`Unpin` は自動トレイトです。`Budget<F>` は
+`Option<F>` を直接持っているので、`Unpin` になるのは `F` が `Unpin` のときだけで、ハーネスの `async`
+ブロックや `ticks` の Future は `Unpin` ではありません。そのため、`self.left -= 1` は「cannot assign to data
+in dereference of `Pin<&mut Budget<F>>`」（E0594）で、`self.get_mut()` や内側の Future への
+`Pin::new(&mut ...)` は「`F` cannot be unpinned」（E0277）で拒否されます。コンパイラの提案どおり
+`F: Unpin` を付けても、エラーがハーネス側に移るだけです。内側の Future を `Box::pin` でヒープ上に
+ピン留めすれば `Budget<F>` は `Unpin` になりますが、問題文がそれを禁じています。非同期ライブラリの
+コンビネータと同じく、`Budget` はメモリを確保しません。
 
-`F` を直接持ったままにするには、*ピンの射影*（pin projection）が必要です。`Pin<&mut Budget<F>>` を
-フィールドの `Pin<&mut F>` に変える操作で、`unsafe`（`Pin::map_unchecked_mut` や `pin-project` などの
-クレート）を使いますが、この問題では禁止されています。安全な方法は、内側の Future をヒープ上に固定する
-ことです。`Box::pin(fut)` が返す `Pin<Box<F>>` は、`F` が何であっても `Unpin` です。box を動かしても
-動くのはポインタだけで、Future は動かないからです。フィールドを `Option<Pin<Box<F>>>` と `u32` にすれば、
-`Budget<F>` は自動的に `Unpin` になり、`get_mut` で普通の `&mut Budget<F>` が得られます。`fut.as_mut()` で、
-box を `poll` が受け取る `Pin<&mut F>` として借用し直せます。
+残る方法は*ピンの射影*（pin projection）です。`Pin<&mut Budget<F>>` を、フィールド `inner` については
+`Pin<&mut Option<F>>` に、`left` については普通の `&mut u32` に変えます。自分で定義した型の射影を安全に
+書く方法は Rust にはない（`pin-project` クレートが生成してくれます）ので、`unsafe` で書きます。
+`self.get_unchecked_mut()` で `&mut Budget<F>` を得て、`Pin::new_unchecked(&mut this.inner)` で
+フィールドをピン留めし直します。`unsafe` の部分は約束です。フィールドごとに決めて、それを守ります。
 
-`Option` にしておくと、`Budget` は内側の Future を早めに破棄できます。`None` を代入すると、その場で（`poll` の
-中で）box と中の Future が破棄されます。Rust では、Future を破棄することがキャンセルです。`.await` の途中で
-破棄された `async` ブロックは二度と再開されず、その時点で持っている値（待っている Future など）が破棄
-されます。内側の Future は、`Ready` を返した後でも破棄することに意味があります。完了した `async` ブロックは
-ローカル変数やキャプチャをすでに破棄していますが、ハーネスの `ticks` のような手書きの Future は、破棄される
-まで自分の持ち物を持ち続けるからです。
+- `inner` は*構造的にピン留め*されます。一度ポーリングしたら、二度と動かしません。`Option::take`、
+  `mem::replace`、`mem::swap` で動かしてはいけませんし、破棄するために動かすのもいけません。
+  その場で破棄しなければなりません。`Budget` に `Unpin` を実装してはいけません（実装すると、安全な
+  コードが `Pin` から `&mut Budget<F>` を取り出して、内側の Future を動かせてしまいます）。
+  フィールドを動かすコードを含む `Drop` を実装してもいけません。
+- `left` はピン留めされません。`&mut u32` を渡しても、内側の Future が動くことはありません。
 
-回数は慎重に数えましょう。予算 `0` は「一度も poll しない」という意味なので、poll の前に確認します。
-`Pending` の後にも、もう一度確認します。許された最後の poll が `Pending` を返したら、`Budget` はその同じ
-poll の中であきらめなければなりません。いったん `Pending` を返して次の poll であきらめると、呼び出し側の
-poll が 1 回むだになり、内側の Future も必要以上に長く残ります。
+`Pin<&mut Option<F>>` があれば、`as_pin_mut()` でポーリングに使う `Option<Pin<&mut F>>` が得られ、
+`set(None)` で内側の Future をその場で破棄して `None` を入れられます。`as_mut()` でピンを借用し直すので、
+その後も `set` に使えます。
 
-`Budget` は `cx` をそのまま渡します。内側の Future は、自分が poll されたときの `Context` の waker を起こし、
-それによって実行器は `Budget` が先に進めることを知ります。`Waker::noop()` などの自前の waker で内側の
-Future を poll すると、その通知が失われます。`Budget` が `Pending` を返すのは内側の Future が `Pending` を
-返した直後だけなので、`Budget` が自分で何かを起こす必要はありません。
+落とし穴は `take()` です。フィールドが `Option` だと、Future を取り出してポーリングし、また戻す、
+あるいは破棄するために取り出す、というコードを書きたくなります。動かした Future に
+`unsafe { Pin::new_unchecked(&mut fut) }` を使えばコンパイルは通りますが、約束を破っています。
+`.await` をまたいで自分のローカル変数を借用する `async` ブロック（テストの `for len in &lens` のループ
+など）は、自分自身の中を指すポインタを持っていて、動かした後もそのポインタは元の場所を指したままです。
+すると次のポーリングでダングリングポインタをたどることになり、Miri が未定義動作を報告します。ハーネスの
+`ticks` の Future も、最初にポーリングされた場所にとどまっているかを確かめています。
+
+内側の Future を早めに破棄することが、Rust での Future のキャンセルです。`.await` の途中で破棄された
+`async` ブロックは二度と再開されず、その時点で持っている値が破棄されます。`Ready` を返した後でも、
+破棄することには意味があります。完了した `async` ブロックはローカル変数やキャプチャをすでに破棄して
+いますが、`ticks` のような手書きの Future は、破棄されるまで自分の持ち物を持ち続けるからです。
+
+回数は慎重に数えましょう。予算 `0` は「一度もポーリングしない」という意味なので、ポーリングの前に
+確認します。`Pending` の後にも、もう一度確認します。許された最後のポーリングが `Pending` を返したら、
+`Budget` はその同じポーリングの中であきらめます。`cx` はそのまま渡します。内側の Future は、自分が
+ポーリングされたときの `Context` のウェイカーを起こし、それによってエグゼキュータは `Budget` が先に
+進めることを知ります。`Budget` が `Pending` を返すのは内側の Future が `Pending` を返した直後だけなので、
+`Budget` が自分で何かを起こす必要はありません。
 
 ### 別解
 
-`Option<F>` を入れた box を固定する方法もあります。`Option::as_pin_mut` は `Pin<&mut Option<F>>` を
-`Option<Pin<&mut F>>` に変え、`Pin::set` は固定された値をその場で置き換えて、古い値を破棄します。
-`set(None)` は、内側の Future を一度も動かさずに破棄します。`Option<F>` を直接持つ場合は、`unsafe` な
-ピンの射影で `Pin<&mut Option<F>>` を得てから同じ 2 つの呼び出しを使うことになります。box なら、その
-`Pin` が `as_mut` で安全に得られます。
+射影を、ピン留めされた `Budget` をフィールドに分けるメソッドとして一度だけ書く方法です。`pin-project` が
+生成するのもこの形で、`unsafe` なコードを 1 か所にまとめられます。
 
 ```rust
-use std::pin::Pin;
-use std::task::{Context, Poll};
-
-pub struct Budget<F> {
-    /// Pinned on the heap. `None` once the inner future has been dropped.
-    inner: Pin<Box<Option<F>>>,
-    left: u32,
-}
-
-pub fn with_budget<F: Future>(fut: F, polls: u32) -> Budget<F> {
-    Budget { inner: Box::pin(Some(fut)), left: polls }
+impl<F> Budget<F> {
+    /// The pin projection: `inner` is structurally pinned, `left` is not.
+    fn project(self: Pin<&mut Self>) -> (Pin<&mut Option<F>>, &mut u32) {
+        // SAFETY: `inner` is only ever used through the `Pin` returned here, so it is never
+        // moved out of a pinned `Budget`. `left` is not pinned.
+        let this = unsafe { self.get_unchecked_mut() };
+        (unsafe { Pin::new_unchecked(&mut this.inner) }, &mut this.left)
+    }
 }
 
 impl<F: Future> Future for Budget<F> {
     type Output = Option<F::Output>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let this = self.get_mut();
-        // `as_pin_mut`: `Pin<&mut Option<F>>` -> `Option<Pin<&mut F>>`.
-        let output = match this.inner.as_mut().as_pin_mut() {
-            Some(fut) if this.left > 0 => {
-                this.left -= 1;
-                match fut.poll(cx) {
-                    Poll::Ready(output) => Some(output),
-                    Poll::Pending if this.left > 0 => return Poll::Pending,
-                    Poll::Pending => None,
-                }
+        let (mut inner, left) = self.project();
+        let mut output = None;
+        if *left > 0
+            && let Some(fut) = inner.as_mut().as_pin_mut()
+        {
+            *left -= 1;
+            match fut.poll(cx) {
+                Poll::Ready(value) => output = Some(value),
+                Poll::Pending if *left > 0 => return Poll::Pending,
+                Poll::Pending => {}
             }
-            // A budget of 0: give up without polling.
-            _ => None,
-        };
-        // Drops the inner future in place, without moving it.
-        this.inner.set(None);
+        }
+        inner.set(None);
         Poll::Ready(output)
     }
 }
 ```
 
-poll の間だけ box を `Option` から取り出し、まだ必要なときだけ戻す方法もあります。取り出しても動くのは
-ポインタだけなので、`Unpin` でない Future でも問題ありません。box を戻さなかったときは、`poll` の終わりで
-box がスコープを抜けるので、内側の Future は `poll` から戻る前に破棄されます。この版では、フィールドへの
-書き込みに `Pin` の `DerefMut` を使っています（そのため `mut self` にしています）。これも `get_mut` と同じく
-`Budget<F>: Unpin` が必要です。模範解答の `poll` と置き換えて使います。
+`Pin::set` はただの代入で、代入は新しい値を書き込む前に古い値をその場で破棄します。そのため、
+`&mut Budget<F>` に対して `this.inner = None` と書いて内側の Future を破棄し、ピン留めは `poll` の
+呼び出しのときだけにすることもできます。模範解答の `poll` と置き換えて使います。
 
 ```rust
-fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-    // Moving the box moves only the pointer; the future stays where it is.
-    let mut fut = self.inner.take().expect("a Budget is not polled after it is ready");
-    if self.left == 0 {
-        return Poll::Ready(None);
-    }
-    self.left -= 1;
-    match fut.as_mut().poll(cx) {
-        Poll::Ready(output) => Poll::Ready(Some(output)),
-        Poll::Pending if self.left > 0 => {
-            // Still needed: put it back.
-            self.inner = Some(fut);
-            Poll::Pending
+fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+    // SAFETY: nothing below moves the inner future out of the pinned `Budget`.
+    let this = unsafe { self.get_unchecked_mut() };
+    let mut output = None;
+    if this.left > 0
+        && let Some(fut) = &mut this.inner
+    {
+        this.left -= 1;
+        // SAFETY: `fut` lives inside the pinned `Budget` and is never moved.
+        match unsafe { Pin::new_unchecked(fut) }.poll(cx) {
+            Poll::Ready(value) => output = Some(value),
+            Poll::Pending if this.left > 0 => return Poll::Pending,
+            Poll::Pending => {}
         }
-        Poll::Pending => Poll::Ready(None),
     }
-    // Unless it was put back, `fut` is dropped here, before `poll` returns.
+    // Assigning drops the old value in place, so the inner future is not moved.
+    this.inner = None;
+    Poll::Ready(output)
 }
 ```

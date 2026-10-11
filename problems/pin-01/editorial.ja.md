@@ -12,7 +12,7 @@ Future は `Unpin` ではありません。`.await` をまたいで自分自身�
 返します。`Box<_>` が `Box<dyn Future<Output = u32>>` に型強制できるのと同じように、これは
 `Pin<Box<dyn Future<Output = u32>>>` に型強制できます。`Pin<Box<_>>` 自体はただのポインタで
 `Unpin` なので、`Vec` に集めたり、添字と組にしたり、`retain_mut` で捨てたりと、自由に動かせます。
-poll するときは、`task.as_mut()`（`Pin::as_mut`）で `&mut Pin<Box<_>>` を `poll` が受け取る
+ポーリングするときは、`task.as_mut()`（`Pin::as_mut`）で `&mut Pin<Box<_>>` を `poll` が受け取る
 `Pin<&mut dyn Future<Output = u32>>` として借用し直します。Box を手放す必要はありません。
 
 この直し方では、Box と Pin にかかわる箇所をすべて直すことになります。`Task` 型の別名、2 か所の `Box::new`
@@ -28,7 +28,7 @@ poll するときは、`task.as_mut()`（`Pin::as_mut`）で `&mut Pin<Box<_>>` 
 
 ### 別解
 
-実行器をジェネリックにして、その中でピン留めする方法です。各関数は自分の `async` ブロックの型の `Vec` を
+エグゼキュータをジェネリックにして、その中でピン留めする方法です。各関数は自分の `async` ブロックの型の `Vec` を
 渡すので、トレイトオブジェクトは要りません。それでも `Box::pin` は必要です。`Vec<F>` の要素は、
 ベクタが確保し直したり要素を取り除いたりすると動くので、`unsafe` なしではその場でピン留めできません。
 
@@ -85,7 +85,7 @@ pub fn finish_order(delays: &[u32]) -> Vec<usize> {
 Box に入れた Future は、Box が所有しているので、後からピン留めすることもできます。`Box::into_pin`
 （または `Pin::from`）は `Box<T>` を、`T` を動かさずに `Pin<Box<T>>` に変えます。ピン留めされていない
 Box は消費されるので、これは安全です。この場合、`Task` 型の別名と `Box::new` の呼び出しはそのままで、
-実行器だけを変えます。
+エグゼキュータだけを変えます。
 
 ```rust
 fn run_round_robin(tasks: Vec<Task>) -> Vec<(usize, u32)> {

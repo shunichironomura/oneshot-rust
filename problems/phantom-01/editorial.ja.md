@@ -1,78 +1,63 @@
-`#[derive]` は、フィールドに本当に必要な境界を調べません。ジェネリックな構造体では
-すべての型引数に境界を付けるので、`#[derive(Debug, Clone, Copy, PartialEq)]` が生成するのは
-`impl<U: Copy> Copy for Length<U>` や `impl<U: PartialEq> PartialEq for Length<U>` などです。
-`U` は `PhantomData<U>` の中にしか現れず、`PhantomData<U>` はどんな `U` でも `Copy`、`PartialEq`、
-`Debug` ですが、それでも境界は付きます。ジェネリックな `perimeter<U>` と `longest<U>` の中では
-`U` について何もわからないので、`Length<U>` は `Copy` になりません。
-`w + w` は `w` をムーブしてからもう一度使い（E0382）、`copied()` は `Length<U>: Copy` を要求します（E0277）。
-`Mm` は何も実装していないので、`Length<Mm>` でさえ `Copy` でも比較可能でもありません。
-この `#[derive]` の制限は「imperfect derive」と呼ばれています。
+数値を左に置くための impl、`impl<U, K: Into<f64>> Mul<Length<U>> for K` は、**孤児ルール**
+（orphan rule）に違反しています（E0210「type parameter `K` must be covered by another type when it
+appears before the first local type」）。`Mul` は標準ライブラリのトレイトなので、その impl には
+ローカルな型が必要です。さらに `impl<..> Mul<T1> for T0` の型は `T0`、`T1` の順に調べられ、
+最初のローカルな型より前に、むき出しの型引数があってはいけません。ここでは `T0` が `K` そのもので、
+どんな型でもありえます。ローカルなのは `T1 = Length<U>` だけです。このルールは、クレート同士が
+衝突しないようにするためのものです。`Meters` という型を定義したクレートは `impl<T> Mul<T> for Meters` を
+書くことが許されているので、もし上の impl も許されると、`Meters * Length<U>` には 2 つのクレートに
+1 つずつ、2 つの impl があることになってしまいます。
 
-`U` に境界を付けずに、4 つの impl を手で書けば解決します。
+そこで、数値型ごとに impl を書きます。
 
 ```rust
-impl<U> Clone for Length<U> {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
+impl<U> Mul<Length<U>> for f64 {
+    type Output = Length<U>;
 
-impl<U> Copy for Length<U> {}
-
-impl<U> PartialEq for Length<U> {
-    fn eq(&self, other: &Self) -> bool {
-        self.value == other.value
-    }
-}
-
-impl<U> fmt::Debug for Length<U> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("Length").field(&self.value).finish()
+    fn mul(self, l: Length<U>) -> Length<U> {
+        l * self
     }
 }
 ```
 
-`Copy` にはメソッドがありませんが、`Clone` の実装が必要です。`Length<U>` はどんな `U` でも `Copy` なので、
-`clone` は `*self` を返すだけで済みます。`debug_tuple` はフィールドを `{:?}` で整形して `Length(...)` と
-表示するので、`10.0` は `{}` のときのような `10` ではなく `10.0` になります。これらの impl があれば、
-`perimeter`、`longest`、`to_mm` は変更しなくてもコンパイルが通ります。
+`f32`、`i32`、`u32` についても同じです。`Mul` も `f64` も標準ライブラリのものですが、この impl は
+許されます。`T0 = f64` は型引数を含まず、`T1 = Length<U>` はローカルな型だからです（中の `U` は
+`Length` に「覆われて」います）。`U` はジェネリックのままにしてください。`Length<Mm>` と `Length<Inch>`
+だけの impl では、テスト独自の単位に対応できません。本体は `l * k` を使い回すだけです。
+`perimeter` の `2 * (w + h)` は左から `i32` を掛けていますが、これで変更せずにコンパイルが通ります。
 
-エディタのコードのコンパイルが通るだけの修正では不十分です。
+逆向きにはこうした注意はいりません。`impl<U, K: Into<f64>> Mul<K> for Length<U>` では `T0` が
+ローカルな `Length<U>` なので、その後ろの型引数 `K` は問題ありません。`l * k` は 1 つの impl で
+`K: Into<f64>` を満たすすべての型に対応できますが、`k * l` には型ごとの impl が必要です。
+（ジェネリックな impl を消して `perimeter` を `(w + h) * 2` と書いてもコンパイルは通りますが、
+テストでは `3 * a` や `2.5 * l` と書きます。）
 
-- `perimeter` と `longest` に `U: Copy` を付ける（さらに例がコンパイルできるよう `Mm` と `Inch` に
-  トレイトを derive する）と、シグネチャが変わります。テストの `Length<Cubit>` は相変わらず `Copy` でも
-  比較可能でも表示可能でもないので、テストがコンパイルできません。
-- `Length::new(2.0 * (w.value + h.value))` のようにしてコピーを避けても、同じ問題が残ります。
-  テスト自身が長さをコピーし、比較し、表示するからです。
-- `Clone` を手で書いて `#[derive(Copy)]` を残すと、コンパイルが通りません。`Length<U>` が `Copy` なのは
-  `U: Copy` のときだけになるので、`*self` で参照の先からムーブできないからです。
-- フィールドを `PhantomData<fn() -> U>` などに変えても解決しません。derive が境界を付けるのは
-  フィールドではなく型引数だからです。
+左側の数値型の impl が複数あると、`2 * (w + h)` の `2` のようなリテラルは `i32` とも `u32` ともとれます。
+コンパイラはこれを既定の型 `i32`（`2.5` なら `f64`）に決めますが、それは型検査の最後なので、
+`(2 * l).value()` のように結果に直接メソッドを呼ぶと「type annotations needed」になります。
+その場合は `2i32 * l` と書くか、先に結果に型を付けてください。
+
+単位の型が `Debug`、`Clone`、`Copy`、`PartialEq` を derive しているのは、`Length<U>` の derive が
+`U` にもそれぞれのトレイトを要求するからです。`U` が `PhantomData<U>` の中にしか現れなくても同じです。
 
 ### 別解
 
-impl はほかの書き方もできます。`clone` で新しい長さを作り、`eq` で `value()` を呼び
-（`Length<U>` は `Copy` なので `*self` がコピーされます）、`Debug` では `write!` を使う書き方です。
-`debug_tuple` と違って `write!` では `{:#?}`（整形表示）が効きませんが、テストでは使いません。
+マクロで 4 つの impl を書く方法です。`f64::from(self)` はどの数値型も値を失わずに変換します。
 
 ```rust
-impl<U> Clone for Length<U> {
-    fn clone(&self) -> Self {
-        Length::new(self.value)
-    }
+macro_rules! scalar_times_length {
+    ($($t:ty),*) => {
+        $(
+            impl<U> Mul<Length<U>> for $t {
+                type Output = Length<U>;
+
+                fn mul(self, l: Length<U>) -> Length<U> {
+                    Length::new(f64::from(self) * l.value)
+                }
+            }
+        )*
+    };
 }
 
-impl<U> Copy for Length<U> {}
-
-impl<U> PartialEq for Length<U> {
-    fn eq(&self, other: &Self) -> bool {
-        self.value() == other.value()
-    }
-}
-
-impl<U> fmt::Debug for Length<U> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Length({:?})", self.value)
-    }
-}
+scalar_times_length!(f64, f32, i32, u32);
 ```

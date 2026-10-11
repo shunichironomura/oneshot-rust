@@ -1,5 +1,5 @@
 id = "clone-01"
-title = { en = "Shared handle clone", ja = "共有ハンドルの複製" }
+title = { en = "Shared handles", ja = "共有ハンドル" }
 difficulty = 2
 concepts = ["#[derive(Clone)] adds T: Clone bounds", "method resolution autoref (clone on &T)", "manual Clone impl for Rc wrappers", "Rc::clone", "Rc::strong_count"]
 kind = "repair"
