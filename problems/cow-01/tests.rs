@@ -1,0 +1,176 @@
+use std::borrow::Cow;
+use std::panic::{self, AssertUnwindSafe};
+
+use crate::judge::{case, check, check_eq};
+use crate::user::{Doc, clamp_all, normalize_ws};
+
+fn borrowed(got: Cow<'_, str>, expected: &str) -> Result<(), String> {
+    match got {
+        Cow::Borrowed(s) => check_eq(s, expected),
+        Cow::Owned(s) => Err(format!("expected Borrowed({expected:?}), got Owned({s:?})")),
+    }
+}
+
+fn owned(got: Cow<'_, str>, expected: &str) -> Result<(), String> {
+    match got {
+        Cow::Owned(s) => check_eq(s.as_str(), expected),
+        Cow::Borrowed(s) => Err(format!("expected Owned({expected:?}), got Borrowed({s:?})")),
+    }
+}
+
+fn is_borrowed(v: &Cow<'_, [i32]>, expected: &[i32]) -> Result<(), String> {
+    match v {
+        Cow::Borrowed(s) => check_eq(*s, expected),
+        Cow::Owned(o) => Err(format!("expected Borrowed({expected:?}), got Owned({o:?})")),
+    }
+}
+
+fn is_owned(v: &Cow<'_, [i32]>, expected: &[i32]) -> Result<(), String> {
+    match v {
+        Cow::Owned(o) => check_eq(o.as_slice(), expected),
+        Cow::Borrowed(s) => Err(format!("expected Owned({expected:?}), got Borrowed({s:?})")),
+    }
+}
+
+pub fn run() {
+    case("sample-1", || {
+        borrowed(normalize_ws("a b"), "a b")?;
+        borrowed(normalize_ws("  hi\n"), "hi")?;
+        owned(normalize_ws("a  b\tc "), "a b c")
+    });
+    case("sample-2", || {
+        let data = [1, 5, 3];
+        let mut v = Cow::Borrowed(&data[..]);
+        clamp_all(&mut v, 9);
+        is_borrowed(&v, &[1, 5, 3])?;
+        clamp_all(&mut v, 4);
+        is_owned(&v, &[1, 4, 3])?;
+        check_eq(data, [1, 5, 3])
+    });
+    case("sample-3", || {
+        let a = Doc::new(&["x", "y"]);
+        let mut b = a.clone();
+        check(a.shares_storage(&b), "a clone should share the storage")?;
+        b.set_line(0, "z");
+        check(!a.shares_storage(&b), "after set_line, b should have its own storage")?;
+        check_eq((a.line(0), b.line(0)), (Some("x"), Some("z")))?;
+        check_eq((a.line(1), b.line(1)), (Some("y"), Some("y")))
+    });
+    case("hidden-1", || {
+        // Every kind of ASCII whitespace; trimming alone borrows a slice of the input.
+        borrowed(normalize_ws(""), "")?;
+        borrowed(normalize_ws(" \t\r\n\x0C"), "")?;
+        owned(normalize_ws("a\tb"), "a b")?;
+        owned(normalize_ws("\tx \r\n y\x0Cz  "), "x y z")?;
+        let s = String::from("\n  one two three \t");
+        match normalize_ws(&s) {
+            Cow::Borrowed(t) => {
+                check_eq(t, "one two three")?;
+                check(t.as_ptr() == s[3..].as_ptr(), "the result should be a slice of the input")
+            }
+            Cow::Owned(t) => Err(format!("expected Borrowed, got Owned({t:?})")),
+        }
+    });
+    case("hidden-2", || {
+        // Only ASCII whitespace counts.
+        borrowed(normalize_ws("a\u{3000}b"), "a\u{3000}b")?;
+        borrowed(normalize_ws("\u{3000}日本 語\u{3000}"), "\u{3000}日本 語\u{3000}")?;
+        borrowed(normalize_ws("v\x0Bt\u{A0}"), "v\x0Bt\u{A0}")?;
+        owned(normalize_ws(" 日本\u{3000} \t語 "), "日本\u{3000} 語")
+    });
+    case("hidden-3", || {
+        // Equal to max is not greater; empty and negative values.
+        let data = [4, -2, 4];
+        let mut v = Cow::Borrowed(&data[..]);
+        clamp_all(&mut v, 4);
+        is_borrowed(&v, &[4, -2, 4])?;
+        let mut e: Cow<'_, [i32]> = Cow::Borrowed(&[]);
+        clamp_all(&mut e, -100);
+        is_borrowed(&e, &[])?;
+        let neg = [-1, -5, -3, 0];
+        let mut n = Cow::Borrowed(&neg[..]);
+        clamp_all(&mut n, -3);
+        is_owned(&n, &[-3, -5, -3, -3])?;
+        check_eq(neg, [-1, -5, -3, 0])?;
+        // An Owned value stays Owned and is changed in place.
+        let mut v: Cow<'_, [i32]> = Cow::Owned(vec![10, 2, 7]);
+        let buf = v.as_ptr();
+        clamp_all(&mut v, 5);
+        is_owned(&v, &[5, 2, 5])?;
+        check(v.as_ptr() == buf, "an Owned Vec should be changed in place")?;
+        clamp_all(&mut v, 6);
+        is_owned(&v, &[5, 2, 5])?;
+        let data = [9, 8];
+        let mut w = Cow::Borrowed(&data[..]);
+        clamp_all(&mut w, 8);
+        is_owned(&w, &[8, 8])?;
+        let buf = w.as_ptr();
+        clamp_all(&mut w, 3);
+        is_owned(&w, &[3, 3])?;
+        check(w.as_ptr() == buf, "an Owned Vec should be changed in place")
+    });
+    case("hidden-4", || {
+        // Edits on a Doc that does not share its storage happen in place.
+        let mut d = Doc::new(&["a", "b", "c"]);
+        let id = d.storage_id();
+        d.set_line(1, "B");
+        check_eq(d.storage_id(), id)?;
+        d.set_line(2, "C");
+        check_eq(d.storage_id(), id)?;
+        d.set_line(1, "bb");
+        check_eq(d.storage_id(), id)?;
+        check_eq([d.line(0), d.line(1), d.line(2), d.line(3)], [Some("a"), Some("bb"), Some("C"), None])?;
+        check_eq(Doc::new(&[]).line(0), None)
+    });
+    case("hidden-5", || {
+        // Equal lines are not the same storage; storage_id agrees with shares_storage.
+        let a = Doc::new(&["same"]);
+        let b = Doc::new(&["same"]);
+        check(!a.shares_storage(&b), "two new Docs should not share storage")?;
+        check(a.storage_id() != b.storage_id(), "two new Docs should have different ids")?;
+        let c = b.clone();
+        check(b.shares_storage(&c) && c.shares_storage(&b), "a clone should share the storage")?;
+        check_eq(c.storage_id(), b.storage_id())?;
+        check(a.shares_storage(&a), "a Doc shares storage with itself")?;
+        let e1 = Doc::new(&[]);
+        let e2 = Doc::new(&[]);
+        check(!e1.shares_storage(&e2), "two new empty Docs should not share storage")?;
+        check(e1.storage_id() != e2.storage_id(), "two new empty Docs should have different ids")
+    });
+    case("hidden-6", || {
+        // Three snapshots: an edit only ever affects the edited one.
+        let mut a = Doc::new(&["1", "2"]);
+        let mut b = a.clone();
+        let mut c = b.clone();
+        let id = a.storage_id();
+        c.set_line(1, "c");
+        check(a.shares_storage(&b), "a and b should still share")?;
+        check(!c.shares_storage(&a) && !c.shares_storage(&b), "c should have its own storage")?;
+        check_eq(a.storage_id(), id)?;
+        let cid = c.storage_id();
+        c.set_line(0, "c0");
+        check_eq(c.storage_id(), cid)?;
+        b.set_line(0, "b");
+        check(!a.shares_storage(&b), "b should have its own storage")?;
+        check_eq(a.storage_id(), id)?;
+        a.set_line(0, "a");
+        check_eq(a.storage_id(), id)?;
+        check_eq([a.line(0), a.line(1)], [Some("a"), Some("2")])?;
+        check_eq([b.line(0), b.line(1)], [Some("b"), Some("2")])?;
+        check_eq([c.line(0), c.line(1)], [Some("c0"), Some("c")])
+    });
+    case("hidden-7", || {
+        // Out of range panics without copying; a dropped snapshot no longer shares.
+        let a = Doc::new(&["x", "y"]);
+        let mut b = a.clone();
+        let r = panic::catch_unwind(AssertUnwindSafe(|| b.set_line(2, "z")));
+        check(r.is_err(), "set_line(2, ..) on two lines should panic")?;
+        check(a.shares_storage(&b), "a failed set_line should not copy the storage")?;
+        check_eq((b.line(0), b.line(1)), (Some("x"), Some("y")))?;
+        let id = a.storage_id();
+        drop(a);
+        b.set_line(1, "w");
+        check_eq(b.storage_id(), id)?;
+        check_eq((b.line(0), b.line(1)), (Some("x"), Some("w")))
+    });
+}

@@ -1,0 +1,12 @@
+id = "btree-01"
+title = { en = "Timeline", ja = "年表" }
+difficulty = 1
+concepts = ["BTreeMap", "BTreeMap::range", "next_back on a range", "split_off", "returning &str views"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,19 @@
+id = "impltrait-01"
+title = { en = "One concrete type", ja = "具体的な型はひとつ" }
+difficulty = 2
+concepts = [
+    "return-position impl Trait is a single type",
+    "every closure has a unique type",
+    "Box<dyn Iterator + '_> / Box<dyn Fn>",
+    "move closures capturing Copy parameters",
+    "remainder of negative numbers",
+    "unsigned_abs",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

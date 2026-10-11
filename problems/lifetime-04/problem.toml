@@ -1,0 +1,12 @@
+id = "lifetime-04"
+title = { en = "Whose lifetime is it?", ja = "だれの寿命？" }
+difficulty = 1
+concepts = ["lifetime annotations", "lifetime elision rules", "relating the output to the right input"]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

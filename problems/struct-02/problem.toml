@@ -1,0 +1,12 @@
+id = "struct-02"
+title = { en = "Settings with defaults", ja = "既定値つきの設定" }
+difficulty = 1
+concepts = ["struct update syntax moves non-Copy fields", "manual Default impl", "..Default::default()", "destructuring let with match ergonomics", "field init shorthand"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

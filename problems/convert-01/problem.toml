@@ -1,0 +1,12 @@
+id = "convert-01"
+title = { en = "Days of the week", ja = "曜日の変換" }
+difficulty = 1
+concepts = ["TryFrom / TryInto", "FromStr and parse", "explicit enum discriminants", "enum as u8", "associated types Error vs Err", "collect into Result"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

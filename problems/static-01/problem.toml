@@ -1,0 +1,12 @@
+id = "static-01"
+title = { en = "A global interner", ja = "グローバルな文字列表" }
+difficulty = 2
+concepts = ["static initializers must be const", "statics must be Sync", "LazyLock / OnceLock", "Mutex in a static", "AtomicUsize counters", "thread_local! is per thread, not global", "consistent state under one lock"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

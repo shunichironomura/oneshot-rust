@@ -1,0 +1,18 @@
+id = "option-01"
+title = { en = "Options behind references", ja = "参照の奥の Option" }
+difficulty = 1
+concepts = [
+    "moving out of borrowed content (E0507)",
+    "Option::as_deref / as_ref",
+    "Option::take / replace",
+    "? on Option",
+    "returning references to locals (E0515)",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

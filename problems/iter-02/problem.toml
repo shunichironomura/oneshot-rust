@@ -1,0 +1,18 @@
+id = "iter-02"
+title = { en = "Layers of references", ja = "参照は何重？" }
+difficulty = 1
+concepts = [
+    "Iterator::find and filter pass &Item",
+    "&&i32 vs &i32 in closures",
+    "slice::contains needs &T",
+    "cannot move out of a reference in closure patterns",
+    "method-call auto-deref",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,12 @@
+id = "cell-01"
+title = { en = "Counting through &self", ja = "&self 越しに数える" }
+difficulty = 2
+concepts = ["interior mutability", "mutation behind & is UB without UnsafeCell", "Cell<T>", "OnceCell::get_or_init", "Stacked Borrows SharedReadOnly", "&mut self vs &self"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,12 @@
+id = "future-01"
+title = { en = "Countdown", ja = "カウントダウン" }
+difficulty = 2
+concepts = ["implementing Future by hand", "Poll and Context", "Waker::wake_by_ref", "Pin<&mut Self> with Unpin types", "pin! and Waker::noop in a block_on", "IntoFuture"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

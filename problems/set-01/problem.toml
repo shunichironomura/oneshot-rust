@@ -1,0 +1,12 @@
+id = "set-01"
+title = { en = "Common ground", ja = "共通点さがし" }
+difficulty = 1
+concepts = ["HashSet / BTreeSet", "union, intersection, difference, symmetric_difference", "sorted output via BTreeSet", "insert returns bool", "iterators of &&str"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

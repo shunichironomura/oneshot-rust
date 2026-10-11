@@ -1,0 +1,12 @@
+id = "derive-01"
+title = { en = "The strongest card", ja = "いちばん強いカード" }
+difficulty = 1
+concepts = ["derive(PartialOrd, Ord)", "enum variant order", "struct field order", "#[default]", "Hash and Eq"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

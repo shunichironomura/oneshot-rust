@@ -1,0 +1,12 @@
+id = "macro-01"
+title = { en = "Macros with repetitions", ja = "繰り返しのあるマクロ" }
+difficulty = 2
+concepts = ["macro_rules!", "repetitions", "optional trailing comma", "$crate paths", "macro hygiene", "evaluating arguments once", "constant expressions"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

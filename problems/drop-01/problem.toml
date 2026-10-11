@@ -1,0 +1,12 @@
+id = "drop-01"
+title = { en = "Release order", ja = "片付けの順番" }
+difficulty = 2
+concepts = ["Drop", "drop order: Vec elements front to back, locals in reverse", "assignment drops the old value", "IntoIter drops the remaining items", "cannot move out of a type implementing Drop (E0509)", "mem::take vs mem::forget leaks"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

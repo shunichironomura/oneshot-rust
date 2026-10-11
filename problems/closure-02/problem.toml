@@ -1,0 +1,18 @@
+id = "closure-02"
+title = { en = "Which Fn?", ja = "どの Fn？" }
+difficulty = 2
+concepts = [
+    "FnOnce / FnMut / Fn bounds",
+    "mut binding for an FnMut parameter",
+    "generic closure inputs and outputs",
+    "calling through &F requires Fn",
+    "fn pointer types for non-capturing closures",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

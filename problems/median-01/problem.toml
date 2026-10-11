@@ -1,0 +1,12 @@
+id = "median-01"
+title = { en = "Median and mode", ja = "中央値と最頻値" }
+difficulty = 1
+concepts = ["slices", "sorting an owned copy", "HashMap counting", "max_by_key tie semantics", "integer overflow", "i32 to f64 conversion"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

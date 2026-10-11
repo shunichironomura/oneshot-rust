@@ -1,0 +1,18 @@
+id = "dst-01"
+title = { en = "Unsized arguments", ja = "サイズ不定の引数" }
+difficulty = 2
+concepts = [
+    "?Sized",
+    "dynamically sized types (str, [T], dyn Trait)",
+    "implicit Sized bound on generic parameters",
+    "From<Box<T>> for Rc<T> with unsized T",
+    "size_of_val",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

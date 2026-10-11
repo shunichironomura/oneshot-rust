@@ -1,0 +1,12 @@
+id = "thread-02"
+title = { en = "Rc cannot cross threads", ja = "Rc はスレッドを越えられない" }
+difficulty = 2
+concepts = ["Send and Sync", "Rc vs Arc", "RefCell/Cell are not Sync, so Arc<RefCell<_>> is not Send", "Arc<Mutex<_>> / AtomicUsize", "Arc::try_unwrap + Mutex::into_inner returns LockResult"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

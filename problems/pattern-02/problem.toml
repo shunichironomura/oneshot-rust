@@ -1,0 +1,18 @@
+id = "pattern-02"
+title = { en = "Edition 2024 binding modes", ja = "2024 の束縛モード" }
+difficulty = 2
+concepts = [
+    "match ergonomics and default binding modes",
+    "edition 2024: no ref / mut / & inside implicitly-borrowing patterns",
+    "fully explicit patterns",
+    "copying out of references",
+    "closure parameters of filter get an extra reference",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

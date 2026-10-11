@@ -1,0 +1,18 @@
+id = "slice-01"
+title = { en = "Runs and windows", ja = "連なりと窓" }
+difficulty = 1
+concepts = [
+    "slice::chunk_by",
+    "slice::windows",
+    "chunks_exact and remainder",
+    "returning subslices (elision)",
+    "usize underflow in manual loops",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

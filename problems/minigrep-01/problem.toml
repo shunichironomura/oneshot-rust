@@ -1,0 +1,12 @@
+id = "minigrep-01"
+title = { en = "minigrep", ja = "minigrep を作る" }
+difficulty = 1
+concepts = ["impl Iterator parameters", "Iterator::next", "moving out of an iterator", "&'static str errors", "lifetimes", "str::lines", "to_lowercase"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

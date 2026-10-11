@@ -1,0 +1,12 @@
+id = "error-02"
+title = { en = "Any error will do", ja = "どんなエラーでも" }
+difficulty = 1
+concepts = ["Box<dyn Error>", "? converting into Box<dyn Error>", "From<&str> for Box<dyn Error>", "downcast_ref", "checked_add"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

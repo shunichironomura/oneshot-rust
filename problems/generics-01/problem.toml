@@ -1,0 +1,19 @@
+id = "generics-01"
+title = { en = "Points of many types", ja = "いろいろな型の点" }
+difficulty = 2
+concepts = [
+    "generic impl blocks (impl<X, Y>)",
+    "method-level generic parameters",
+    "impl for a concrete type",
+    "conditional methods with trait bounds",
+    "where clauses on impl parameters inside a method",
+    "minimal bounds (PartialOrd, not Ord; no Copy or Clone)",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

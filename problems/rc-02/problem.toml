@@ -1,0 +1,12 @@
+id = "rc-02"
+title = { en = "Family tree leak", ja = "解放されない家系図" }
+difficulty = 2
+concepts = ["Rc reference cycles leak", "Weak back-pointers", "Rc::downgrade / Weak::upgrade", "strong_count / weak_count", "Miri leak detection"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

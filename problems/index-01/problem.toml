@@ -1,0 +1,19 @@
+id = "index-01"
+title = { en = "Grid indexing", ja = "グリッドの添字" }
+difficulty = 2
+concepts = [
+    "Index / IndexMut with a tuple index",
+    "Output associated type",
+    "RangeBounds<usize> and Bound",
+    "per-coordinate bounds checks",
+    "overflow-free bound arithmetic",
+    "i64 accumulation",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
