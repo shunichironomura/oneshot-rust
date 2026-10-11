@@ -10,10 +10,10 @@ pub fn shout(msg: String) -> String
 ```
 
 - `initials` returns the first character of each word of `full_name`, each followed by a `.`, in
-  order. Words are separated by any amount of whitespace (spaces, tabs, newlines), and whitespace at
-  the start or end is ignored. The characters are kept as they are, with no change of case, and a
-  word may start with any Unicode character, not only an ASCII letter. If there is no word, the
-  result is `""`.
+  order. Words are separated by one or more whitespace characters (spaces, tabs, newlines), and
+  whitespace at the start or end is ignored. The characters are kept as they are, with no change of
+  case, and a word may start with any Unicode character, not only an ASCII letter. If there is no
+  word, the result is `""`.
 - `join_path` returns `dir`, then a `/`, then `file`. If `dir` is empty, it returns `file`
   unchanged. Nothing else is special: an empty `file` still gets the `/` (`"usr"` and `""` give
   `"usr/"`).

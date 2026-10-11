@@ -50,20 +50,20 @@ pub fn authorize(s: Option<&Session>, now: u64) -> Result<(), AuthError>
 let root = Session { user: "root".to_string(), expires_at: 100, admin: true };
 let ann = Session { user: "ann".to_string(), expires_at: 100, admin: false };
 
-is_admin(Some(&root))        // true
-is_admin(None)               // false
+is_admin(Some(&root))         // true
+is_admin(None)                // false
 
-within_limit(None, 99)       // true
-within_limit(Some(3), 2)     // true
-within_limit(Some(3), 3)     // false
+within_limit(None, 99)        // true
+within_limit(Some(3), 2)      // true
+within_limit(Some(3), 3)      // false
 
-time_left(&ann, 40)          // Some(60)
-time_left(&ann, 100)         // None
+time_left(&ann, 40)           // Some(60)
+time_left(&ann, 100)          // None
 
-authorize(Some(&root), 99)   // Ok(())
-authorize(Some(&ann), 99)    // Err(AuthError::NotAdmin)
-authorize(Some(&root), 100)  // Err(AuthError::Expired)
-authorize(None, 0)           // Err(AuthError::NoSession)
+authorize(Some(&root), 99)    // Ok(())
+authorize(Some(&ann), 99)     // Err(AuthError::NotAdmin)
+authorize(Some(&root), 100)   // Err(AuthError::Expired)
+authorize(None, 0)            // Err(AuthError::NoSession)
 
 let mut slot = Some(root.clone());
 evict_expired(&mut slot, 100) // Some(root)。セッションが取り出され、slot は None になる

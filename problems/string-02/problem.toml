@@ -1,5 +1,5 @@
 id = "string-02"
-title = { en = "Plus is not append", ja = "+ は追記ではない" }
+title = { en = "Three string helpers", ja = "3 つの文字列ヘルパー" }
 difficulty = 1
 concepts = ["String + &str (Add<&str>)", "+ moves its left operand", "no integer indexing into str", "chars vs bytes", "to_uppercase"]
 kind = "repair"

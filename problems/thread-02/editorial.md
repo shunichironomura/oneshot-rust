@@ -4,11 +4,11 @@ enough:
 
 1. `Rc` is not `Send`. Its reference count is updated without synchronization, so two threads
    cloning or dropping handles at the same time could corrupt it. `Arc` updates the count atomically.
-2. `Arc<T>` is `Send` only if `T` is `Send + Sync`, because every thread holding a handle reaches the
-   same `T` through a shared reference. `RefCell` and `Cell` are not `Sync`: they change their
-   contents through `&` without synchronization. So `Arc<RefCell<_>>` and `Arc<Cell<_>>` are rejected
-   too. Their thread-safe counterparts are `Mutex` (or `RwLock`) and the atomic types such as
-   `AtomicUsize`.
+2. `Arc<T>` is `Send` only if `T` is `Send + Sync`: every thread holding a handle reaches the same
+   `T` through a shared reference, and whichever thread drops the last handle also drops the `T`.
+   `RefCell` and `Cell` are not `Sync`: they change their contents through `&` without
+   synchronization. So `Arc<RefCell<_>>` and `Arc<Cell<_>>` are rejected too. Their thread-safe
+   counterparts are `Mutex` (or `RwLock`) and the atomic types such as `AtomicUsize`.
 3. `Mutex::into_inner` returns a `LockResult`, not the value itself, because the mutex is
    *poisoned* if a thread panicked while holding the lock. That needs one more `unwrap()`.
 

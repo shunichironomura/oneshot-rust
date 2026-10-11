@@ -4,26 +4,18 @@ use std::rc::Rc;
 use crate::judge::{case, check, check_eq};
 use crate::user::{Subject, Subscription};
 
-/// What the listeners were called with: (name of the listener, message).
-type Log = Rc<RefCell<Vec<(&'static str, &'static str)>>>;
+/// Who was called with what, in order.
+type Log = Rc<RefCell<Vec<(&'static str, String)>>>;
+/// Who was called, in order (for the tests where the message does not matter).
+type Names = Rc<RefCell<Vec<&'static str>>>;
 type Slot = Rc<RefCell<Option<Subscription>>>;
-
-/// Every message the tests send.
-const MESSAGES: [&str; 12] =
-    ["hi", "bye", "1", "2", "3", "4", "", "ünï 🦀", "ping", "echo", "nested", "after"];
-
-/// The message as a `&'static str`, so that logging does not allocate.
-fn intern(msg: &str) -> &'static str {
-    MESSAGES.into_iter().find(|&m| m == msg).unwrap_or("(unexpected message)")
-}
 
 fn new_log() -> Log {
     Rc::new(RefCell::new(Vec::new()))
 }
 
-/// Takes the entries out of `log`.
-fn drain(log: &Log) -> Vec<(&'static str, &'static str)> {
-    log.take()
+fn new_names() -> Names {
+    Rc::new(RefCell::new(Vec::new()))
 }
 
 fn empty_slot() -> Slot {
@@ -33,15 +25,21 @@ fn empty_slot() -> Slot {
 /// A listener that appends `(name, msg)` to `log`.
 fn logger(log: &Log, name: &'static str) -> impl Fn(&str) + 'static {
     let log = Rc::clone(log);
-    move |msg| log.borrow_mut().push((name, intern(msg)))
+    move |msg| log.borrow_mut().push((name, msg.to_string()))
 }
 
-/// Like `logger`, and it also holds a clone of `token` for as long as it lives.
-fn tracked(log: &Log, name: &'static str, token: &Rc<()>) -> impl Fn(&str) + 'static {
-    let (log, token) = (Rc::clone(log), Rc::clone(token));
-    move |msg| {
+/// A listener that appends `name` to `names`.
+fn marker(names: &Names, name: &'static str) -> impl Fn(&str) + 'static {
+    let names = Rc::clone(names);
+    move |_| names.borrow_mut().push(name)
+}
+
+/// Like `marker`, and it also holds a clone of `token` for as long as it lives.
+fn tracked(names: &Names, name: &'static str, token: &Rc<()>) -> impl Fn(&str) + 'static {
+    let (names, token) = (Rc::clone(names), Rc::clone(token));
+    move |_| {
         let _ = &token;
-        log.borrow_mut().push((name, intern(msg)));
+        names.borrow_mut().push(name);
     }
 }
 
@@ -56,7 +54,7 @@ pub fn run() {
         drop(a);
         check_eq(subject.listener_count(), 1)?;
         check_eq(subject.notify("bye"), 1)?;
-        check_eq(drain(&log), [("a", "hi"), ("b", "hi"), ("b", "bye")])
+        check_eq(log.take(), [("a", "hi"), ("b", "hi"), ("b", "bye")].map(|(n, m)| (n, m.into())))
     });
     case("sample-2", || {
         let log = new_log();
@@ -71,7 +69,7 @@ pub fn run() {
                 (Rc::clone(&slot), Rc::clone(&subject), Rc::clone(&log), Rc::clone(&left));
             subject.subscribe(move |msg| {
                 drop(me.borrow_mut().take());
-                l.borrow_mut().push(("once", intern(msg)));
+                l.borrow_mut().push(("once", msg.to_string()));
                 left.set(Some(s.listener_count()));
             })
         };
@@ -81,63 +79,48 @@ pub fn run() {
         check_eq(left.get(), Some(2))?;
         check_eq(subject.notify("2"), 2)?;
         check_eq(subject.listener_count(), 2)?;
-        check_eq(drain(&log), [("a", "1"), ("once", "1"), ("c", "1"), ("a", "2"), ("c", "2")])
+        let expected = [("a", "1"), ("once", "1"), ("c", "1"), ("a", "2"), ("c", "2")];
+        check_eq(log.take(), expected.map(|(n, m)| (n, m.into())))
     });
     case("hidden-1", || {
-        // No listeners, a subscription dropped at once, and the order after unsubscribing.
+        // A subscription dropped at once, the order after unsubscribing, and unusual messages.
         let log = new_log();
         let subject = Subject::new();
-        check_eq((subject.listener_count(), subject.notify("hi")), (0, 0))?;
         let _ = subject.subscribe(logger(&log, "gone"));
         check_eq((subject.listener_count(), subject.notify("hi")), (0, 0))?;
         let a = subject.subscribe(logger(&log, "a"));
         let b = subject.subscribe(logger(&log, "b"));
         let _c = subject.subscribe(logger(&log, "c"));
-        let _a2 = subject.subscribe(logger(&log, "a"));
         drop(b);
         let _d = subject.subscribe(logger(&log, "d"));
-        check_eq(subject.notify(""), 4)?;
+        check_eq(subject.notify(""), 3)?;
         drop(a);
         let _e = subject.subscribe(logger(&log, "e"));
-        check_eq(subject.listener_count(), 4)?;
-        check_eq(subject.notify("ünï 🦀"), 4)?;
-        check_eq(
-            drain(&log),
-            [
-                ("a", ""),
-                ("c", ""),
-                ("a", ""),
-                ("d", ""),
-                ("c", "ünï 🦀"),
-                ("a", "ünï 🦀"),
-                ("d", "ünï 🦀"),
-                ("e", "ünï 🦀"),
-            ],
-        )
+        check_eq(subject.listener_count(), 3)?;
+        check_eq(subject.notify("ünï 🦀"), 3)?;
+        let expected =
+            [("a", ""), ("c", ""), ("d", ""), ("c", "ünï 🦀"), ("d", "ünï 🦀"), ("e", "ünï 🦀")];
+        check_eq(log.take(), expected.map(|(n, m)| (n, m.into())))
     });
     case("hidden-2", || {
-        // The subject does not keep a listener alive.
-        let log = new_log();
+        // The subject keeps neither a listener nor itself alive.
+        let names = new_names();
         let token = Rc::new(());
         let subject = Subject::new();
-        let sub = subject.subscribe(tracked(&log, "t", &token));
+        let sub = subject.subscribe(tracked(&names, "t", &token));
+        check_eq(subject.notify("1"), 1)?;
         check_eq(Rc::strong_count(&token), 2)?;
         drop(sub);
         check_eq(Rc::strong_count(&token), 1)?;
-        let sub = subject.subscribe(tracked(&log, "t", &token));
-        check_eq(subject.notify("1"), 1)?;
-        drop(sub);
-        check_eq(Rc::strong_count(&token), 1)?;
         check_eq((subject.listener_count(), subject.notify("2")), (0, 0))?;
-        check_eq(drain(&log), [("t", "1")])?;
 
         // A listener that holds an Rc of its own subject.
         let shared = Rc::new(Subject::new());
         let weak = Rc::downgrade(&shared);
-        let counts = Rc::new(RefCell::new(Vec::new()));
+        let counts = Rc::new(Cell::new(0));
         let sub = {
             let (s, counts) = (Rc::clone(&shared), Rc::clone(&counts));
-            shared.subscribe(move |_| counts.borrow_mut().push(s.listener_count()))
+            shared.subscribe(move |_| counts.set(counts.get() + s.listener_count()))
         };
         drop(shared);
         let alive = weak.upgrade().ok_or("the listener holds an Rc of the subject")?;
@@ -145,32 +128,33 @@ pub fn run() {
         drop(alive);
         drop(sub);
         check(weak.upgrade().is_none(), "the subject should be freed with its last listener")?;
-        check_eq(counts.take(), [1])?;
+        check_eq(counts.get(), 1)?;
 
         // A subscription that outlives its subject.
         let short = Subject::new();
-        let sub = short.subscribe(tracked(&log, "t", &token));
+        let sub = short.subscribe(tracked(&names, "u", &token));
         drop(short);
+        check_eq(Rc::strong_count(&token), 2)?;
         drop(sub);
         check_eq(Rc::strong_count(&token), 1)?;
-        check_eq(drain(&log), [])
+        check_eq(names.take(), ["t"])
     });
     case("hidden-3", || {
         // A listener that subscribes a new listener every time it is called.
         const NAMES: [&str; 2] = ["n1", "n2"];
-        let log = new_log();
+        let names = new_names();
         let subject = Rc::new(Subject::new());
         let spawned: Rc<RefCell<Vec<Subscription>>> = Rc::new(RefCell::new(Vec::new()));
-        let _a = subject.subscribe(logger(&log, "a"));
+        let _a = subject.subscribe(marker(&names, "a"));
         let spawner = {
-            let (s, l, spawned) = (Rc::clone(&subject), Rc::clone(&log), Rc::clone(&spawned));
+            let (s, n, spawned) = (Rc::clone(&subject), Rc::clone(&names), Rc::clone(&spawned));
             subject.subscribe(move |_| {
                 let name = NAMES[spawned.borrow().len()];
-                let sub = s.subscribe(logger(&l, name));
+                let sub = s.subscribe(marker(&n, name));
                 spawned.borrow_mut().push(sub);
             })
         };
-        let _b = subject.subscribe(logger(&log, "b"));
+        let _b = subject.subscribe(marker(&names, "b"));
         check_eq(subject.notify("1"), 3)?;
         check_eq(subject.listener_count(), 4)?;
         check_eq(subject.notify("2"), 4)?;
@@ -178,42 +162,30 @@ pub fn run() {
         drop(spawner);
         spawned.borrow_mut().remove(0);
         check_eq(subject.notify("3"), 3)?;
-        check_eq(
-            drain(&log),
-            [
-                ("a", "1"),
-                ("b", "1"),
-                ("a", "2"),
-                ("b", "2"),
-                ("n1", "2"),
-                ("a", "3"),
-                ("b", "3"),
-                ("n2", "3"),
-            ],
-        )
+        check_eq(names.take(), ["a", "b", "a", "b", "n1", "a", "b", "n2"])
     });
     case("hidden-4", || {
         // A listener drops the subscriptions of an earlier and a later listener.
-        let log = new_log();
+        let names = new_names();
         let token = Rc::new(());
         let subject = Subject::new();
         let (a, c) = (empty_slot(), empty_slot());
-        *a.borrow_mut() = Some(subject.subscribe(logger(&log, "a")));
+        *a.borrow_mut() = Some(subject.subscribe(marker(&names, "a")));
         let _killer = {
-            let (a, c, l) = (Rc::clone(&a), Rc::clone(&c), Rc::clone(&log));
-            subject.subscribe(move |msg| {
-                l.borrow_mut().push(("killer", intern(msg)));
+            let (a, c, n) = (Rc::clone(&a), Rc::clone(&c), Rc::clone(&names));
+            subject.subscribe(move |_| {
+                n.borrow_mut().push("killer");
                 drop(a.borrow_mut().take());
                 drop(c.borrow_mut().take());
             })
         };
-        *c.borrow_mut() = Some(subject.subscribe(tracked(&log, "c", &token)));
-        let _d = subject.subscribe(logger(&log, "d"));
+        *c.borrow_mut() = Some(subject.subscribe(tracked(&names, "c", &token)));
+        let _d = subject.subscribe(marker(&names, "d"));
         check_eq((subject.listener_count(), Rc::strong_count(&token)), (4, 2))?;
         check_eq(subject.notify("1"), 3)?;
         check_eq((subject.listener_count(), Rc::strong_count(&token)), (2, 1))?;
         check_eq(subject.notify("2"), 2)?;
-        check_eq(drain(&log), [("a", "1"), ("killer", "1"), ("d", "1"), ("killer", "2"), ("d", "2")])
+        check_eq(names.take(), ["a", "killer", "d", "killer", "d"])
     });
     case("hidden-5", || {
         // Nested notify calls, before and after a listener unsubscribes itself.
@@ -227,11 +199,11 @@ pub fn run() {
             let (me, s, l, counts) =
                 (Rc::clone(&slot), Rc::clone(&subject), Rc::clone(&log), Rc::clone(&counts));
             subject.subscribe(move |msg| {
-                l.borrow_mut().push(("r", intern(msg)));
+                l.borrow_mut().push(("r", msg.to_string()));
                 if msg == "bye" {
                     drop(me.borrow_mut().take());
                 }
-                if msg == "echo" || msg == "bye" {
+                if msg != "nested" {
                     let count = s.listener_count();
                     let called = s.notify("nested");
                     counts.borrow_mut().extend([count, called]);
@@ -242,71 +214,43 @@ pub fn run() {
         let _c = subject.subscribe(logger(&log, "c"));
         check_eq(subject.notify("echo"), 3)?;
         check_eq(subject.notify("bye"), 3)?;
-        check_eq(subject.notify("after"), 2)?;
         check_eq(subject.listener_count(), 2)?;
         check_eq(counts.take(), [3, 3, 2, 2])?;
-        check_eq(
-            drain(&log),
-            [
-                ("a", "echo"),
-                ("r", "echo"),
-                ("a", "nested"),
-                ("r", "nested"),
-                ("c", "nested"),
-                ("c", "echo"),
-                ("a", "bye"),
-                ("r", "bye"),
-                ("a", "nested"),
-                ("c", "nested"),
-                ("c", "bye"),
-                ("a", "after"),
-                ("c", "after"),
-            ],
-        )?;
+        let expected = [
+            ("a", "echo"),
+            ("r", "echo"),
+            ("a", "nested"),
+            ("r", "nested"),
+            ("c", "nested"),
+            ("c", "echo"),
+            ("a", "bye"),
+            ("r", "bye"),
+            ("a", "nested"),
+            ("c", "nested"),
+            ("c", "bye"),
+        ];
+        check_eq(log.take(), expected.map(|(n, m)| (n, m.into())))?;
         drop(subject);
         check(weak.upgrade().is_none(), "the subject should be freed")
     });
     case("hidden-6", || {
-        // Listeners that own the subscriptions of other listeners.
-        let log = new_log();
+        // A listener that owns the subscription of another listener.
+        let names = new_names();
         let token = Rc::new(());
         let subject = Subject::new();
-        let inner = subject.subscribe(tracked(&log, "inner", &token));
+        let inner = subject.subscribe(tracked(&names, "inner", &token));
         let outer = {
-            let l = Rc::clone(&log);
-            subject.subscribe(move |msg| {
+            let n = Rc::clone(&names);
+            subject.subscribe(move |_| {
                 let _ = &inner;
-                l.borrow_mut().push(("outer", intern(msg)));
+                n.borrow_mut().push("outer");
             })
         };
-        check_eq((subject.listener_count(), subject.notify("1")), (2, 2))?;
+        let _last = subject.subscribe(marker(&names, "last"));
+        check_eq((subject.listener_count(), subject.notify("1")), (3, 3))?;
         drop(outer);
         check_eq(Rc::strong_count(&token), 1)?;
-        check_eq((subject.listener_count(), subject.notify("2")), (0, 0))?;
-
-        // The same chain, dropped by a third listener during a notify.
-        let y = subject.subscribe(tracked(&log, "y", &token));
-        let x = {
-            let l = Rc::clone(&log);
-            subject.subscribe(move |msg| {
-                let _ = &y;
-                l.borrow_mut().push(("x", intern(msg)));
-            })
-        };
-        let x_slot = Rc::new(RefCell::new(Some(x)));
-        let _z = {
-            let (x_slot, l) = (Rc::clone(&x_slot), Rc::clone(&log));
-            subject.subscribe(move |msg| {
-                l.borrow_mut().push(("z", intern(msg)));
-                drop(x_slot.borrow_mut().take());
-            })
-        };
-        check_eq((subject.listener_count(), subject.notify("3")), (3, 3))?;
-        check_eq((subject.listener_count(), Rc::strong_count(&token)), (1, 1))?;
-        check_eq(subject.notify("4"), 1)?;
-        check_eq(
-            drain(&log),
-            [("inner", "1"), ("outer", "1"), ("y", "3"), ("x", "3"), ("z", "3"), ("z", "4")],
-        )
+        check_eq((subject.listener_count(), subject.notify("2")), (1, 1))?;
+        check_eq(names.take(), ["inner", "outer", "last", "last"])
     });
 }

@@ -4,11 +4,12 @@ of it.
 `new` cannot use `[None; N]`. A repeat expression `[x; N]` copies `x` into every element, so `x`
 must be `Copy`, and `Option<T>` is `Copy` only when `T` is. Generic code is type-checked once for
 all possible `T`, so it does not matter that the example uses `i32`: the compiler rejects
-`[None; N]` with E0277. Adding the bound `T: Copy`, as the compiler suggests, only moves the error
-to the harness, which uses `String`. A constant is the exception: an inline `const` block (stable
-since Rust 1.79) is evaluated again for each element instead of being copied, so
-`[const { None }; N]` works for any `T`. `Default::default()` does not work either, because arrays
-implement `Default` only for lengths up to 32, not for every `N`.
+`[None; N]` with E0277 and suggests two fixes. The first one, adding the bound `T: Copy`, only moves
+the error to the harness, which uses `String` (and the statement forbids new bounds). The second
+one is the way out, because a constant is the exception: an inline `const` block (stable since
+Rust 1.79) is evaluated again for each element instead of being copied, so `[const { None }; N]`
+works for any `T`. `Default::default()` does not work either, because arrays implement `Default`
+only for lengths up to 32, not for every `N`.
 
 `self.buf[i]` names a place inside the array. `let x = self.buf[i];` would move the element out and
 leave a hole, so it is rejected (E0507). `Option` can swap values instead: `take()` leaves `None`

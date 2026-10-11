@@ -6,8 +6,8 @@ are in different functions, so the compiler reports all three at once.
   you say which. `word.chars().next()` returns the first `char` as an `Option`, which is `None` only
   for an empty string, and `split_whitespace` never yields an empty word. Two other fixes compile but
   are wrong: `word.as_bytes()[0] as char` takes the first byte of `é` (`0xC3`) and turns it into the
-  character `Ã`, and `&word[..1]` panics, because a range on a `str` counts bytes and byte 1 is
-  inside `é`.
+  character `Ã`, and `&word[..1]` panics, because a range on a `str` counts bytes and byte offset 1
+  falls inside `é`, which is not a character boundary.
 - **`dir + "/" + file`**: `+` on a `String` calls `add(self, s: &str) -> String`. It takes the left
   side by value, appends to its buffer and returns it, and the right side must be a `&str`. `"/"` is
   one, but `file` is a `String`. Write `&file`: the `&String` is deref-coerced to `&str`. Moving

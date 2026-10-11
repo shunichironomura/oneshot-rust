@@ -8,6 +8,12 @@ struct Counter {
     n: u32,
 }
 
+/// Implements `Default`, but not `Clone`.
+#[derive(Default)]
+struct Tally {
+    n: u32,
+}
+
 /// Sets the flag when it is dropped. Not `Clone` either, and it borrows.
 struct Probe<'a> {
     dropped: &'a Cell<bool>,
@@ -74,7 +80,7 @@ pub fn run() {
     });
     case("hidden-3", || {
         // `Default` makes a new, independent value. Even when `T` is `Clone`, cloning a handle
-        // shares the value instead of copying it.
+        // shares the value instead of copying it. `Default` must not require `T: Clone`.
         let a: Handle<Vec<u32>> = Handle::default();
         let b = Handle::<Vec<u32>>::default();
         let c = a.clone();
@@ -82,7 +88,10 @@ pub fn run() {
         a.share().update(|v| v.push(4));
         check_eq(a.read(|v| v.clone()), vec![3, 4])?;
         check_eq(b.read(|v| v.len()), 0)?;
-        check_eq((a.handles(), b.handles()), (2, 1))
+        check_eq((a.handles(), b.handles()), (2, 1))?;
+        let t = Handle::<Tally>::default();
+        t.clone().update(|x| x.n += 1);
+        check_eq((t.read(|x| x.n), t.handles()), (1, 1))
     });
     case("hidden-4", || {
         // The value is dropped together with its last handle, not before.

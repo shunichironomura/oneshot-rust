@@ -4,20 +4,21 @@
 - `is_admin`：`Option::is_some_and(f)` は、`Some(x)` で `f(x)` が `true` のときにだけ `true` です。
 - `within_limit`：`Option::is_none_or(f)`（Rust 1.82）はその対になるメソッドで、`None` なら `true`、
   `Some(x)` なら `f(x)` を返します。`attempts < limit.unwrap_or(u32::MAX)` も同じに見えますが、
-  `attempts == u32::MAX` のときに間違えます。ほかのどの `u32` よりも大きい `u32` はないからです。
+  `attempts == u32::MAX` のときに間違えます。`u32::MAX` より大きい `u32` はないので、「上限なし」を
+  `u32` の値で表すことはできないからです。
 - `time_left`：`bool::then_some(v)` に渡す値は、ほかの関数の引数と同じく、条件が真でも偽でも
   呼び出しの**前に**計算されます。そのため `(now < s.expires_at).then_some(s.expires_at - now)` は
   期限切れのセッションでも引き算をしてしまい、`now > expires_at` になるとオーバーフローします。
-  デバッグビルドや Miri ではパニックです。`bool::then` はクロージャを受け取り、条件が真のときにだけ
-  実行します。`checked_sub` を使えばオーバーフローは避けられますが、それだけでは `now == expires_at`
-  のときに `Some(0)` を返してしまいます。
-- `evict_expired`：`Option::take_if(f)`（Rust 1.80）は `&mut self` を受け取ります。`f` を `&mut T` で呼び、
-  `f` が `true` を返したときにだけ値を取り出して `None` を残します。ほかの思いつきやすい書き方は
-  うまくいきません。
+  デバッグビルドや Miri ではパニックになります。`bool::then` はクロージャを受け取り、条件が真の
+  ときにだけ実行します。`checked_sub` を使えばオーバーフローは避けられますが、それだけでは
+  `now == expires_at` のときに `Some(0)` を返してしまいます。
+- `evict_expired`：`Option::take_if(f)`（Rust 1.80）は `&mut self` を受け取ります。`f` に
+  `&mut T` を渡して呼び、`f` が `true` を返したときにだけ値を取り出して `None` を残します。
+  ほかの思いつきやすい書き方はうまくいきません。
   - `slot.filter(...)`、`slot.is_some_and(...)`、`slot.map(...)`、`slot.unwrap()` は `Option` を
     **値で**受け取ります。`slot: &mut Option<Session>` を通して呼ぶと、参照の先からのムーブになります
-    （E0507）。`is_admin` と `within_limit` で同じメソッドを使えたのは、`Option<&Session>` と
-    `Option<u32>` が `Copy` だからです。
+    （E0507）。`is_admin` と `within_limit` で同じメソッドを使えたのは、これらの関数が `Option` を
+    値で受け取っていて、消費してよいからです。
   - `slot.take().filter(...)` はコンパイルが通りますが、`take` がまずスロットを必ず空にするので、
     まだ有効なセッションは戻されずに捨てられます。
   - `slot.as_ref().filter(...).cloned()` はコピーを返すだけで、期限切れのセッションはスロットに残ります。

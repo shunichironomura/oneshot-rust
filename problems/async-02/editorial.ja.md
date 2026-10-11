@@ -8,8 +8,9 @@ captures state from its environment」と言うのはこのためです。`async
 
 Rust 1.85 で、async クロージャと一緒に `AsyncFn`、`AsyncFnMut`、`AsyncFnOnce` の 3 つのトレイトが
 追加されました（プレリュードに入っています）。`F: AsyncFnMut() -> Result<T, E>` は「`f` を呼ぶと、
-返された Future が完了するまで `f` を可変で借用する」という意味で、本体の使い方にちょうど合います。
-各 `f().await` は、次の呼び出しの前に完了するからです。ほかの 2 つは合いません。
+返された Future が存在する間ずっと `f` を可変で借用する」という意味で、本体の使い方にちょうど
+合います。各 `f().await` は、次の呼び出しの前に完了し、その Future も破棄されるからです。
+ほかの 2 つは合いません。
 
 - `AsyncFn` は `f` を不変でしか借用しないので、キャプチャしたものを変更するクロージャ
   （`calls += 1`、`log.push(...)`、`fetch_any` の中で `urls` を進めるクロージャ）を受け付けません。

@@ -8,8 +8,8 @@ borrows it from the closure.
 
 Rust 1.85 added async closures together with the traits `AsyncFn`, `AsyncFnMut` and `AsyncFnOnce`
 (they are in the prelude). `F: AsyncFnMut() -> Result<T, E>` means "calling `f` borrows it mutably
-until the returned future has finished", which is exactly how the body uses it: each `f().await`
-finishes before the next call. The other two traits do not fit:
+for as long as the returned future is alive", which is exactly how the body uses it: each
+`f().await` finishes, and drops its future, before the next call. The other two traits do not fit:
 
 - `AsyncFn` borrows `f` only immutably, so it rejects closures that change what they capture
   (`calls += 1`, `log.push(...)`, and the closure in `fetch_any` that advances `urls`).

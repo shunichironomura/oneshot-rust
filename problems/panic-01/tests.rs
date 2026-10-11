@@ -51,7 +51,11 @@ fn by_key(a: &(u32, char), b: &(u32, char)) -> bool {
 /// `boom(n, a, b)` is true for its `n`-th call `less(a, b)` (counting from 1). The panic must
 /// reach the caller, and the vector must then hold the strings of `v` in the same order, plus `x`
 /// at most once. (`x` is not in `v`.)
-fn string_panic(v: &[&str], x: &str, boom: impl Fn(usize, &str, &str) -> bool) -> Result<(), String> {
+fn string_panic(
+    v: &[&str],
+    x: &str,
+    boom: impl Fn(usize, &str, &str) -> bool,
+) -> Result<(), String> {
     let mut got: Vec<String> = v.iter().map(|s| s.to_string()).collect();
     let mut calls = 0;
     let panicked = panics(|| {

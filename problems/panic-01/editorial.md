@@ -21,7 +21,9 @@ which only moves values and never calls the caller's code.
 
 The predicate `!less(&x, e)` is true for the elements that are not greater than `x`. In a sorted
 vector they come first, so `partition_point` returns the position after the last element equal to
-`x`. With `|e| less(e, &x)` you would get the position *before* the equal elements instead.
+`x`. With `|e| less(e, &x)` you would get the position *before* the equal elements instead. Do not
+rely on `binary_search_by` here: when several elements are equal, its documentation allows it to
+return any one of them.
 
 Catching the panic with `std::panic::catch_unwind` does not help: the panic has to reach the caller.
 

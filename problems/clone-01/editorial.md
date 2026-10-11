@@ -1,7 +1,8 @@
-`#[derive(Clone)]` does not look at the types of the fields. On a generic struct it adds a bound to
-every type parameter and generates `impl<T: Clone> Clone for Handle<T>`, although the only field,
-`Rc<RefCell<T>>`, can be cloned for any `T`: cloning an `Rc` copies the pointer and increments the
-count. Inside `impl<T> Handle<T>` nothing is known about `T`, so there `Handle<T>` is not `Clone`.
+`#[derive(Clone)]` does not check which bounds the fields really need. On a generic struct it adds
+a bound to every type parameter and generates `impl<T: Clone> Clone for Handle<T>`, although the
+only field, `Rc<RefCell<T>>`, can be cloned for any `T`: cloning an `Rc` copies the pointer and
+increments the count. Inside `impl<T> Handle<T>` nothing is known about `T`, so there `Handle<T>`
+is not `Clone`.
 
 The surprise is that `self.clone()` still finds a `clone` method. Method lookup tries the receiver
 with an extra `&` too, and `&Handle<T>` is `Clone` for any `T` (every shared reference is `Copy`).

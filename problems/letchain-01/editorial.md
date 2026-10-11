@@ -8,7 +8,8 @@ The trap is rule 2. Like `str::parse`, `u32::from_str_radix` accepts a leading `
 `Ok(0x12345)`. "Six characters that parse as hex" is not the same as "six hex digits": check every
 byte with `is_ascii_hexdigit` first. After that check `from_str_radix` cannot fail, and putting it
 into the chain as `let Ok(value) = ...` avoids an `unwrap`. Use `strip_prefix('#')` rather than
-slicing with `&tok[..1]`: a byte range that ends inside a multi-byte character such as `é` panics.
+slicing with `&tok[..1]`: a byte range that ends inside a multi-byte character such as `é`, or past
+the end of the empty string, panics.
 
 Exclusive range patterns such as `0..10` (stable since Rust 1.80) match the rules as written. The
 compiler checks that integer ranges cover every value, so `0..10`, `10..1000` and `1000..` need no

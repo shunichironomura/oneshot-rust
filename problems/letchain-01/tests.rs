@@ -44,9 +44,10 @@ pub fn run() {
         check_eq(classify(""), word(""))
     });
     case("hidden-3", || {
-        // A '+' is not a hexadecimal digit (u32::from_str_radix would accept it).
+        // A sign is not a hexadecimal digit (u32::from_str_radix would accept a '+').
         check_eq(classify("#+12345"), word("#+12345"))?;
-        check_eq(classify("#+c0fee"), word("#+c0fee"))
+        check_eq(classify("#+c0fee"), word("#+c0fee"))?;
+        check_eq(classify("#-12345"), word("#-12345"))
     });
     case("hidden-4", || {
         // Exactly six ASCII hexadecimal digits after the '#'.
@@ -56,6 +57,7 @@ pub fn run() {
         check_eq(classify("#12345"), word("#12345"))?;
         check_eq(classify("#1234567"), word("#1234567"))?;
         check_eq(classify("#"), word("#"))?;
+        check_eq(classify("$C0FFEE"), word("$C0FFEE"))?;
         check_eq(classify("123456"), Token::Large(123456))
     });
     case("hidden-5", || {

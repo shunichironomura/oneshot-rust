@@ -1,6 +1,6 @@
 id = "panic-01"
 title = { en = "Panic-safe insert", ja = "パニックに強い挿入" }
-difficulty = 3
+difficulty = 2
 concepts = ["exception safety", "unwinding through unsafe code", "ptr::read / ptr::copy duplicate values", "double drop", "two-phase algorithms", "guard types (Hole)", "upper bound"]
 kind = "implement"
 
