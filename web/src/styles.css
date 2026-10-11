@@ -294,11 +294,6 @@ button.chip:hover:not(:disabled) {
   font-size: 0.9em;
 }
 
-.lead {
-  color: var(--muted);
-  font-size: 1.05em;
-}
-
 /* App header */
 
 .app-header {
@@ -400,7 +395,16 @@ main > section {
 /* Home */
 
 main > section.home {
+  display: flex;
+  flex-direction: column;
   max-width: 68em;
+  min-height: 100%;
+}
+
+/* The hero fills the screen and centers itself vertically, with the credit at the bottom. */
+.home .hero {
+  flex: 1;
+  align-content: center;
 }
 
 .hero {
@@ -422,6 +426,11 @@ main > section.home {
   margin: 0;
   color: var(--muted);
   font-size: 1.15em;
+}
+
+/* Break Japanese between phrases, not in the middle of a word. */
+.hero-text {
+  word-break: auto-phrase;
 }
 
 .credit {
@@ -531,57 +540,30 @@ main > section.home {
 
 .launcher {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1em;
-  padding: 1.4em 1.6em;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--panel);
-}
-
-.launcher h2 {
-  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.4em;
-  margin: 0;
-  font-size: 1.2em;
+  gap: 0.9em 1.2em;
+  margin-top: 2em;
 }
 
-.launcher h2 svg {
-  color: var(--accent);
+.launcher .round-progress {
+  flex-basis: 100%;
+  font-size: 1.4em;
 }
 
-.launcher-text {
-  margin: 0;
-  color: var(--muted);
-}
-
-.abandon-round {
+.link-button.abandon-round {
   color: var(--muted);
   font-size: 0.9em;
+  text-decoration: none;
 }
 
-.course-options {
-  flex-wrap: wrap;
-}
-
-.course-options button {
-  min-width: 9em;
-  padding: 0.5em 1em;
+.link-button.abandon-round:hover {
+  color: var(--ce);
+  text-decoration: underline;
 }
 
 main > section.round-start {
   max-width: 44em;
-}
-
-.subtle-link {
-  color: var(--muted);
-  font-size: 0.9em;
-}
-
-.subtle-link:hover {
-  color: var(--accent);
 }
 
 /* Static code */
@@ -656,6 +638,50 @@ main > section.round-start {
 
 .syn-meta {
   color: var(--syn-meta);
+}
+
+/* Round progress: one square per problem */
+
+.round-progress {
+  display: inline-flex;
+  gap: 0.3em;
+  vertical-align: middle;
+}
+
+.round-progress .hole {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75em;
+  height: 1.75em;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: var(--border);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.8em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.round-progress .hole.solved {
+  border-color: var(--ac);
+  background: var(--ac);
+  color: var(--panel);
+}
+
+.round-progress .hole.unsolved {
+  border-color: var(--border);
+  background: transparent;
+}
+
+.round-progress .hole.current {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.round-progress .hole.current:not(.solved) {
+  background: transparent;
 }
 
 /* Shot meter: one slot per submission */

@@ -1,7 +1,7 @@
 import { CircleCheck, CircleDot } from "lucide-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
-import { courseName, type Round, roundSummary, seenProblemIds } from "../core/round.ts";
+import { type Round, roundSummary, seenProblemIds } from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
 import { type Best, bestsByProblem, bestVerdicts, type Run } from "../core/run.ts";
 import { useApp } from "./context.ts";
@@ -125,11 +125,6 @@ export function ProblemsPage() {
               <a class="run-date" href={routeHref({ page: "scorecard", roundId: r.id })}>
                 {dateFormat.format(r.startedAt)}
               </a>
-              {r.course === undefined ? (
-                <span>{courseName(r.course, t)}</span>
-              ) : (
-                <DifficultyBadge difficulty={r.course} />
-              )}
               <span>{roundSummary(r, t)}</span>
             </li>
           ))}

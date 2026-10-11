@@ -1,6 +1,6 @@
 // The result images offered for sharing: their content and the layout of the verdict grid.
 import type { Messages } from "./i18n.ts";
-import { courseName, type Round, roundResult, solvedCount, totalSubmissions } from "./round.ts";
+import { type Round, roundResult, solvedCount, totalSubmissions } from "./round.ts";
 import { type ShareInput, titleFor, type VerdictTone, verdictTone } from "./scoring.ts";
 
 export const SITE_NAME = "oneshotrust.dev";
@@ -15,7 +15,7 @@ export interface ShareCard {
   headline: string;
   /** Whether the headline is a success (every problem solved). */
   solved: boolean;
-  /** The problem title, or the course of a round. */
+  /** The problem title, or when the round was played. */
   title: string;
   /** e.g. "3 tries" or "+2 over perfect" */
   detail: string;
@@ -44,12 +44,12 @@ export function shareCard(
   };
 }
 
-/** The scorecard of a finished round. */
-export function roundShareCard(round: Round, messages: Messages): ShareCard {
+/** The scorecard of a finished round, with the date it was played (already formatted). */
+export function roundShareCard(round: Round, date: string, messages: Messages): ShareCard {
   return {
     headline: messages.roundTotal(totalSubmissions(round)),
     solved: solvedCount(round) === round.problemIds.length,
-    title: messages.courseTitle(courseName(round.course, messages)),
+    title: date,
     detail: roundResult(round, messages),
     rows: round.entries.map((e) => shots(e.verdicts)),
   };

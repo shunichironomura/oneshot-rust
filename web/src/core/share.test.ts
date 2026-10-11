@@ -62,18 +62,13 @@ test("a round", () => {
     ...newRunStub(id, problemId),
     status: solved ? "solved" : "failed",
   });
-  let round = newRound({
-    id: "r",
-    course: 2,
-    problemIds: ["a", "b"],
-    now: 0,
-  });
+  let round = newRound({ id: "r", problemIds: ["a", "b"], now: 0 });
   round = recordRun(round, run("1", "a", true));
   round = recordRun(round, run("2", "b", false));
-  expect(roundShareCard(round, MESSAGES.en)).toEqual({
+  expect(roundShareCard(round, "Oct 11, 2026", MESSAGES.en)).toEqual({
     headline: "Total 0",
     solved: false,
-    title: "Intermediate course",
+    title: "Oct 11, 2026",
     detail: "1/2 solved",
     rows: [[], []],
   });

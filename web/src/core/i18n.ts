@@ -42,16 +42,10 @@ export interface Messages {
   // Landing page
   heroTitle: string;
   heroTagline: string;
-  roundHeading: string;
-  roundIntro: (n: number) => string;
-  courseHeading: string;
-  /** e.g. "Beginner course" */
-  courseTitle: (name: string) => string;
-  /** The course of rounds from before courses existed. */
-  courseUnknown: string;
-  startRound: string;
+  play: string;
   continueRound: string;
-  continueRoundDetail: (course: string, position: string) => string;
+  /** e.g. "Problem 2 of 5" */
+  roundPosition: (i: number, n: number) => string;
   demoAccepted: (n: number) => string;
   demoWrongAnswer: (passed: number, n: number) => string;
   demoSubmitHint: string;
@@ -165,11 +159,9 @@ export interface Messages {
   confirmAbandonRoundYes: string;
   columnTries: string;
   oneMoreRound: string;
-  changeCourse: string;
   roundUnfinished: string;
   roundNotFound: string;
   roundSkipDeleted: (id: string) => string;
-  roundShareHeader: (course: string) => string;
 }
 
 const en: Messages = {
@@ -188,15 +180,9 @@ const en: Messages = {
 
   heroTitle: "Rust in one shot.",
   heroTagline: "No autocomplete. No IDE. Just you and the compiler — every compile counts.",
-  roundHeading: "Play a round",
-  roundIntro: (n) =>
-    `${n} problems from one course, back to back. Your score is the total number of submissions: ${n} is perfect.`,
-  courseHeading: "Course",
-  courseTitle: (name) => `${name} course`,
-  courseUnknown: "Random",
-  startRound: "Start round",
+  play: "Play",
   continueRound: "Continue",
-  continueRoundDetail: (course, position) => `${course} course · problem ${position}`,
+  roundPosition: (i, n) => `Problem ${i} of ${n}`,
   demoAccepted: (n) => `Accepted · ${n}/${n} tests passed`,
   demoWrongAnswer: (passed, n) => `Wrong answer · ${passed}/${n} tests passed`,
   demoSubmitHint: "Submit",
@@ -339,11 +325,9 @@ const en: Messages = {
   confirmAbandonRoundYes: "Abandon",
   columnTries: "Tries",
   oneMoreRound: "One more round",
-  changeCourse: "Change course",
   roundUnfinished: "This round is not finished yet.",
   roundNotFound: "This round was not found.",
   roundSkipDeleted: (id) => `Problem “${id}” no longer exists and is skipped.`,
-  roundShareHeader: (course) => `OneShot Rust 🦀 ${course}`,
 };
 
 const ja: Messages = {
@@ -364,15 +348,9 @@ const ja: Messages = {
   heroTitle: "Rust を、一発で。",
   heroTagline:
     "補完なし、IDE なし。あなたとコンパイラだけ。コンパイルは 1 回ごとにカウントされます。",
-  roundHeading: "ラウンドに挑戦",
-  roundIntro: (n) =>
-    `コースから ${n} 問を続けて解きます。スコアは合計の提出回数で、${n} 回なら完璧です。`,
-  courseHeading: "コース",
-  courseTitle: (name) => `${name}コース`,
-  courseUnknown: "ランダム",
-  startRound: "ラウンドを始める",
+  play: "プレイ",
   continueRound: "続きから",
-  continueRoundDetail: (course, position) => `${course}コース · ${position} 問目`,
+  roundPosition: (i, n) => `${n} 問中 ${i} 問目`,
   demoAccepted: (n) => `正解 · ${n}/${n} テスト通過`,
   demoWrongAnswer: (passed, n) => `不正解 · ${passed}/${n} テスト通過`,
   demoSubmitHint: "提出",
@@ -516,11 +494,9 @@ const ja: Messages = {
   confirmAbandonRoundYes: "棄権する",
   columnTries: "回数",
   oneMoreRound: "もう 1 ラウンド",
-  changeCourse: "コースを変える",
   roundUnfinished: "このラウンドはまだ終わっていません。",
   roundNotFound: "ラウンドが見つかりませんでした。",
   roundSkipDeleted: (id) => `問題「${id}」は削除されたため、スキップします。`,
-  roundShareHeader: (course) => `OneShot Rust 🦀 ${course}`,
 };
 
 export const MESSAGES: Record<Locale, Messages> = { en, ja };

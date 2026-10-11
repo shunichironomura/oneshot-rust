@@ -19,7 +19,7 @@ problems/<id>/
 ```toml
 id = "lifetime-01"             # ディレクトリ名と同じにする
 title = { en = "Longest word", ja = "最長の単語" }   # en は必須
-difficulty = 2                 # 難易度ティア：1（初級）| 2（中級）| 3（上級）。コースの割り当てと一覧の並び順に使う
+difficulty = 2                 # 難易度ティア：1（初級）| 2（中級）| 3（上級）。出題と一覧の並び順に使う
 concepts = ["lifetimes", "iterators"]  # 作者向けのメモ。ネタバレになるのでプレイヤーには表示しない
 kind = "implement"             # implement | repair | signature
 
@@ -31,8 +31,8 @@ stdout_limit_bytes = 65536
 harness_visible = false        # tests.rs をプレイヤーに見せるか
 ```
 
-難易度ティアはラウンドのコースと 1 対 1 に対応します。ラウンドは同じティアの問題から出題するので、
-どのティアにも十分な数の問題があるようにしてください。
+1 ラウンドは初級 2 問・中級 2 問・上級 1 問を、この順に出題します（`web/src/core/round.ts` の `ROUND_LADDER`）。
+各ティアでは未出題の問題を優先するので、どのティアにも十分な数の問題があるようにしてください。
 
 ## 問題の種類
 

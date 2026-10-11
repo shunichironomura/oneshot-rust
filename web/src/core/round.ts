@@ -1,12 +1,16 @@
-// A round: a few problems from one course in a row, scored by the total number of submissions.
+// A round: a few problems in a row, from easy to hard, scored by the total number of
+// submissions. Every round has the same make-up, so scores can be compared.
 import type { VerdictKind } from "./classify.ts";
 import type { Messages } from "./i18n.ts";
 import { type Mode, PLAY_MODE } from "./mode.ts";
-import type { Difficulty, Problem } from "./problem.ts";
+import { DIFFICULTIES, type Difficulty, type Problem } from "./problem.ts";
 import { type Run, verdictsOf } from "./run.ts";
 import { verdictEmoji } from "./scoring.ts";
 
-export const ROUND_LENGTH = 5;
+/** The difficulties of the problems of a round, in order. */
+export const ROUND_LADDER: readonly Difficulty[] = [1, 1, 2, 2, 3];
+
+export const ROUND_LENGTH = ROUND_LADDER.length;
 
 export interface RoundEntry {
   problemId: string;
@@ -17,7 +21,10 @@ export interface RoundEntry {
 
 export interface Round {
   id: string;
-  /** The course the problems were drawn from. Missing for rounds from before courses existed. */
+  /**
+   * The difficulty all the problems were drawn from, in rounds of older versions (players
+   * chose a course then). Rounds now climb the ladder instead.
+   */
   course?: Difficulty;
   /** Always `PLAY_MODE` now; rounds of older versions may have another mode. */
   mode: Mode;
@@ -27,14 +34,6 @@ export interface Round {
   finishedAt?: number;
   /** Set when the round was abandoned before all of its problems were played. */
   abandoned?: true;
-}
-
-/** The problems of a course, in the given order. */
-export function courseProblemIds(
-  problems: readonly Pick<Problem, "id" | "difficulty">[],
-  course: Difficulty,
-): string[] {
-  return problems.filter((p) => p.difficulty === course).map((p) => p.id);
 }
 
 /** Fisher–Yates shuffle with the given RNG. */
@@ -47,33 +46,44 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
   return pool;
 }
 
-/**
- * Picks up to `count` distinct problems at random, unsolved ones first, so that the same
- * course can be played again and again.
- */
-export function pickProblems(
-  ids: readonly string[],
-  solved: ReadonlySet<string>,
-  count: number,
-  random: () => number,
-): string[] {
-  const unsolved = shuffle(
-    ids.filter((id) => !solved.has(id)),
-    random,
-  );
-  const rest = shuffle(
-    ids.filter((id) => solved.has(id)),
-    random,
-  );
-  return [...unsolved, ...rest].slice(0, count);
+/** What the player has done so far, which decides the problems of the next round. */
+export interface PlayedProblems {
+  /** Problems with a best record. */
+  solved: ReadonlySet<string>;
+  /** Problems shown in earlier rounds. */
+  seen: ReadonlySet<string>;
 }
 
-export function newRound(params: {
-  id: string;
-  course: Difficulty;
-  problemIds: string[];
-  now: number;
-}): Round {
+type Candidate = Pick<Problem, "id" | "difficulty">;
+
+/**
+ * Picks the problems of a new round, one per step of the ladder, ordered from easy to hard.
+ * Within a difficulty, problems not seen yet come first, then those seen but not solved
+ * (the player may just have read their model solution), then solved ones, each group in
+ * random order. A difficulty without enough problems is made up for from the others.
+ */
+export function pickRound(
+  problems: readonly Candidate[],
+  played: PlayedProblems,
+  random: () => number,
+): string[] {
+  const staleness = (p: Candidate) => (played.solved.has(p.id) ? 2 : played.seen.has(p.id) ? 1 : 0);
+  // Sorting is stable, so the shuffled order remains within each group.
+  const ranked = (candidates: readonly Candidate[]) =>
+    shuffle(candidates, random).sort((a, b) => staleness(a) - staleness(b));
+  const steps = (d: Difficulty) => ROUND_LADDER.filter((step) => step === d).length;
+  const picked = DIFFICULTIES.flatMap((d) =>
+    ranked(problems.filter((p) => p.difficulty === d)).slice(0, steps(d)),
+  );
+  const pickedIds = new Set(picked.map((p) => p.id));
+  const makeUp = ranked(problems.filter((p) => !pickedIds.has(p.id))).slice(
+    0,
+    ROUND_LENGTH - picked.length,
+  );
+  return [...picked, ...makeUp].sort((a, b) => a.difficulty - b.difficulty).map((p) => p.id);
+}
+
+export function newRound(params: { id: string; problemIds: string[]; now: number }): Round {
   const { now, ...rest } = params;
   return { ...rest, mode: PLAY_MODE, startedAt: now, entries: [] };
 }
@@ -159,21 +169,12 @@ export function roundSummary(round: Round, messages: Messages): string {
   return [messages.roundTotal(totalSubmissions(round)), roundResult(round, messages)].join(" · ");
 }
 
-/** The course name, or the fallback for rounds from before courses existed. */
-export function courseName(course: Difficulty | undefined, messages: Messages): string {
-  return course === undefined ? messages.courseUnknown : messages.difficulties[course];
-}
-
 /** Wordle-style result text: one row of squares per problem. Problems are not named. */
 export function roundShareText(round: Round, messages: Messages): string {
   const rows = round.entries.map(
     (e) => `${e.verdicts.map(verdictEmoji).join("") || "—"}${e.solved ? "" : " ✗"}`,
   );
-  return [
-    messages.roundShareHeader(courseName(round.course, messages)),
-    ...rows,
-    roundSummary(round, messages),
-  ].join("\n");
+  return ["OneShot Rust 🦀", ...rows, roundSummary(round, messages)].join("\n");
 }
 
 /**

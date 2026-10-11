@@ -1,13 +1,7 @@
 import { RotateCcw } from "lucide-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
-import {
-  courseName,
-  type Round,
-  roundResult,
-  roundShareText,
-  totalSubmissions,
-} from "../core/round.ts";
+import { type Round, roundResult, roundShareText, totalSubmissions } from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
 import { verdictEmoji } from "../core/scoring.ts";
 import { roundShareCard } from "../core/share.ts";
@@ -16,15 +10,18 @@ import { startRound } from "./RoundLauncher.tsx";
 import { ShareButtons } from "./ShareButtons.tsx";
 
 function Scorecard({ round }: { round: Round }) {
-  const { content, storage, settings, locale, t } = useApp();
+  const { content, storage, locale, t } = useApp();
   const [starting, setStarting] = useState(false);
   const text = roundShareText(round, t);
-  const card = useMemo(() => roundShareCard(round, t), [round, t]);
+  const card = useMemo(() => {
+    const date = new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(round.startedAt);
+    return roundShareCard(round, date, t);
+  }, [round, locale, t]);
   const dateFormat = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" });
 
   const oneMore = () => {
     setStarting(true);
-    void startRound(storage, content.problems, settings).then(() => {
+    void startRound(storage, content.problems).then(() => {
       window.location.hash = routeHref({ page: "round" });
     });
   };
@@ -33,7 +30,6 @@ function Scorecard({ round }: { round: Round }) {
     <section class="scorecard">
       <h1>{t.scorecardTitle}</h1>
       <p class="scorecard-meta">
-        {t.courseTitle(courseName(round.course, t))}
         <span class="run-date">{dateFormat.format(round.startedAt)}</span>
       </p>
       <p class="scorecard-total">
@@ -81,9 +77,6 @@ function Scorecard({ round }: { round: Round }) {
           {t.oneMoreRound}
         </button>
         <ShareButtons text={text} card={card} fileName={`oneshot-rust-round-${round.id}`} />
-        <a class="button" href={routeHref({ page: "home" })}>
-          {t.changeCourse}
-        </a>
       </div>
     </section>
   );
