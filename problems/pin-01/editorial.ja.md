@@ -15,7 +15,7 @@ Future は `Unpin` ではありません。`.await` をまたいで自分自身�
 poll するときは、`task.as_mut()`（`Pin::as_mut`）で `&mut Pin<Box<_>>` を `poll` が受け取る
 `Pin<&mut dyn Future<Output = u32>>` として借用し直します。Box を手放す必要はありません。
 
-つまり、Box と Pin にかかわる箇所をすべて直す必要があります。`Task` 型の別名、2 か所の `Box::new`
+この直し方では、Box と Pin にかかわる箇所をすべて直すことになります。`Task` 型の別名、2 か所の `Box::new`
 （`as Task` でキャストしている方も含む）、そして `poll` の呼び出しです。別名だけを変えると、
 `Box::new` のところで型が合わなくなり、`Pin::new` も相変わらず失敗します。反対の例が
 `YieldNow` です。`bool` を持つだけの普通の構造体なので `Unpin` であり、自分の `poll` の中では
@@ -79,6 +79,30 @@ pub fn finish_order(delays: &[u32]) -> Vec<usize> {
         })
         .collect();
     run_round_robin(tasks).into_iter().map(|(index, _)| index).collect()
+}
+```
+
+Box に入れた Future は、Box が所有しているので、後からピン留めすることもできます。`Box::into_pin`
+（または `Pin::from`）は `Box<T>` を、`T` を動かさずに `Pin<Box<T>>` に変えます。ピン留めされていない
+Box は消費されるので、これは安全です。この場合、`Task` 型の別名と `Box::new` の呼び出しはそのままで、
+実行器だけを変えます。
+
+```rust
+fn run_round_robin(tasks: Vec<Task>) -> Vec<(usize, u32)> {
+    let mut cx = Context::from_waker(Waker::noop());
+    let mut unfinished: Vec<(usize, Pin<Task>)> =
+        tasks.into_iter().map(Box::into_pin).enumerate().collect();
+    let mut finished = Vec::new();
+    while !unfinished.is_empty() {
+        unfinished.retain_mut(|(index, task)| match task.as_mut().poll(&mut cx) {
+            Poll::Ready(output) => {
+                finished.push((*index, output));
+                false
+            }
+            Poll::Pending => true,
+        });
+    }
+    finished
 }
 ```
 

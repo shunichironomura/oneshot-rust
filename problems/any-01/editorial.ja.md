@@ -4,7 +4,8 @@
 できます。`Any` は `Component` のスーパートレイトなので、`&dyn Component` は `&dyn Any` に、
 `&mut dyn Component` は `&mut dyn Any` に、`Box<dyn Component>` は `Box<dyn Any>` に変換できます。
 具体的な型の情報は残るので、ダウンキャストはコンポーネントの本当の型を調べます。また、`Component: Any` に
-よってどのコンポーネント型も `'static` になり、`downcast_ref::<C>()` が `C` に求める条件を満たします。
+よってどのコンポーネント型も `'static` になります。これは `downcast_ref::<C>()` が `C` に求める条件で、
+`add` にも必要です（`Box<dyn Component>` は `Box<dyn Component + 'static>` の省略形です）。
 
 罠は、**何を**アップキャストするかです。要素は `Box<dyn Component>` で、`Box<dyn Component>` 自身も
 `'static` な型なので `Any` を実装しています。`item` が `&Box<dyn Component>` のとき（`for item in &self.items`

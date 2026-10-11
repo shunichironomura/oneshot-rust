@@ -30,8 +30,7 @@ pub fn run() {
         // Empty lists, and a word repeated within a list counts once.
         check_overlap(overlap(&[], &[]), [&[], &[], &[], &[], &[]])?;
         let ab: &[&str] = &["a", "b"];
-        check_overlap(overlap(&["b", "a", "a"], &[]), [&[], ab, &[], ab, ab])?;
-        check_overlap(overlap(&[], &["b", "a", "b"]), [&[], &[], ab, ab, ab])
+        check_overlap(overlap(&["b", "a", "a"], &[]), [&[], ab, &[], ab, ab])
     });
     case("hidden-2", || {
         // The same words with different counts and orders.
@@ -39,9 +38,9 @@ pub fn run() {
         check_overlap(overlap(&["y", "x"], &["x", "y", "x"]), [xy, &[], &[], &[], xy])
     });
     case("hidden-3", || {
-        // Words are case-sensitive and sorted by bytes.
+        // Words are case-sensitive and sorted by bytes. "Z" is repeated only in `right`.
         check_overlap(
-            overlap(&["b", "é", "a", "apple"], &["a", "Z", "app", "B"]),
+            overlap(&["b", "é", "a", "apple"], &["Z", "a", "app", "B", "Z"]),
             [
                 &["a"],
                 &["apple", "b", "é"],

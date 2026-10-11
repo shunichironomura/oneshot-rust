@@ -149,13 +149,15 @@ pub fn run() {
         check_eq(log.take(), vec!["s", "s"])
     });
     case("hidden-3", || {
-        // A finished task is never polled again, and waking it does nothing.
+        // A finished task is never polled again, and waking it does nothing, also when other
+        // tasks are ready after it.
         let mut ex = Executor::new();
         ex.spawn(poll_fn(|cx| {
             cx.waker().wake_by_ref();
             Poll::Ready(())
         }));
-        check_eq((ex.run(), ex.pending()), (1, 0))?;
+        ex.spawn(yield_now());
+        check_eq((ex.run(), ex.pending()), (3, 0))?;
         let old = Slot::default();
         let s = old.clone();
         ex.spawn(poll_fn(move |cx| {
@@ -169,8 +171,8 @@ pub fn run() {
         let old_waker = old.take();
         old_waker.wake_by_ref();
         check_eq((ex.run(), ex.pending()), (0, 1))?;
+        // Woken before a waiting task: the waiting task still runs.
         old_waker.wake();
-        check_eq(ex.run(), 0)?;
         slot.take().wake();
         check_eq((ex.run(), ex.pending()), (1, 0))
     });

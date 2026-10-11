@@ -14,7 +14,10 @@ pub fn run() {
     });
     case("sample-3", || {
         check_eq(running_balance(100, &[-30, 50, -200, 10]), vec![70, 120])?;
-        check_eq(powers_of(10).len(), 20)?;
+        let tens = powers_of(10);
+        check_eq(tens.len(), 20)?;
+        check_eq(tens.first(), Some(&1))?;
+        check_eq(tens.last(), Some(&10_000_000_000_000_000_000))?;
         check_eq(powers_of(2).last(), Some(&(1 << 63)))
     });
     case("hidden-1", || {

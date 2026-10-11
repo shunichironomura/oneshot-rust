@@ -1,11 +1,12 @@
-`#[derive]` はフィールドの型を見ません。ジェネリックな構造体では、すべての型引数に境界を付けるので、
-`#[derive(Debug, Clone, Copy, PartialEq)]` が生成するのは `impl<U: Copy> Copy for Length<U>` や
-`impl<U: PartialEq> PartialEq for Length<U>` などです。`U` は `PhantomData<U>` の中にしか現れず、
-`PhantomData<U>` はどんな `U` でも `Copy`、`PartialEq`、`Debug` ですが、それでも境界は付きます。
-ジェネリックな `perimeter<U>` と `longest<U>` の中では `U` について何もわからないので、`Length<U>` は
-`Copy` になりません。`w + w` は `w` をムーブしてからもう一度使い（E0382）、`copied()` は
-`Length<U>: Copy` を要求します（E0277）。`Mm` は何も実装していないので、`Length<Mm>` でさえ `Copy` でも
-比較可能でもありません。この `#[derive]` の制限は「imperfect derive」と呼ばれています。
+`#[derive]` は、フィールドに本当に必要な境界を調べません。ジェネリックな構造体では
+すべての型引数に境界を付けるので、`#[derive(Debug, Clone, Copy, PartialEq)]` が生成するのは
+`impl<U: Copy> Copy for Length<U>` や `impl<U: PartialEq> PartialEq for Length<U>` などです。
+`U` は `PhantomData<U>` の中にしか現れず、`PhantomData<U>` はどんな `U` でも `Copy`、`PartialEq`、
+`Debug` ですが、それでも境界は付きます。ジェネリックな `perimeter<U>` と `longest<U>` の中では
+`U` について何もわからないので、`Length<U>` は `Copy` になりません。
+`w + w` は `w` をムーブしてからもう一度使い（E0382）、`copied()` は `Length<U>: Copy` を要求します（E0277）。
+`Mm` は何も実装していないので、`Length<Mm>` でさえ `Copy` でも比較可能でもありません。
+この `#[derive]` の制限は「imperfect derive」と呼ばれています。
 
 `U` に境界を付けずに、4 つの impl を手で書けば解決します。
 

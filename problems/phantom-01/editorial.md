@@ -1,5 +1,5 @@
-`#[derive]` does not look at the types of the fields. On a generic struct it puts a bound on every
-type parameter, so `#[derive(Debug, Clone, Copy, PartialEq)]` generates
+`#[derive]` does not check which bounds the fields really need. On a generic struct it puts a bound
+on every type parameter, so `#[derive(Debug, Clone, Copy, PartialEq)]` generates
 `impl<U: Copy> Copy for Length<U>`, `impl<U: PartialEq> PartialEq for Length<U>` and so on. `U`
 only appears in `PhantomData<U>`, which is `Copy`, `PartialEq` and `Debug` for any `U`, but the
 bounds are there anyway. Inside the generic `perimeter<U>` and `longest<U>` nothing is known about

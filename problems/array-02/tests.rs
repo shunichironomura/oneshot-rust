@@ -35,8 +35,11 @@ pub fn run() {
         check_eq(&got[25], &["zulu", "Zed"])
     });
     case("hidden-4", || {
-        // Non-ASCII first characters are ignored, even when they are letters.
-        let got = bucket_by_initial(&["šálek", "ñu", "Ωmega", "ｂｉｇ", "日本", "🦀rust", "ok", "Éa"]);
+        // Non-ASCII first characters are ignored, even when they are letters, and even when
+        // their Unicode lowercase starts with an ASCII letter (U+0130 -> "i\u{307}", U+212A -> "k").
+        let got = bucket_by_initial(&[
+            "šálek", "ñu", "Ωmega", "ｂｉｇ", "日本", "🦀rust", "ok", "Éa", "\u{130}zmir", "\u{212A}elvin",
+        ]);
         check_eq(letters_used(&got), "o")?;
         check_eq(&got[14], &["ok"])
     });

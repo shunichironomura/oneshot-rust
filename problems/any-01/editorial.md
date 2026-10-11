@@ -4,7 +4,8 @@ component has to become a `dyn Any` first. Since Rust 1.86 this is a plain coerc
 upcasting*: `Any` is a supertrait of `Component`, so `&dyn Component` coerces to `&dyn Any`,
 `&mut dyn Component` to `&mut dyn Any`, and `Box<dyn Component>` to `Box<dyn Any>`. The concrete
 type is kept, so the downcast checks the real type of the component. `Component: Any` also makes
-every component type `'static`, which is what `downcast_ref::<C>()` requires of `C`.
+every component type `'static`: `downcast_ref::<C>()` requires that of `C`, and so does `add`,
+because `Box<dyn Component>` is short for `Box<dyn Component + 'static>`.
 
 The trap is *what* gets upcast. The items are `Box<dyn Component>`, and a `Box<dyn Component>` is a
 `'static` type itself, so it implements `Any` too. When `item` is a `&Box<dyn Component>` (as in

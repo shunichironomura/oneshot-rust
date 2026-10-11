@@ -1,7 +1,7 @@
 use std::fmt::Write;
 
 /// Hands out items one at a time, like an iterator. An item may borrow from the lender itself,
-/// so it has to be dropped before `next` is called again.
+/// so it can no longer be used once `next` is called again.
 pub trait Lender {
     type Item<'a> where Self: 'a;
 

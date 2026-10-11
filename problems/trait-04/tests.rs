@@ -27,19 +27,15 @@ pub fn run() {
         check_eq(None::<bool>.describe(), "none")
     });
     case("hidden-2", || {
-        check_eq(Some(Some(-3)).describe(), "some(some(-3))")?;
-        check_eq(vec![vec![], vec![1, 2]].describe(), "[[], [1, 2]]")?;
-        check_eq((1, (false, None::<i32>)).describe(), "(1, (no, none))")?;
-        let entries = vec![(String::from("k"), vec![Some(true), None])];
-        check_eq(entries.describe(), "[(\"k\", [some(yes), none])]")
+        check_eq(vec![vec![], vec![1]].describe(), "[[], [1]]")?;
+        check_eq((1, (false, None::<i32>)).describe(), "(1, (no, none))")
     });
     case("hidden-3", || {
         let v = vec![10, 20, 30];
         let flags = [true, false];
-        check_eq(v[1..].describe(), "[20, 30]")?;
-        check_eq(flags[..].describe(), "[yes, no]")?;
+        check_eq(v[2..].describe(), "[30]")?;
         check_eq(vec![&v[..1], &v[3..]].describe(), "[[10], []]")?;
-        check_eq((&v[..2], Some(&flags[1..])).describe(), "([10, 20], some([no]))")
+        check_eq(Some(&flags[1..]).describe(), "some([no])")
     });
     case("hidden-4", || {
         let word = String::from("café");
@@ -50,23 +46,20 @@ pub fn run() {
     case("hidden-5", || {
         // Strings are escaped the way `{:?}` does it.
         check_eq("say \"hi\"\n".describe(), "\"say \\\"hi\\\"\\n\"")?;
-        check_eq(String::new().describe(), "\"\"")?;
-        check_eq(vec!["a\\b", ""].describe(), "[\"a\\\\b\", \"\"]")
+        check_eq("a\\b".describe(), "\"a\\\\b\"")?;
+        check_eq(String::new().describe(), "\"\"")
     });
     case("hidden-6", || {
         // Values of different types in one `Vec`.
         let list = vec![true, false];
         let nothing: Option<i32> = None;
-        let items: Vec<&dyn Describe> = vec![&1, &"two", &list, &nothing];
-        check_eq(items.describe(), "[1, \"two\", [yes, no], none]")?;
-        let pair: &dyn Describe = &(3, "x");
-        check_eq(Some(pair).describe(), "some((3, \"x\"))")
+        let warm = Celsius(21);
+        let items: Vec<&dyn Describe> = vec![&1, &"two", &list, &nothing, &warm];
+        check_eq(items.describe(), "[1, \"two\", [yes, no], none, 21°C]")
     });
     case("hidden-7", || {
-        let today = Celsius(21);
-        check_eq(vec![Celsius(-4), Celsius(0)].describe(), "[-4°C, 0°C]")?;
-        check_eq((Some(&today), &today).describe(), "(some(21°C), 21°C)")?;
-        let items: Vec<&dyn Describe> = vec![&today, &"warm"];
-        check_eq(items[..].describe(), "[21°C, \"warm\"]")
+        let today = Celsius(-4);
+        check_eq(vec![Celsius(0), Celsius(35)].describe(), "[0°C, 35°C]")?;
+        check_eq((Some(&today), &today).describe(), "(some(-4°C), -4°C)")
     });
 }

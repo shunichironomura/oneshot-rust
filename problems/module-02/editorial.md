@@ -19,9 +19,9 @@ Paths and visibility are both relative to modules, and the template makes six mi
 - `pub(super)` on `Rect::new` reaches `crate::user`, so `square` compiles, but the harness is
   outside `crate::user`. Make it `pub` (or `pub(crate)`, since the harness is in the same crate).
 
-`checks` reads `rect.width`, a private field of `Rect`. That is fine: a private field is visible in
-the module where its struct is defined and in all of that module's descendants, and `checks` is
-inside `shapes`.
+The pattern in `checks` reads `width` and `height`, private fields of `Rect`. That is fine: a
+private field is visible in the module where its struct is defined and in all of that module's
+descendants, and `checks` is inside `shapes`.
 
 You cannot give `shapes` alone access to the field of `Cm`: `pub(in crate::user::shapes)` is
 rejected, because a visibility can only be restricted to an ancestor module, and `shapes` is a

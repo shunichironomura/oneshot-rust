@@ -23,7 +23,7 @@ crate::user::total_area(rects: &[Rect]) -> u32
 - `total_area` returns the sum of the areas of the rectangles in the slice (`0` for an empty slice).
 - Areas and their sums always fit in a `u32`.
 - Change only visibility, paths and `use` declarations. Keep every module, type and function where
-  it is (do not move, rename or remove them), and keep `Cm` a tuple struct.
+  it is (do not move, rename or remove them).
 
 ### Examples
 

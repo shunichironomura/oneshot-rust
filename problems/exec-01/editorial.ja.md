@@ -2,9 +2,10 @@
 `From<Arc<W>> for Waker` には `W: Wake + Send + Sync + 'static` という条件があります。
 ウェイカーは複製されて、どのスレッドからでも起こされるかもしれないからです。この問題のタスクは
 `Rc` を持っていて `Send` ではないので、ウェイカーを `Arc<Task>` にして Future を `Mutex` に
-入れておく定番の設計はコンパイルできません（`Waker::from` で「`dyn Future<Output = ()>`
-cannot be sent between threads safely」）。箱に入れた Future に `+ Send` を付けてもエラーが
-`spawn` に移るだけで、キューを `Rc<RefCell<VecDeque<_>>>` にしても同じ理由で失敗します。
+入れておく定番の設計はコンパイルできません。`Waker::from` のところで、
+`dyn Future<Output = ()>` はスレッド間で安全に送れない（cannot be sent between threads safely）
+というエラーになります。箱に入れた Future に `+ Send` を付けてもエラーが `spawn` に移るだけで、
+キューを `Rc<RefCell<VecDeque<_>>>` にしても同じ理由で失敗します。
 そこで、タスクを 2 つに分けます。
 
 - Future は実行器が `Pin<Box<dyn Future<Output = ()>>>` として持ち、タスクの ID で引けるように
@@ -27,7 +28,8 @@ cannot be sent between threads safely」）。箱に入れた Future に `+ Send
   追い越すことがあるからです。
 - **終了したタスク。** キューには終了したタスクの ID が残っていることがあり（自分を起こしてから
   `Ready` を返した場合）、しまっておいたウェイカーはいつ起こされるかわかりません。終了した
-  タスクの場所は `None` にし（これで Future が破棄されます）、`run` はそのような ID を読み飛ばします。
+  タスクの場所は `None` にし（これで Future が破棄されます）、`run` はそのような ID を `continue` で
+  読み飛ばします（`break` や `return` ではいけません。後ろに実行可能なタスクがあるかもしれません）。
   ID を使い回さないので、古いウェイカーが新しいタスクを起こすことはありません。終了したタスクを
   取り除く `HashMap` で `id = tasks.len()` とすると、そうなってしまいます。
 - **ポーリング中はロックを持たない。**

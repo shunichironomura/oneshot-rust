@@ -27,8 +27,7 @@ impl Drop for Transaction { /* ... */ }
 - Rolling back appends `"rollback:<n>"` to the log, where `<n>` is the number of operations in the
   transaction (`"rollback:0"` for an empty one).
 - Dropping a transaction that was neither committed nor consumed by `into_ops` rolls it back.
-- Each transaction appends **exactly one** line to the log: a committed transaction is not rolled
-  back as well, and `into_ops` rolls back only once.
+- Each transaction appends **exactly one** line to the log.
 - A transaction that is gone must not keep its log alive: once no transaction that writes to `log` is
   left, `Rc::strong_count(&log)` is `1` again.
 

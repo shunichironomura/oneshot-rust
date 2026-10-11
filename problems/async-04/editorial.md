@@ -12,9 +12,8 @@ the `.await`, and it is conservative about borrowed ones: once a variable has be
 (`guard.push(item)` and `guard.len()` borrow `guard` through `DerefMut` and `Deref`), it counts as
 needed until the end of its scope, since a reference to it might still exist. `drop(guard)` moves
 the guard out, but the variable is still in scope at the `.await`, so a `MutexGuard` is still
-counted as part of the future.
-Put the guard in a block that ends before the `.await`: the block evaluates to the new length, and
-the guard's scope is over.
+counted as part of the future. Put the guard in a block that ends before the `.await`: the block
+evaluates to the new length, and the guard's scope is over.
 
 **`forward_all`**: there is no guard variable here, but `inbox.lock().unwrap()` creates a temporary
 guard, and a temporary lives until the end of the statement it is in. The body is a single

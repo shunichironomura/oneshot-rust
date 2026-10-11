@@ -1,5 +1,5 @@
 id = "gat-01"
-title = { en = "Lending windows", ja = "貸し出すイテレータ" }
+title = { en = "Lending windows", ja = "窓の貸し出し" }
 difficulty = 3
 concepts = [
     "generic associated types",

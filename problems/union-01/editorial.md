@@ -1,5 +1,5 @@
-Reading a union field reinterprets the bytes the union holds as the type of that field. That is sound
-only if those bytes form a **valid value** of that type. Integers and floats accept every bit
+Reading a union field reinterprets the bytes the union holds as the type of that field. That is
+sound only if those bytes form a **valid value** of that type. Integers and floats accept every bit
 pattern, but not uninitialized bytes, and a `bool` accepts only `0` and `1`. Going through the four
 functions:
 
@@ -15,9 +15,10 @@ functions:
   uninitialized memory as an integer is UB: it is not "some unknown number". `u32::from(b)` (or
   `b as u32`, which never loses anything here) converts the number.
 - `pack_header` is the subtle one. `Header` is `#[repr(C)]`, so `len` is aligned to offset 2, and
-  byte 1 is **padding**. Zeroing `bits` first does not help: `packed.header = Header { .. }` stores a
-  whole `Header` value, and a value does not carry its padding, so storing it makes byte 1
-  uninitialized again. Reading `bits` then reads that byte. Build the number with shifts instead.
+  the byte at offset 1 is **padding**. Zeroing `bits` first does not help:
+  `packed.header = Header { .. }` stores a whole `Header` value, and a value does not carry its
+  padding, so storing it makes that byte uninitialized again. Reading `bits` then reads that byte.
+  Build the number with shifts instead.
 
 The solution needs no `unsafe`. Shifts and `u32::from` also do not depend on the byte order of the
 target, while any union-based `widen` or `pack_header` relies on the target being little-endian.

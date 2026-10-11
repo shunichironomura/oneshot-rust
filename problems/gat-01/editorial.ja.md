@@ -16,10 +16,10 @@ pub trait Lender {
 }
 ```
 
-`Self::Item<'_>` は `&mut self` のライフタイムを使うので、要素は破棄されるまでレンダーを可変で借用し続けます。
-これがこのレンダーを安全にしています。`while let Some(w) = windows.next()` では、各 `w` は次の呼び出しの前に
-なくなるので、2 つの窓が同時に存在することはありません。レンダーはそれぞれ別々に借用されるので、
-別々のレンダーの要素は一緒に使えます。
+`Self::Item<'_>` は `&mut self` のライフタイムを使うので、要素を使っている間はレンダーが可変で
+借用されたままです。これがこのレンダーを安全にしています。`while let Some(w) = windows.next()` では、
+各 `w` は次の呼び出しの前になくなるので、2 つの窓が同時に存在することはありません。レンダーは
+それぞれ別々に借用されるので、別々のレンダーの要素は一緒に使えます。
 
 `where Self: 'a` は必須です。`next` は `Item<'a>` を `&'a mut self` と一緒に使っていて、これは `Self: 'a` を
 意味します。rustc は、この境界を書いていない GAT を拒否します（「missing required bound on `Item`」）。
@@ -61,6 +61,38 @@ impl<'s, T> Lender for WindowsMut<'s, T> {
 impl<'t> Lender for Numbered<'t> {
     type Item<'a> = &'a str where 't: 'a;
 
+    fn next(&mut self) -> Option<&str> {
+        let line = self.lines.next()?;
+        self.n += 1;
+        self.buf.clear();
+        write!(self.buf, "{}: {}", self.n, line).unwrap();
+        Some(&self.buf)
+    }
+}
+```
+
+トレイトで戻り値の位置に `impl Trait` を書く方法でも解けます。これは内部的には GAT で、隠れた型は
+`&mut self` のライフタイムをキャプチャします。`type Item` の行は削除します。テストで窓をスライスとして
+使えるように、impl は具体的な型を返す必要があり、`refining_impl_trait` を許可しないと rustc はこの
+詳細化を警告します。ジェネリックなコードからは要素が `Sized` であることしか分からず、`L::Item<'a>` の
+ように型に名前を付けたり境界を追加したりできないので、GAT のほうが使いやすい設計です。
+
+```rust
+pub trait Lender {
+    fn next(&mut self) -> Option<impl Sized>;
+}
+
+impl<'s, T> Lender for WindowsMut<'s, T> {
+    #[allow(refining_impl_trait)]
+    fn next(&mut self) -> Option<&mut [T]> {
+        let window = self.slice.get_mut(self.pos..self.pos + self.size)?;
+        self.pos += 1;
+        Some(window)
+    }
+}
+
+impl<'t> Lender for Numbered<'t> {
+    #[allow(refining_impl_trait)]
     fn next(&mut self) -> Option<&str> {
         let line = self.lines.next()?;
         self.n += 1;

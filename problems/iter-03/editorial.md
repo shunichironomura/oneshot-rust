@@ -58,8 +58,9 @@ pub fn split_header<'a>(lines: &[&'a str]) -> (Vec<&'a str>, Vec<&'a str>) {
 }
 ```
 
-You can also compute every running sum and keep them up to the first negative one. Everything after
-that point is cut off anyway, so it does not matter that the state went on.
+You can also compute the running sums and keep them up to the first negative one. The state does add
+the rejected transaction, but `take_while` drops that sum and then stops asking `scan` for more
+items, so no later transaction is added.
 
 ```rust
 pub fn running_balance(start: i64, txns: &[i64]) -> Vec<i64> {

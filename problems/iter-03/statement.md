@@ -30,6 +30,6 @@ pub fn powers_of(base: u64) -> Vec<u64>
 - `longest(&["éé", "abc"])` returns `Some("abc")`.
 - `split_header(&["# a", "# b", "body", "# x"])` returns
   `(vec!["# a", "# b"], vec!["body", "# x"])`.
-- `running_balance(100, &[-30, 50, -200, 10])` returns `[70, 120]`.
+- `running_balance(100, &[-30, 50, -200, 10])` returns `vec![70, 120]`.
 - `powers_of(10)` has 20 elements, from `1` to `10_000_000_000_000_000_000` (10¹⁹).
 - The last element of `powers_of(2)` is `1 << 63` (2⁶³).

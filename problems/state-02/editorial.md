@@ -56,8 +56,9 @@ fn transition(&mut self, f: impl FnOnce(Box<dyn State>) -> Box<dyn State>) {
 }
 ```
 
-The trait methods themselves can be passed as functions: `State::approve` is a function from
-`Box<dyn State>` to `Box<dyn State>`. `request_review` and `reject` are written the same way.
+The trait methods themselves can be passed as functions: here `State::approve` means
+`<dyn State as State>::approve`, a function from `Box<dyn State>` to `Box<dyn State>`.
+`request_review` and `reject` are written the same way.
 
 ```rust
 pub fn approve(&mut self) {

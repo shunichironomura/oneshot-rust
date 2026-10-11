@@ -1,10 +1,10 @@
 A `Waker` can be made from an `Arc<W>` where `W` implements `std::task::Wake`, but
 `From<Arc<W>> for Waker` requires `W: Wake + Send + Sync + 'static`: a waker may be cloned and woken
 on any thread. The tasks here are not `Send` (they hold `Rc`s), so the classic design where the
-waker is an `Arc<Task>` that owns the future in a `Mutex` does not compile:
-"`dyn Future<Output = ()>` cannot be sent between threads safely" at `Waker::from`. Adding `+ Send`
-to the boxed future only moves the error to `spawn`, and an `Rc<RefCell<VecDeque<_>>>` queue fails
-for the same reason. So the task is split in two:
+waker is an `Arc<Task>` that owns the future in a `Mutex` does not compile: at `Waker::from`, rustc
+reports that `dyn Future<Output = ()>` cannot be sent between threads safely. Adding `+ Send` to the
+boxed future only moves the error to `spawn`, and an `Rc<RefCell<VecDeque<_>>>` queue fails for the
+same reason. So the task is split in two:
 
 - The executor owns the futures, as `Pin<Box<dyn Future<Output = ()>>>` indexed by task id. Polling
   needs a pinned future; `Box::pin` pins any future, and `as_mut()` reborrows the pin for each poll.
@@ -22,9 +22,9 @@ bookkeeping:
   entry from an earlier wake can then let a task overtake tasks that became ready before it.
 - **Finished tasks.** The queue may still contain the id of a finished task (it woke itself and then
   returned `Ready`), and a stored waker may be woken at any time. The slot of a finished task
-  becomes `None` (which drops the future), and `run` skips such ids. Ids are never reused, so an old
-  waker cannot wake a newer task. With `id = tasks.len()` on a `HashMap` that removes finished
-  tasks, it could.
+  becomes `None` (which drops the future), and `run` skips such ids with `continue` (not `break` or
+  `return`: other tasks may be ready behind them). Ids are never reused, so an old waker cannot wake
+  a newer task. With `id = tasks.len()` on a `HashMap` that removes finished tasks, it could.
 - **Do not hold the lock while polling.** In
   `while let Some(id) = self.ready.lock().unwrap().pop_front() { ... }`, the `MutexGuard` is a
   temporary of the condition and lives until the end of the loop body (the same goes for the

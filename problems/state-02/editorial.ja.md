@@ -1,5 +1,5 @@
-`Option::unwrap` はオプションを**値で**受け取ります。`self.state` は `&mut self`（`content` では `&self`）の
-先にあり、借用している構造体からフィールドだけをムーブすることはできません。`*self` に穴が空いてしまうからです。
+`Option::unwrap` は `Option` を**値で**受け取ります。`self.state` は `&mut self`（`content` では `&self`）の
+先にあり、借用している構造体からフィールドだけをムーブすることはできません。`*self` に穴が開いてしまうからです。
 そのため `self.state.unwrap()` はどれもエラー E0507 になります。箱を `s` にムーブする
 `if let Some(s) = self.state` も同じです。
 
@@ -55,8 +55,9 @@ fn transition(&mut self, f: impl FnOnce(Box<dyn State>) -> Box<dyn State>) {
 }
 ```
 
-トレイトのメソッドそのものを関数として渡すこともできます。`State::approve` は `Box<dyn State>` から
-`Box<dyn State>` への関数です。`request_review` と `reject` も同じように書けます。
+トレイトのメソッドそのものを関数として渡すこともできます。ここでの `State::approve` は
+`<dyn State as State>::approve` のことで、`Box<dyn State>` から `Box<dyn State>` への関数です。
+`request_review` と `reject` も同じように書けます。
 
 ```rust
 pub fn approve(&mut self) {

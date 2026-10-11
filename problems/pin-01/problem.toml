@@ -1,7 +1,7 @@
 id = "pin-01"
-title = { en = "Boxed futures that won't poll", ja = "poll できない Box 入りの Future" }
+title = { en = "Round-robin tasks", ja = "ラウンドロビンで動くタスク" }
 difficulty = 2
-concepts = ["trait objects of futures", "Unpin", "async blocks are !Unpin", "Box::pin vs Box::new", "Pin<Box<dyn Future>>", "Pin::as_mut", "round-robin polling"]
+concepts = ["trait objects of futures", "Unpin", "async blocks are !Unpin", "Box::pin vs Box::new", "Box::into_pin", "Pin<Box<dyn Future>>", "Pin::as_mut", "round-robin polling"]
 kind = "repair"
 
 [judge]

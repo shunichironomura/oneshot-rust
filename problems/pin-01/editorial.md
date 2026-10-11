@@ -11,12 +11,13 @@ The fix is to pin each future when it is created: `Box::pin` instead of `Box::ne
 moves the future to the heap and returns a `Pin<Box<_>>`, which promises that the future never
 moves again. It coerces to `Pin<Box<dyn Future<Output = u32>>>` just like a `Box<_>` coerces to
 `Box<dyn Future<Output = u32>>`. The `Pin<Box<_>>` itself is only a pointer and is `Unpin`, so it
-can be moved freely: collected into a `Vec`, paired with its index, dropped by `retain_mut`. To poll it, `task.as_mut()` (`Pin::as_mut`) reborrows the `&mut Pin<Box<_>>` as the
+can be moved freely: collected into a `Vec`, paired with its index, dropped by `retain_mut`. To
+poll it, `task.as_mut()` (`Pin::as_mut`) reborrows the `&mut Pin<Box<_>>` as the
 `Pin<&mut dyn Future<Output = u32>>` that `poll` takes, without giving up the box.
 
-So the repair touches every piece of the plumbing: the `Task` alias, both `Box::new` calls
-(including the one cast with `as Task`), and the `poll` call. Changing only the alias leaves
-mismatched types at the `Box::new` calls, and `Pin::new` still fails. `YieldNow` shows the other
+This fix touches every piece of the plumbing: the `Task` alias, both `Box::new` calls (including
+the one cast with `as Task`), and the `poll` call. Changing only the alias leaves mismatched types
+at the `Box::new` calls, and `Pin::new` still fails. `YieldNow` shows the other
 side: it is a plain struct with a `bool`, so it is `Unpin`, and its own `poll` can assign
 `self.yielded` through `Pin<&mut Self>`.
 
@@ -79,6 +80,30 @@ pub fn finish_order(delays: &[u32]) -> Vec<usize> {
         })
         .collect();
     run_round_robin(tasks).into_iter().map(|(index, _)| index).collect()
+}
+```
+
+A boxed future can also be pinned later, because the box owns it: `Box::into_pin` (or
+`Pin::from`) turns a `Box<T>` into a `Pin<Box<T>>` without moving `T`, and it is safe because the
+unpinned box is consumed. Then the `Task` alias and the `Box::new` calls stay as they are, and only
+the executor changes:
+
+```rust
+fn run_round_robin(tasks: Vec<Task>) -> Vec<(usize, u32)> {
+    let mut cx = Context::from_waker(Waker::noop());
+    let mut unfinished: Vec<(usize, Pin<Task>)> =
+        tasks.into_iter().map(Box::into_pin).enumerate().collect();
+    let mut finished = Vec::new();
+    while !unfinished.is_empty() {
+        unfinished.retain_mut(|(index, task)| match task.as_mut().poll(&mut cx) {
+            Poll::Ready(output) => {
+                finished.push((*index, output));
+                false
+            }
+            Poll::Pending => true,
+        });
+    }
+    finished
 }
 ```
 

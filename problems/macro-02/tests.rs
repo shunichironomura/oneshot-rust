@@ -81,6 +81,7 @@ pub fn run() {
         let owned = String::from("Bob");
         let inner = crate::user::json!([1, "two"]);
         let expected_inner = J::Arr(vec![J::Num(1.0), J::Str("two".into())]);
+        check_json(crate::user::json!((-2.5)), J::Num(-2.5))?;
         check_json(
             crate::user::json!([
                 (-1),

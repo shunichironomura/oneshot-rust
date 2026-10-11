@@ -12,13 +12,14 @@ The fix is the classic pair of orderings:
 - Locking is an **Acquire** operation that reads that `false`: everything the Release published
   becomes visible to the new holder.
 
-The second bug is in `try_lock`: `load` followed by `store` is two separate steps ("test, then set"). Two
-threads can both load `false` before either stores `true`, and both get a guard. Stronger orderings
-do not close this gap; replacing every `Relaxed` with `SeqCst` still leaves it. The test and the set
-must be **one** atomic read-modify-write: `compare_exchange(false, true, Acquire, Relaxed)` changes
-`false` to `true` only if the value is `false` at that very moment, and reports whether it did. The
-success ordering `Acquire` is the one that matters. On failure the thread did not get the lock and
-touches nothing protected, so `Relaxed` is enough.
+The second bug is in `try_lock`: `load` followed by `store` is two separate steps ("test, then
+set"). Two threads can both load `false` before either stores `true`, and both get a guard.
+Stronger orderings do not close this gap; replacing every `Relaxed` with `SeqCst` still leaves it.
+The test and the set must be **one** atomic read-modify-write:
+`compare_exchange(false, true, Acquire, Relaxed)` changes `false` to `true` only if the value is
+`false` at that very moment, and reports whether it did. The success ordering `Acquire` is the one
+that matters. On failure the thread did not get the lock and touches nothing protected, so
+`Relaxed` is enough.
 
 Pitfalls:
 

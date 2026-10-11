@@ -17,8 +17,8 @@ pub trait Lender {
 }
 ```
 
-`Self::Item<'_>` uses the lifetime of `&mut self`, so an item keeps the lender mutably borrowed
-until it is dropped. That is what makes these lenders safe: in `while let Some(w) = windows.next()`,
+`Self::Item<'_>` uses the lifetime of `&mut self`, so the lender stays mutably borrowed for as long
+as the item is in use. That is what makes these lenders safe: in `while let Some(w) = windows.next()`,
 each `w` is gone before the next call, so two windows never exist at once. Each lender is borrowed
 on its own, so the items of different lenders can be used together.
 
@@ -62,6 +62,39 @@ impl<'s, T> Lender for WindowsMut<'s, T> {
 impl<'t> Lender for Numbered<'t> {
     type Item<'a> = &'a str where 't: 'a;
 
+    fn next(&mut self) -> Option<&str> {
+        let line = self.lines.next()?;
+        self.n += 1;
+        self.buf.clear();
+        write!(self.buf, "{}: {}", self.n, line).unwrap();
+        Some(&self.buf)
+    }
+}
+```
+
+Return-position `impl Trait` in the trait also works, because it is a GAT under the hood: the hidden
+type captures the lifetime of `&mut self`. Remove the `type Item` lines. The impls have to return
+the concrete types so that the tests can use the windows as slices, and rustc warns about this
+refinement unless `refining_impl_trait` is allowed. Generic code only knows that an item is `Sized`
+and cannot name its type or ask for more bounds as it can with `L::Item<'a>`, so the GAT is the
+more useful design.
+
+```rust
+pub trait Lender {
+    fn next(&mut self) -> Option<impl Sized>;
+}
+
+impl<'s, T> Lender for WindowsMut<'s, T> {
+    #[allow(refining_impl_trait)]
+    fn next(&mut self) -> Option<&mut [T]> {
+        let window = self.slice.get_mut(self.pos..self.pos + self.size)?;
+        self.pos += 1;
+        Some(window)
+    }
+}
+
+impl<'t> Lender for Numbered<'t> {
+    #[allow(refining_impl_trait)]
     fn next(&mut self) -> Option<&str> {
         let line = self.lines.next()?;
         self.n += 1;

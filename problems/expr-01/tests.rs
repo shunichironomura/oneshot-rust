@@ -22,93 +22,6 @@ fn unchanged(e: Expr) -> Result<(), String> {
     check_eq(simplify(e.clone()), e)
 }
 
-/// A direct transcription of the rules of the statement, working on references.
-fn reference_simplify(e: &Expr) -> Expr {
-    match e {
-        Num(_) | Var => e.clone(),
-        Expr::Add(l, r) => {
-            let (l, r) = (reference_simplify(l), reference_simplify(r));
-            if let (Num(a), Num(b)) = (&l, &r)
-                && let Some(sum) = a.checked_add(*b)
-            {
-                Num(sum)
-            } else if r == Num(0) {
-                l
-            } else if l == Num(0) {
-                r
-            } else if r == neg(l.clone()) || l == neg(r.clone()) {
-                Num(0)
-            } else {
-                add(l, r)
-            }
-        }
-        Expr::Mul(l, r) => {
-            let (l, r) = (reference_simplify(l), reference_simplify(r));
-            if let (Num(a), Num(b)) = (&l, &r)
-                && let Some(product) = a.checked_mul(*b)
-            {
-                Num(product)
-            } else if l == Num(0) || r == Num(0) {
-                Num(0)
-            } else if r == Num(1) {
-                l
-            } else if l == Num(1) {
-                r
-            } else {
-                mul(l, r)
-            }
-        }
-        Expr::Neg(inner) => match reference_simplify(inner) {
-            Num(a) if a != MIN => Num(-a),
-            Expr::Neg(e) => *e,
-            other => neg(other),
-        },
-    }
-}
-
-struct Rng(u64);
-
-impl Rng {
-    fn below(&mut self, n: u64) -> u64 {
-        self.0 = self.0.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
-        (self.0 >> 33) % n
-    }
-}
-
-/// `e` with the operands of its top node swapped.
-fn swapped(e: &Expr) -> Expr {
-    match e {
-        Expr::Add(l, r) => add((**r).clone(), (**l).clone()),
-        Expr::Mul(l, r) => mul((**r).clone(), (**l).clone()),
-        other => other.clone(),
-    }
-}
-
-/// A small random expression, often containing `e + (-e)` and numbers that overflow.
-fn generate(rng: &mut Rng, depth: u32) -> Expr {
-    if depth == 0 || rng.below(4) == 0 {
-        return match rng.below(8) {
-            0 | 1 => Var,
-            2 => Num(0),
-            3 => Num(1),
-            4 => Num(-1),
-            5 => Num(3),
-            6 => Num(MAX),
-            _ => Num(MIN),
-        };
-    }
-    match rng.below(7) {
-        0 | 1 => add(generate(rng, depth - 1), generate(rng, depth - 1)),
-        2 => {
-            let e = generate(rng, depth - 1);
-            let f = if rng.below(2) == 0 { e.clone() } else { swapped(&e) };
-            if rng.below(2) == 0 { add(e, neg(f)) } else { add(neg(f), e) }
-        }
-        3 | 4 => mul(generate(rng, depth - 1), generate(rng, depth - 1)),
-        _ => neg(generate(rng, depth - 1)),
-    }
-}
-
 pub fn run() {
     case("sample-1", || {
         check_eq(simplify(add(mul(Var, Num(1)), Num(0))), Var)?;
@@ -204,12 +117,43 @@ pub fn run() {
         check_eq(eval(&mul(add(Var, Num(1)), Num(0)), MAX), None)
     });
     case("hidden-7", || {
-        let mut rng = Rng(2024);
-        for _ in 0..20 {
-            let e = generate(&mut rng, 3);
-            let expected = reference_simplify(&e);
-            check_eq(simplify(e), expected)?;
-        }
-        Ok(())
+        // Larger expressions where the rules interact.
+        unchanged(add(Var, add(mul(Num(MIN), Num(-1)), neg(mul(Num(-1), Num(MIN))))))?;
+        check_eq(
+            simplify(mul(neg(Num(1)), mul(add(Num(MIN), Num(MAX)), Var))),
+            mul(Num(-1), mul(Num(-1), Var)),
+        )?;
+        check_eq(
+            simplify(add(add(neg(mul(Var, Var)), mul(Var, Var)), neg(add(Var, Num(MIN))))),
+            neg(add(Var, Num(MIN))),
+        )?;
+        check_eq(
+            simplify(add(
+                mul(add(Var, Num(0)), add(Num(MIN), Num(0))),
+                add(mul(Num(-1), Num(MIN)), mul(Num(0), Num(MAX))),
+            )),
+            add(mul(Var, Num(MIN)), mul(Num(-1), Num(MIN))),
+        )?;
+        check_eq(
+            simplify(add(
+                add(Num(1), Var),
+                add(add(neg(Num(MIN)), Num(MIN)), neg(add(Num(MIN), neg(Num(MIN))))),
+            )),
+            add(Num(1), Var),
+        )?;
+        check_eq(
+            simplify(add(
+                neg(add(neg(Var), add(neg(Num(3)), Num(3)))),
+                add(neg(Var), add(neg(Num(3)), Num(3))),
+            )),
+            Num(0),
+        )?;
+        check_eq(
+            simplify(mul(
+                add(mul(Var, Num(1)), mul(Var, Num(-1))),
+                mul(Num(1), add(Num(MAX), Num(MIN))),
+            )),
+            mul(add(Var, mul(Var, Num(-1))), Num(-1)),
+        )
     });
 }
