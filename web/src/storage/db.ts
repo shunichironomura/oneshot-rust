@@ -118,8 +118,10 @@ export class Storage {
     return this.db.getAll("bests");
   }
 
-  async bestOf(problemId: string, mode: Mode): Promise<Best | undefined> {
-    return this.db.get("bests", [problemId, mode]);
+  /** The best records of a problem, one per mode it was solved in. */
+  async bestsOf(problemId: string): Promise<Best[]> {
+    // Arrays sort after strings, so this range covers [problemId, <any mode>].
+    return this.db.getAll("bests", IDBKeyRange.bound([problemId], [problemId, []]));
   }
 
   async saveBest(best: Best): Promise<void> {
@@ -144,8 +146,15 @@ export class Storage {
     return (await this.db.getKey("reveals", problemId)) !== undefined;
   }
 
-  /** Records that the model solution was seen (the first time is kept). */
+  /**
+   * Records that the model solution was seen (the first time is kept). Unfinished runs of
+   * the problem (e.g. a practice run left for later) become assisted.
+   */
   async saveReveal(problemId: string, now: number): Promise<void> {
+    const playing = (await this.runsOf(problemId)).filter(
+      (r) => r.status === "playing" && r.assisted !== true,
+    );
+    await Promise.all(playing.map((r) => this.saveRun({ ...r, assisted: true })));
     if (await this.isRevealed(problemId)) return;
     await this.db.put("reveals", { problemId, revealedAt: now });
   }

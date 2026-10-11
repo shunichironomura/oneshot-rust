@@ -1,4 +1,5 @@
-import { EyeOff } from "lucide-preact";
+import { CircleCheck, CircleDashed, CircleX, EyeOff, type LucideIcon } from "lucide-preact";
+import type { CaseStatus } from "../core/classify.ts";
 import type { Presentation } from "../core/present.ts";
 import { useApp } from "./context.ts";
 import type { LastResult, SubmitPhase } from "./usePlay.ts";
@@ -31,20 +32,29 @@ function Output({ stdout, stderr }: { stdout: string; stderr: string }) {
   );
 }
 
+const CASE_ICONS: Record<CaseStatus, LucideIcon> = {
+  pass: CircleCheck,
+  fail: CircleX,
+  "not-run": CircleDashed,
+};
+
 function Cases({ cases }: { cases: NonNullable<Presentation["cases"]> }) {
   const { t } = useApp();
   return (
     <ul class="cases">
-      {cases.map((c) => (
-        <li key={c.id} class={c.status}>
-          <span class="case-status">{t.caseStatus[c.status]}</span>
-          <span class="case-id">
-            {c.id}
-            {!c.visible && <EyeOff size={13} aria-label={t.hiddenCase} class="hidden-case" />}
-          </span>
-          {c.message !== undefined && <code class="case-message">{c.message}</code>}
-        </li>
-      ))}
+      {cases.map((c) => {
+        const Icon = CASE_ICONS[c.status];
+        return (
+          <li key={c.id} class={c.status}>
+            <Icon size={16} class="case-status" role="img" aria-label={t.caseStatus[c.status]} />
+            <span class="case-id">
+              {c.id}
+              {!c.visible && <EyeOff size={13} aria-label={t.hiddenCase} class="hidden-case" />}
+            </span>
+            {c.message !== undefined && <code class="case-message">{c.message}</code>}
+          </li>
+        );
+      })}
     </ul>
   );
 }

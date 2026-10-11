@@ -34,12 +34,13 @@ export function ShotMeter({ shots = [], label }: Props) {
   );
 }
 
-/** The meter with the number of submissions, as a pill. */
+/** The meter with the number of submissions (once there is one), as a pill. */
 export function ShotChip(props: Props) {
+  const count = props.shots?.length ?? 0;
   return (
     <span class="shot-chip">
       <ShotMeter {...props} />
-      <span class="shot-count">{props.shots?.length ?? 0}</span>
+      {count > 0 && <span class="shot-count">{count}</span>}
     </span>
   );
 }

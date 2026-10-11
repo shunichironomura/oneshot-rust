@@ -1,16 +1,14 @@
-import { Eye, Lock } from "lucide-preact";
 import solutions from "virtual:oneshot-solutions";
 import { useEffect, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
-import type { ModelSolution, Problem } from "../core/problem.ts";
-import type { SolutionAccess } from "../core/solution.ts";
+import type { ModelSolution as Solution, Problem } from "../core/problem.ts";
 import { CodeView } from "./CodeView.tsx";
 import { useApp } from "./context.ts";
 import { DiffView } from "./DiffView.tsx";
 
 type Loaded =
   | { kind: "loading" }
-  | { kind: "ok"; solution: ModelSolution }
+  | { kind: "ok"; solution: Solution }
   | { kind: "error"; message: string };
 
 function useSolution(problemId: string): Loaded {
@@ -33,7 +31,7 @@ function useSolution(problemId: string): Loaded {
 }
 
 /** The model solution with its editorial, and a diff from the player's code. */
-function RevealedSolution({ problem, code }: { problem: Problem; code: string }) {
+export function ModelSolution({ problem, code }: { problem: Problem; code: string }) {
   const { locale, t } = useApp();
   const loaded = useSolution(problem.id);
   const [view, setView] = useState<"code" | "diff">("code");
@@ -68,45 +66,4 @@ function RevealedSolution({ problem, code }: { problem: Problem; code: string })
       )}
     </>
   );
-}
-
-interface Props {
-  problem: Problem;
-  access: SolutionAccess;
-  /** The player's current code, to diff against the solution. */
-  code: string;
-  /** Shows the solution right away (after the problem is finished). */
-  onReveal: () => void;
-  /** Asks for confirmation before giving up to see the solution. */
-  onGiveUp: () => void;
-}
-
-export function SolutionPanel({ problem, access, code, onReveal, onGiveUp }: Props) {
-  const { t } = useApp();
-  switch (access) {
-    case "locked":
-      return (
-        <div class="solution-gate">
-          <Lock size={20} aria-hidden="true" />
-          <p>{t.solutionLocked}</p>
-          <p class="solution-note">{t.solutionGiveUpHint}</p>
-          <button type="button" class="icon-button" onClick={onGiveUp}>
-            <Eye size={16} aria-hidden="true" />
-            {t.solutionGiveUp}
-          </button>
-        </div>
-      );
-    case "unlocked":
-      return (
-        <div class="solution-gate">
-          <p>{t.solutionUnlocked}</p>
-          <button type="button" class="primary icon-button" onClick={onReveal}>
-            <Eye size={16} aria-hidden="true" />
-            {t.showSolution}
-          </button>
-        </div>
-      );
-    case "revealed":
-      return <RevealedSolution problem={problem} code={code} />;
-  }
 }

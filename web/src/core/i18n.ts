@@ -70,7 +70,6 @@ export interface Messages {
   submit: string;
   judging: string;
   history: string;
-  startOver: string;
   giveUp: string;
   nextProblem: string;
   tabStatement: string;
@@ -80,27 +79,16 @@ export interface Messages {
   practiceTooltip: string;
   assistedChip: string;
   assistedTooltip: string;
-  roundChip: (position: string) => string;
   toScorecard: string;
   backToRecords: string;
   confirmSubmit: (n: number) => string;
   confirmSubmitYes: string;
   cancel: string;
-  confirmStartOver: string;
-  startOverAbandons: string;
-  confirmStartOverYes: string;
   confirmGiveUp: string;
   confirmGiveUpYes: string;
   problemNotFound: (id: string) => string;
 
   // Model solution
-  solutionLocked: string;
-  solutionGiveUpHint: string;
-  solutionGiveUp: string;
-  confirmRevealSolution: string;
-  confirmRevealSolutionYes: string;
-  solutionUnlocked: string;
-  showSolution: string;
   solutionLoading: string;
   solutionLoadError: (message: string) => string;
   solutionCode: string;
@@ -206,39 +194,24 @@ const en: Messages = {
   submit: "Submit",
   judging: "Judging…",
   history: "Submission history",
-  startOver: "Start over",
   giveUp: "Give up",
   nextProblem: "Next problem",
   tabStatement: "Problem",
-  tabHarness: "tests.rs (read-only)",
+  tabHarness: "tests.rs",
   tabSolution: "Solution",
   practiceChip: "Practice",
   practiceTooltip: "Played on its own: it counts toward your best, not toward a round.",
   assistedChip: "Solution seen",
   assistedTooltip: "You have seen the model solution, so this run does not update your best.",
-  roundChip: (p) => `Round ${p}`,
   toScorecard: "See the scorecard",
   backToRecords: "Back to records",
-  confirmSubmit: (n) => `Submit this code? This will be submission #${n}.`,
+  confirmSubmit: (n) => `Submit #${n}?`,
   confirmSubmitYes: "Submit",
   cancel: "Cancel",
-  confirmStartOver: "Reset the code to the template and start a new run?",
-  startOverAbandons: "The current run will end unsolved.",
-  confirmStartOverYes: "Start over",
-  confirmGiveUp:
-    "Give up this problem? It is recorded as unsolved, and the model solution unlocks.",
+  confirmGiveUp: "Give up this problem?",
   confirmGiveUpYes: "Give up",
   problemNotFound: (id) => `Problem “${id}” was not found.`,
 
-  solutionLocked: "The model solution unlocks once you finish this problem: solve it or give up.",
-  solutionGiveUpHint: "Stuck? You can give up and look at it now.",
-  solutionGiveUp: "Give up and show",
-  confirmRevealSolution:
-    "Show the model solution? You can keep going, but from now on runs on this problem do not update your best.",
-  confirmRevealSolutionYes: "Show solution",
-  solutionUnlocked:
-    "Compare your code with the model solution. Once you look at it, later runs on this problem do not update your best.",
-  showSolution: "Show solution",
   solutionLoading: "Loading…",
   solutionLoadError: (m) => `Could not load the solution: ${m}`,
   solutionCode: "Code",
@@ -320,8 +293,7 @@ const en: Messages = {
   roundSolved: (s, c) => `${s}/${c} solved`,
   roundAbandoned: (s, c) => `Abandoned (${s}/${c} solved)`,
   abandonRound: "Abandon this round",
-  confirmAbandonRound:
-    "Abandon this round? It ends now, with the problems not solved yet counted as unsolved.",
+  confirmAbandonRound: "Abandon this round? The remaining problems count as unsolved.",
   confirmAbandonRoundYes: "Abandon",
   columnTries: "Tries",
   oneMoreRound: "One more round",
@@ -374,40 +346,24 @@ const ja: Messages = {
   submit: "提出",
   judging: "判定中…",
   history: "提出履歴",
-  startOver: "最初から",
   giveUp: "ギブアップ",
   nextProblem: "次の問題へ",
   tabStatement: "問題文",
-  tabHarness: "tests.rs（読み取り専用）",
+  tabHarness: "tests.rs",
   tabSolution: "模範解答",
   practiceChip: "練習",
   practiceTooltip: "単独の練習：ベストには残りますが、ラウンドにはなりません。",
   assistedChip: "解答閲覧済み",
   assistedTooltip: "模範解答を見たあとの挑戦なので、自己ベストは更新されません。",
-  roundChip: (p) => `ラウンド ${p}`,
   toScorecard: "スコアカードへ",
   backToRecords: "記録へ戻る",
-  confirmSubmit: (n) => `この内容で提出しますか？（${n} 回目の提出）`,
+  confirmSubmit: (n) => `${n} 回目の提出をしますか？`,
   confirmSubmitYes: "提出する",
   cancel: "やめる",
-  confirmStartOver: "コードをテンプレートに戻し、新しいランを始めますか？",
-  startOverAbandons: "進行中のランは未解決で終了します。",
-  confirmStartOverYes: "最初からやり直す",
-  confirmGiveUp:
-    "この問題をギブアップしますか？（未解決として記録され、模範解答を見られるようになります）",
+  confirmGiveUp: "この問題をギブアップしますか？",
   confirmGiveUpYes: "ギブアップする",
   problemNotFound: (id) => `問題「${id}」は見つかりませんでした。`,
 
-  solutionLocked:
-    "この問題を終える（正解するか、ギブアップする）と、模範解答を見られるようになります。",
-  solutionGiveUpHint: "どうしても解けないときは、ギブアップして今すぐ見ることもできます。",
-  solutionGiveUp: "ギブアップして見る",
-  confirmRevealSolution:
-    "模範解答を表示しますか？ 挑戦はこのまま続けられますが、以降この問題では自己ベストが更新されません。",
-  confirmRevealSolutionYes: "表示する",
-  solutionUnlocked:
-    "模範解答と見比べてみましょう。表示すると、以降この問題では自己ベストが更新されません。",
-  showSolution: "模範解答を表示",
   solutionLoading: "読み込み中…",
   solutionLoadError: (m) => `模範解答を読み込めませんでした: ${m}`,
   solutionCode: "コード",
@@ -489,8 +445,7 @@ const ja: Messages = {
   roundSolved: (s, c) => `${s}/${c} 問正解`,
   roundAbandoned: (s, c) => `棄権（${s}/${c} 問正解）`,
   abandonRound: "このラウンドを棄権",
-  confirmAbandonRound:
-    "このラウンドを棄権しますか？ラウンドはここで終了し、まだ解いていない問題は未解決として記録されます。",
+  confirmAbandonRound: "このラウンドを棄権しますか？残りの問題は未解決になります。",
   confirmAbandonRoundYes: "棄権する",
   columnTries: "回数",
   oneMoreRound: "もう 1 ラウンド",
