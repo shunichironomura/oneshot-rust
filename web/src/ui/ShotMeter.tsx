@@ -34,13 +34,17 @@ export function ShotMeter({ shots = [], label }: Props) {
   );
 }
 
-/** The meter with the number of submissions (once there is one), as a pill. */
+/**
+ * The meter with the number of submissions, as a pill. Nothing before the first
+ * submission: a lone empty slot says nothing yet.
+ */
 export function ShotChip(props: Props) {
   const count = props.shots?.length ?? 0;
+  if (count === 0) return null;
   return (
     <span class="shot-chip">
       <ShotMeter {...props} />
-      {count > 0 && <span class="shot-count">{count}</span>}
+      <span class="shot-count">{count}</span>
     </span>
   );
 }

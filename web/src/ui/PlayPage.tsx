@@ -181,13 +181,15 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
         )}
         <h1>{localize(problem.title, locale)}</h1>
         <DifficultyBadge difficulty={problem.difficulty} />
-        <ShotChip shots={run === null ? [] : verdictsOf(run)} label={t.shotsTooltip(tries)} />
         {assisted && (
           <span class="chip" title={t.assistedTooltip}>
             {t.assistedChip}
           </span>
         )}
         <div class="play-actions">
+          {/* Next to the buttons that spend shots, so that what it counts is plain; first, so
+              that the buttons stay put when it appears. */}
+          <ShotChip shots={run === null ? [] : verdictsOf(run)} label={t.shotsTooltip(tries)} />
           {ended ? (
             <IconButton
               icon={round === undefined ? RotateCcw : SkipForward}
