@@ -1,4 +1,4 @@
-// A round: a few problems in a row, from easy to hard, scored by the total number of
+// A round: one problem of each difficulty, from easy to hard, scored by the total number of
 // submissions. Every round has the same make-up, so scores can be compared.
 import type { VerdictKind } from "./classify.ts";
 import type { Messages } from "./i18n.ts";
@@ -8,7 +8,7 @@ import { type Run, verdictsOf } from "./run.ts";
 import { verdictEmoji } from "./scoring.ts";
 
 /** The difficulties of the problems of a round, in order. */
-export const ROUND_LADDER: readonly Difficulty[] = [1, 1, 2, 2, 3];
+export const ROUND_LADDER: readonly Difficulty[] = [1, 2, 3];
 
 export const ROUND_LENGTH = ROUND_LADDER.length;
 
@@ -98,7 +98,7 @@ export function currentProblemId(round: Round): string | undefined {
   return round.problemIds[round.entries.length];
 }
 
-/** e.g. "3 / 5" for the problem at `index` (0-based). */
+/** e.g. "2 / 3" for the problem at `index` (0-based). */
 export function roundPosition(round: Round, index: number): string {
   return `${index + 1} / ${round.problemIds.length}`;
 }

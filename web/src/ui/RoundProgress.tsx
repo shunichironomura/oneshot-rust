@@ -1,4 +1,5 @@
 import type { Round } from "../core/round.ts";
+import { useApp } from "./context.ts";
 
 interface Props {
   round: Round;
@@ -10,16 +11,20 @@ interface Props {
 
 /**
  * One square per problem of a round, like the holes of a golf scorecard: a solved problem
- * shows its number of submissions, an unsolved one a cross, and the rest are empty.
+ * shows its number of submissions, an unsolved one a cross, and the rest are empty. A bar
+ * under each square shows the difficulty of its problem.
  */
 export function RoundProgress({ round, current, label }: Props) {
+  const { content } = useApp();
   return (
     <span class="round-progress" role="img" aria-label={label} title={label}>
       {round.problemIds.map((id, i) => {
         const entry = round.entries[i];
         const state = entry === undefined ? "" : entry.solved ? " solved" : " unsolved";
+        const difficulty = content.problems.find((p) => p.id === id)?.difficulty;
+        const level = difficulty === undefined ? "" : ` difficulty-${difficulty}`;
         return (
-          <span key={`${i}:${id}`} class={`hole${state}${i === current ? " current" : ""}`}>
+          <span key={`${i}:${id}`} class={`hole${state}${level}${i === current ? " current" : ""}`}>
             {entry === undefined ? "" : entry.solved ? entry.verdicts.length : "✗"}
           </span>
         );

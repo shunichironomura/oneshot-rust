@@ -5,6 +5,7 @@ import { type Round, roundResult, roundShareText, totalSubmissions } from "../co
 import { routeHref } from "../core/route.ts";
 import { roundShareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
+import { DifficultyBadge } from "./DifficultyBadge.tsx";
 import { startRound } from "./RoundLauncher.tsx";
 import { ShareButton } from "./ShareButton.tsx";
 import { ShotMeter } from "./ShotMeter.tsx";
@@ -51,6 +52,7 @@ function Scorecard({ round }: { round: Round }) {
                   {localize(problem.title, locale)}
                 </a>
               )}
+              {problem !== undefined && <DifficultyBadge difficulty={problem.difficulty} />}
               <span class="scorecard-shots">
                 {n > 0 && <ShotMeter shots={entry?.verdicts} label={t.shareTries(n)} />}
                 {entry !== undefined && <span class="shot-count">{n}</span>}

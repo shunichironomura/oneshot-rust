@@ -1,4 +1,5 @@
 import { ArrowRight, Play } from "lucide-preact";
+import { Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import type { Problem } from "../core/problem.ts";
 import {
@@ -7,6 +8,7 @@ import {
   currentProblemId,
   newRound,
   pickRound,
+  ROUND_LADDER,
   type Round,
   seenProblemIds,
 } from "../core/round.ts";
@@ -14,6 +16,7 @@ import { routeHref } from "../core/route.ts";
 import type { Storage } from "../storage/db.ts";
 import { useApp } from "./context.ts";
 import { Confirm } from "./Dialog.tsx";
+import { DifficultyBadge } from "./DifficultyBadge.tsx";
 import { RoundProgress } from "./RoundProgress.tsx";
 
 /** Starts a round, unless one is already in progress: then that one is returned. */
@@ -110,6 +113,15 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
         <Play size={18} aria-hidden="true" />
         {t.play}
       </button>
+      <p class="round-ladder">
+        {t.roundLadder(ROUND_LADDER.length)}
+        {ROUND_LADDER.map((d, i) => (
+          <Fragment key={d}>
+            {i > 0 && <span aria-hidden="true">→</span>}
+            <DifficultyBadge difficulty={d} />
+          </Fragment>
+        ))}
+      </p>
     </div>
   );
 }
