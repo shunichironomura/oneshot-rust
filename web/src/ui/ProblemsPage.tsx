@@ -1,12 +1,12 @@
 import { CircleCheck, CircleDot } from "lucide-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
-import { type Round, roundSummary, seenProblemIds } from "../core/round.ts";
+import { type Round, roundSummary, seenProblemIds, totalSubmissions } from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
 import { type Best, bestsByProblem, bestVerdicts, type Run } from "../core/run.ts";
 import { useApp } from "./context.ts";
-import { KindBadge } from "./KindBadge.tsx";
 import { DifficultyBadge } from "./DifficultyBadge.tsx";
+import { RoundProgress } from "./RoundProgress.tsx";
 import { ShotMeter } from "./ShotMeter.tsx";
 
 function BestRecord({ best, run }: { best: Best; run: Run | undefined }) {
@@ -17,16 +17,17 @@ function BestRecord({ best, run }: { best: Best; run: Run | undefined }) {
         shots={
           bestVerdicts(best, run) ?? Array.from({ length: best.submissions }, () => "done" as const)
         }
-        label={`${best.submissions}`}
+        label={t.shareTries(best.submissions)}
       />
-      {best.submissions}
+      <span class="shot-count">{best.submissions}</span>
     </span>
   );
 }
 
 /**
- * Records: the best of every problem met so far (each opens as practice) and past rounds.
- * Problems no round has shown yet are left out, unless they were played anyway.
+ * Records: past rounds, and the best of every problem met so far. A problem opens its
+ * history, from where it can be practiced. Problems no round has shown yet are left out,
+ * unless they were played anyway.
  */
 export function ProblemsPage() {
   const { content, storage, locale, t } = useApp();
@@ -61,59 +62,6 @@ export function ProblemsPage() {
   return (
     <section class="problems">
       <h1>{t.recordsHeading}</h1>
-      <h2>{t.problemsHeading}</h2>
-      {problems.length === 0 ? (
-        <p class="dim">{t.noProblemsSeen}</p>
-      ) : (
-        <>
-          <p class="hint">{t.practiceHint}</p>
-          <table class="problem-table">
-            <thead>
-              <tr>
-                <th aria-hidden="true" />
-                <th>{t.columnProblem}</th>
-                <th>{t.columnDifficulty}</th>
-                <th>{t.columnBest}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {problems.map((p) => {
-                const best = bests.get(p.id);
-                return (
-                  <tr key={p.id}>
-                    <td class="status">
-                      {best !== undefined ? (
-                        <CircleCheck size={18} class="solved" aria-label="solved" />
-                      ) : inProgress.has(p.id) ? (
-                        <CircleDot size={18} class="in-progress" aria-label="in progress" />
-                      ) : null}
-                    </td>
-                    <td>
-                      <a
-                        class="problem-link"
-                        href={routeHref({ page: "practice", problemId: p.id })}
-                      >
-                        {localize(p.title, locale)}
-                      </a>
-                      <KindBadge kind={p.kind} />
-                    </td>
-                    <td>
-                      <DifficultyBadge difficulty={p.difficulty} />
-                    </td>
-                    <td class="best">
-                      {best === undefined ? (
-                        <span class="dim">—</span>
-                      ) : (
-                        <BestRecord best={best} run={bestRuns.get(best.runId)} />
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </>
-      )}
 
       <h2>{t.roundsHeading}</h2>
       {rounds.length === 0 ? (
@@ -122,13 +70,53 @@ export function ProblemsPage() {
         <ul class="round-history">
           {rounds.map((r) => (
             <li key={r.id}>
-              <a class="run-date" href={routeHref({ page: "scorecard", roundId: r.id })}>
-                {dateFormat.format(r.startedAt)}
+              <a href={routeHref({ page: "scorecard", roundId: r.id })}>
+                <RoundProgress round={r} label={roundSummary(r, t)} />
+                <strong class="round-total">{totalSubmissions(r)}</strong>
+                <span class="run-date">{dateFormat.format(r.startedAt)}</span>
               </a>
-              <span>{roundSummary(r, t)}</span>
             </li>
           ))}
         </ul>
+      )}
+
+      <h2>{t.problemsHeading}</h2>
+      {problems.length === 0 ? (
+        <p class="dim">{t.noProblemsSeen}</p>
+      ) : (
+        <table class="problem-table">
+          <tbody>
+            {problems.map((p) => {
+              const best = bests.get(p.id);
+              return (
+                <tr key={p.id}>
+                  <td class="status">
+                    {best !== undefined ? (
+                      <CircleCheck size={18} class="solved" aria-label={t.solvedHeadline} />
+                    ) : inProgress.has(p.id) ? (
+                      <CircleDot size={18} class="in-progress" aria-label={t.runPlaying} />
+                    ) : null}
+                  </td>
+                  <td>
+                    <a class="problem-link" href={routeHref({ page: "history", problemId: p.id })}>
+                      {localize(p.title, locale)}
+                    </a>
+                  </td>
+                  <td>
+                    <DifficultyBadge difficulty={p.difficulty} />
+                  </td>
+                  <td class="best">
+                    {best === undefined ? (
+                      <span class="dim">—</span>
+                    ) : (
+                      <BestRecord best={best} run={bestRuns.get(best.runId)} />
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       )}
     </section>
   );

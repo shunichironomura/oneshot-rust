@@ -284,11 +284,6 @@ button.chip:hover:not(:disabled) {
   opacity: 0.6;
 }
 
-.hint {
-  color: var(--muted);
-  font-size: 0.9em;
-}
-
 /* App header */
 
 .app-header {
@@ -374,7 +369,8 @@ main > section {
 .section-head {
   display: flex;
   align-items: center;
-  gap: 0.8em;
+  flex-wrap: wrap;
+  gap: 0.6em 0.8em;
   margin: 2em 0 0.6em;
 }
 
@@ -384,6 +380,15 @@ main > section {
 }
 
 .section-head .chip {
+  margin-left: auto;
+}
+
+.section-head .badge {
+  margin-left: 0;
+}
+
+/* The page's action goes to the far end. */
+.section-head > .button:last-child {
   margin-left: auto;
 }
 
@@ -761,7 +766,6 @@ main > section.round-start {
   overflow: hidden;
 }
 
-.problem-table th,
 .problem-table td {
   padding: 0.6em 0.8em;
   border-bottom: 1px solid var(--border);
@@ -777,19 +781,9 @@ main > section.round-start {
   background: var(--code-bg);
 }
 
-.problem-table th {
-  font-size: 0.8em;
-  font-weight: 600;
-  color: var(--muted);
-}
-
 .problem-table .status {
   width: 2.2em;
   text-align: center;
-}
-
-.problem-table .num {
-  font-variant-numeric: tabular-nums;
 }
 
 .problem-link {
@@ -1162,8 +1156,45 @@ dialog .actions {
 .history summary {
   display: flex;
   align-items: center;
-  gap: 0.7em;
+  gap: 0.6em;
   cursor: pointer;
+}
+
+/* A flex summary loses its disclosure triangle: draw one. */
+.history summary::before {
+  content: "";
+  flex: none;
+  border-block: 0.3em solid transparent;
+  border-left: 0.45em solid var(--muted);
+  transition: transform 0.15s;
+}
+
+.history details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.history .model-solution summary {
+  font-weight: 600;
+}
+
+.history .model-solution[open] summary {
+  margin-bottom: 0.8em;
+}
+
+.history .model-solution .code-view {
+  font-size: 0.9em;
+}
+
+.history .model-solution .segmented {
+  margin-bottom: 0.6em;
+}
+
+.history .run-date {
+  margin-left: auto;
+}
+
+.history .failed {
+  color: var(--ce);
 }
 
 .run-date {
@@ -1197,6 +1228,11 @@ dialog .actions {
   margin-bottom: 0.3em;
   font-family: var(--mono);
   font-size: 0.85em;
+}
+
+.attempts .verdict {
+  min-width: 3.4em;
+  font-size: 0.9em;
 }
 
 .attempts button[aria-pressed="true"] {
@@ -1245,62 +1281,52 @@ dialog .actions {
 
 /* Scorecard */
 
-.scorecard-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.6em;
-  color: var(--muted);
-}
-
-.scorecard-meta .badge {
-  margin-left: 0;
-}
-
 .scorecard-total {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0.8em;
-  margin: 0.4em 0 1em;
-}
-
-.scorecard-total strong {
-  font-size: 2.2em;
+  gap: 0.2em 0.6em;
+  margin: 0.2em 0 0.8em;
   color: var(--accent);
+  font-size: 2.4em;
 }
 
 .scorecard-total span {
-  font-size: 1.15em;
+  color: var(--fg);
+  font-size: 0.45em;
   font-weight: 600;
 }
 
-.scorecard-table {
-  border-collapse: collapse;
-  margin-bottom: 1.2em;
+.scorecard-rows {
+  max-width: 34em;
+  margin: 0 0 1.4em;
+  padding: 0;
+  list-style: none;
 }
 
-.scorecard-table th,
-.scorecard-table td {
-  padding: 0.35em 0.9em 0.35em 0;
-  text-align: left;
+.scorecard-rows li {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.45em 0;
+  border-bottom: 1px solid var(--border);
 }
 
-.scorecard-table th {
+.row-number {
+  min-width: 1em;
   color: var(--muted);
-  font-size: 0.85em;
-  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
-.scorecard-table .squares {
-  letter-spacing: 0.1em;
+.scorecard-shots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  margin-left: auto;
 }
 
-.scorecard .share {
-  display: inline-block;
-  padding: 0.8em 1.1em;
-  background: var(--code-bg);
-  border-radius: var(--radius);
+.unsolved-mark {
+  color: var(--muted);
 }
 
 .scorecard .actions {
@@ -1313,24 +1339,34 @@ dialog .actions {
 /* Records */
 
 .problems h2 {
-  margin: 1.6em 0 0.3em;
+  margin: 1.6em 0 0.4em;
 }
 
 .round-history {
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.round-history li {
+.round-history a {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.7em;
-  padding: 0.3em 0;
+  gap: 0.8em;
+  padding: 0.35em 0.5em;
+  border-radius: var(--radius);
+  color: var(--fg);
+  text-decoration: none;
 }
 
-.round-history .badge {
-  margin-left: 0;
+.round-history a:hover {
+  background: var(--code-bg);
+}
+
+.round-total {
+  min-width: 1.6em;
+  font-size: 1.15em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Narrow screens */
@@ -1371,13 +1407,12 @@ dialog .actions {
     display: none;
   }
 
-  .problem-table th:nth-child(4),
-  .problem-table td:nth-child(4) {
-    display: none;
-  }
-
   .run-detail {
     grid-template-columns: 1fr;
+  }
+
+  .section-head h1 {
+    font-size: 1.5em;
   }
 }
 

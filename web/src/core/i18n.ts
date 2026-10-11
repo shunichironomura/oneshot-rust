@@ -5,7 +5,7 @@ import type {
   RuntimeErrorReason,
   VerdictKind,
 } from "./classify.ts";
-import type { Difficulty, ProblemKind } from "./problem.ts";
+import type { Difficulty } from "./problem.ts";
 
 export type Locale = "en" | "ja";
 
@@ -54,17 +54,12 @@ export interface Messages {
   // Records
   recordsHeading: string;
   problemsHeading: string;
-  practiceHint: string;
   noProblemsSeen: string;
-  columnProblem: string;
-  columnBest: string;
   roundsHeading: string;
   noRounds: string;
   bestTooltip: (ceCount: number) => string;
-  columnDifficulty: string;
   shotsTooltip: (tries: number) => string;
   difficulties: Record<Difficulty, string>;
-  kinds: Record<ProblemKind, string>;
 
   // Play screen
   submit: string;
@@ -115,10 +110,9 @@ export interface Messages {
   solvedHeadline: string;
   unsolvedHeadline: string;
   newBest: string;
-  copyResult: string;
+  /** Shares a result (or copies it, where there is no share sheet). */
+  share: string;
   copied: string;
-  shareImage: string;
-  imageSaved: string;
   seeSolution: string;
   assistedRun: string;
   tryAgain: string;
@@ -127,17 +121,15 @@ export interface Messages {
   unsolved: string;
 
   // History
-  historyTitle: string;
+  /** Plays the problem on its own. */
+  practice: string;
   noSubmissions: string;
-  runSolved: (n: number) => string;
-  runFailed: string;
   runPlaying: string;
   attemptHeading: (i: number, verdict: string) => string;
   changesFromTemplate: string;
   changesFrom: (i: number) => string;
 
   // Rounds
-  scorecardTitle: string;
   roundTotal: (total: number) => string;
   roundOverPerfect: (n: number) => string;
   roundSolved: (solved: number, count: number) => string;
@@ -145,7 +137,6 @@ export interface Messages {
   abandonRound: string;
   confirmAbandonRound: string;
   confirmAbandonRoundYes: string;
-  columnTries: string;
   oneMoreRound: string;
   roundUnfinished: string;
   roundNotFound: string;
@@ -178,18 +169,12 @@ const en: Messages = {
 
   recordsHeading: "Records",
   problemsHeading: "Problems",
-  practiceHint:
-    "Pick a problem to practice it on its own. Practice counts toward your best, not toward a round.",
   noProblemsSeen: "Problems you meet in rounds will be listed here.",
-  columnProblem: "Problem",
-  columnBest: "Best",
   roundsHeading: "Rounds",
   noRounds: "No rounds played yet.",
   bestTooltip: (ce) => `${ce} compile error${ce === 1 ? "" : "s"}`,
-  columnDifficulty: "Difficulty",
   shotsTooltip: (tries) => `${tries} ${tries === 1 ? "try" : "tries"} so far · aim for one`,
   difficulties: { 1: "Beginner", 2: "Intermediate", 3: "Advanced" },
-  kinds: { implement: "Implement", repair: "Repair", signature: "Signature" },
 
   submit: "Submit",
   judging: "Judging…",
@@ -267,10 +252,8 @@ const en: Messages = {
   solvedHeadline: "Solved",
   unsolvedHeadline: "Unsolved",
   newBest: "New personal best!",
-  copyResult: "Copy result",
+  share: "Share",
   copied: "Copied!",
-  shareImage: "Share image",
-  imageSaved: "Image saved",
   seeSolution: "Model solution",
   assistedRun: "Solution seen: your best is not updated.",
   tryAgain: "Try again",
@@ -278,16 +261,13 @@ const en: Messages = {
   shareTries: (n) => `${n} ${n === 1 ? "try" : "tries"}`,
   unsolved: "unsolved",
 
-  historyTitle: "Submission history",
+  practice: "Practice",
   noSubmissions: "No submissions yet.",
-  runSolved: (n) => `Solved in ${n}`,
-  runFailed: "Ended unsolved",
   runPlaying: "In progress",
   attemptHeading: (i, v) => `Submission #${i} — ${v}`,
   changesFromTemplate: "Changes from the template",
   changesFrom: (i) => `Changes from submission #${i}`,
 
-  scorecardTitle: "Scorecard",
   roundTotal: (t) => `Total ${t}`,
   roundOverPerfect: (n) => (n === 0 ? "Perfect!" : `+${n} over perfect`),
   roundSolved: (s, c) => `${s}/${c} solved`,
@@ -295,7 +275,6 @@ const en: Messages = {
   abandonRound: "Abandon this round",
   confirmAbandonRound: "Abandon this round? The remaining problems count as unsolved.",
   confirmAbandonRoundYes: "Abandon",
-  columnTries: "Tries",
   oneMoreRound: "One more round",
   roundUnfinished: "This round is not finished yet.",
   roundNotFound: "This round was not found.",
@@ -330,18 +309,12 @@ const ja: Messages = {
 
   recordsHeading: "記録",
   problemsHeading: "問題",
-  practiceHint:
-    "問題を選ぶと、その問題だけを練習できます。練習の結果はベストに残りますが、ラウンドにはなりません。",
   noProblemsSeen: "ラウンドで出会った問題がここに並びます。",
-  columnProblem: "問題",
-  columnBest: "ベスト",
   roundsHeading: "ラウンド",
   noRounds: "まだラウンドを遊んでいません。",
   bestTooltip: (ce) => `うち CE ${ce} 回`,
-  columnDifficulty: "難易度",
   shotsTooltip: (tries) => `現在 ${tries} 回（目標は 1 回）`,
   difficulties: { 1: "初級", 2: "中級", 3: "上級" },
-  kinds: { implement: "実装", repair: "修理", signature: "シグネチャ" },
 
   submit: "提出",
   judging: "判定中…",
@@ -419,10 +392,8 @@ const ja: Messages = {
   solvedHeadline: "正解",
   unsolvedHeadline: "未解決",
   newBest: "自己ベスト更新！",
-  copyResult: "結果をコピー",
+  share: "シェア",
   copied: "コピーしました",
-  shareImage: "画像でシェア",
-  imageSaved: "画像を保存しました",
   seeSolution: "模範解答",
   assistedRun: "模範解答を閲覧済みのため、自己ベストは更新されません。",
   tryAgain: "もう一度",
@@ -430,16 +401,13 @@ const ja: Messages = {
   shareTries: (n) => `${n}回`,
   unsolved: "未解決",
 
-  historyTitle: "提出履歴",
+  practice: "練習する",
   noSubmissions: "まだ提出がありません。",
-  runSolved: (n) => `${n} 回で正解`,
-  runFailed: "未解決で終了",
   runPlaying: "挑戦中",
   attemptHeading: (i, v) => `${i} 回目の提出 — ${v}`,
   changesFromTemplate: "テンプレートからの変更",
   changesFrom: (i) => `${i} 回目からの変更`,
 
-  scorecardTitle: "スコアカード",
   roundTotal: (t) => `合計 ${t}`,
   roundOverPerfect: (n) => (n === 0 ? "完璧！" : `完璧まで +${n}`),
   roundSolved: (s, c) => `${s}/${c} 問正解`,
@@ -447,7 +415,6 @@ const ja: Messages = {
   abandonRound: "このラウンドを棄権",
   confirmAbandonRound: "このラウンドを棄権しますか？残りの問題は未解決になります。",
   confirmAbandonRoundYes: "棄権する",
-  columnTries: "回数",
   oneMoreRound: "もう 1 ラウンド",
   roundUnfinished: "このラウンドはまだ終わっていません。",
   roundNotFound: "ラウンドが見つかりませんでした。",

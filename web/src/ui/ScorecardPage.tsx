@@ -3,11 +3,11 @@ import { useEffect, useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import { type Round, roundResult, roundShareText, totalSubmissions } from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
-import { verdictEmoji } from "../core/scoring.ts";
 import { roundShareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
 import { startRound } from "./RoundLauncher.tsx";
-import { ShareButtons } from "./ShareButtons.tsx";
+import { ShareButton } from "./ShareButton.tsx";
+import { ShotMeter } from "./ShotMeter.tsx";
 
 function Scorecard({ round }: { round: Round }) {
   const { content, storage, locale, t } = useApp();
@@ -28,55 +28,44 @@ function Scorecard({ round }: { round: Round }) {
 
   return (
     <section class="scorecard">
-      <h1>{t.scorecardTitle}</h1>
-      <p class="scorecard-meta">
-        <span class="run-date">{dateFormat.format(round.startedAt)}</span>
-      </p>
-      <p class="scorecard-total">
-        <strong>{t.roundTotal(totalSubmissions(round))}</strong>
+      <p class="run-date">{dateFormat.format(round.startedAt)}</p>
+      <h1 class="scorecard-total">
+        {t.roundTotal(totalSubmissions(round))}
         <span>{roundResult(round, t)}</span>
-      </p>
-      <table class="scorecard-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>{t.columnProblem}</th>
-            <th aria-hidden="true" />
-            <th>{t.columnTries}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {round.entries.map((e, i) => {
-            const problem = content.problems.find((p) => p.id === e.problemId);
-            return (
-              <tr key={e.problemId}>
-                <td class="dim">{i + 1}</td>
-                <td>
-                  {problem === undefined ? (
-                    e.problemId
-                  ) : (
-                    <a href={routeHref({ page: "history", problemId: e.problemId })}>
-                      {localize(problem.title, locale)}
-                    </a>
-                  )}
-                </td>
-                <td class="squares">{e.verdicts.map(verdictEmoji).join("") || "—"}</td>
-                <td>
-                  {e.verdicts.length}
-                  {!e.solved && <span class="dim"> ✗</span>}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <pre class="share">{text}</pre>
+      </h1>
+      <ol class="scorecard-rows">
+        {round.problemIds.map((problemId, i) => {
+          const entry = round.entries[i];
+          const problem = content.problems.find((p) => p.id === problemId);
+          const n = entry?.verdicts.length ?? 0;
+          return (
+            <li key={`${i}:${problemId}`} class={entry === undefined ? "dim" : undefined}>
+              <span class="row-number">{i + 1}</span>
+              {entry === undefined ? (
+                // Not reached (the round was abandoned): it may come up in a later round.
+                <span>—</span>
+              ) : problem === undefined ? (
+                <span>{problemId}</span>
+              ) : (
+                <a href={routeHref({ page: "history", problemId })}>
+                  {localize(problem.title, locale)}
+                </a>
+              )}
+              <span class="scorecard-shots">
+                {n > 0 && <ShotMeter shots={entry?.verdicts} label={t.shareTries(n)} />}
+                {entry !== undefined && <span class="shot-count">{n}</span>}
+                {entry?.solved === false && <span class="unsolved-mark">✗</span>}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
       <div class="actions">
         <button type="button" class="primary icon-button" onClick={oneMore} disabled={starting}>
           <RotateCcw size={16} aria-hidden="true" />
           {t.oneMoreRound}
         </button>
-        <ShareButtons text={text} card={card} fileName={`oneshot-rust-round-${round.id}`} />
+        <ShareButton text={text} card={card} fileName={`oneshot-rust-round-${round.id}`} />
       </div>
     </section>
   );
