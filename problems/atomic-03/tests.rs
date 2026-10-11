@@ -16,7 +16,7 @@ fn summary(stats: &Stats) -> Summary {
 
 const ROUNDS: usize = 3;
 const BUCKETS_PER_ROUND: usize = 6;
-const K: usize = 1;
+const K: usize = 3;
 const BUCKETS: usize = ROUNDS * BUCKETS_PER_ROUND;
 
 /// In bucket `i`, thread `t` records `base(i) + ORDERS[i % 6][t] / 4`, so the largest and the

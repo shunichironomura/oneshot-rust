@@ -39,6 +39,9 @@ impl<U> Mul<Length<U>> for f64 {
 
 単位の型が `Debug`、`Clone`、`Copy`、`PartialEq` を derive しているのは、`Length<U>` の derive が
 `U` にもそれぞれのトレイトを要求するからです。`U` が `PhantomData<U>` の中にしか現れなくても同じです。
+そのため、`Length<U>` をコピーしたり比較したりするジェネリックなコードには `U: Copy` や `U: PartialEq` が
+必要になります（テストのジェネリックなコードは掛け算しかしません）。`impl<U> Copy for Length<U> {}`
+のように手で書いた impl には、このような境界はありません。
 
 ### 別解
 

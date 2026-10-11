@@ -39,9 +39,9 @@ a type first.
 
 The units derive `Debug`, `Clone`, `Copy` and `PartialEq` because the derives on `Length<U>`
 require each of these traits of `U` as well, even though `U` only appears in `PhantomData<U>`. So
-generic code that copies or compares a `Length<U>` would need `U: Copy` or `U: PartialEq` (the tests'
-generic code only multiplies). Impls written by hand, such as `impl<U> Copy for Length<U> {}`, have
-no such bounds.
+generic code that copies or compares a `Length<U>` would need `U: Copy` or `U: PartialEq` (the
+tests' generic code only multiplies). Impls written by hand, such as
+`impl<U> Copy for Length<U> {}`, have no such bounds.
 
 ### Alternatives
 
