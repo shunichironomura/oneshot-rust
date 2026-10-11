@@ -13,11 +13,12 @@ their contents through `&self`. Which one fits depends on what has to come back 
   hands out a reference to its contents, so changing them through `&self` is safe.
 - The cached list is different: `keys` returns a plain `&[String]` that borrows from `&self`, and
   the caller may keep it while it calls `get` or `keys` again. A `Cell` cannot lend its contents
-  through `&self` at all. A `RefCell` lends them only through a guard: in `self.keys.borrow().as_deref().unwrap()`, the
-  slice borrows from the `Ref`, a temporary dropped at the end of `keys`, so it is rejected with
-  E0515 ("cannot return value referencing temporary value"). This is not a limitation to work
-  around: if a plain reference could outlive the guard, a later `borrow_mut` through another
-  `&Lookup` could replace the vector while the caller is still reading it.
+  through `&self` at all. A `RefCell` lends them only through a guard: in
+  `self.keys.borrow().as_deref().unwrap()`, the slice borrows from the `Ref`, a temporary dropped at
+  the end of `keys`, so it is rejected with E0515 ("cannot return value referencing temporary
+  value"). This is not a limitation to work around: if a plain reference could outlive the guard, a
+  later `borrow_mut` through another `&Lookup` could replace the vector while the caller is still
+  reading it.
 - `OnceCell<Vec<String>>` is the cell that fits. Through `&self` it can only go from empty to full;
   it never changes or drops a value it holds. So references to its contents stay valid as long as
   the `&self` they came from, and `get_or_init` returns one: it runs the closure only while the cell

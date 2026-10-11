@@ -27,9 +27,9 @@ as it is: it is not trimmed.
 2. If `tok` consists of an opening single quote `'`, then a `text` that contains no `'`, then a
    closing `'`, the token is `Quoted(text)`. The `text` is kept as it is. It may be empty (`''` is
    `Quoted("")`) and may contain any other character, `:` included.
-3. If `tok` contains a `:`, split it at its **first** `:`. If the part before it and the part after
-   it are both non-empty, the token is `Pair(before, after)`. The `:` itself belongs to neither
-   part.
+3. If `tok` contains a `:`, split it at its **first** `:`. If the part before it (`before`) and the
+   part after it (`after`) are both non-empty, the token is `Pair(before, after)`. The `:` itself
+   belongs to neither part.
 4. Otherwise, the token is `Word(tok)`. This includes the empty string.
 
 `sum_first_two(nums)` returns `Some(a + b)`, where `a` and `b` are the first two elements of `nums`.

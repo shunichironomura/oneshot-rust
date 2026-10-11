@@ -14,7 +14,7 @@
 まさにこれです。各実装は `Box<Draft>` のような具体的な型の箱を受け取ります。ここで `Box::new(self)` と
 書くと箱をさらに箱に入れることになり、`Box<Draft>` は `State` を実装していないのでエラーになります
 （E0277）。`self` をそのまま返してください。`Box<Draft>` は `Box<dyn State>` に型強制され（unsizing
-coercion）、元のメモリ領域がそのまま使われます。`PendingReview::approve` は `mut self: Box<Self>` を
+coercion）、元の箱がそのまま使い回されます。`PendingReview::approve` は `mut self: Box<Self>` を
 受け取り、箱を通して `approvals` を増やします。
 
 うまくいきそうで、うまくいかない修正が 2 つあります。
@@ -28,8 +28,8 @@ coercion）、元のメモリ領域がそのまま使われます。`PendingRevi
 ### 別解
 
 遷移のメソッドを `&self` で受け取り、次の状態を作って返すこともできます。これでも動きますが、
-状態が変わらないときも含めて遷移のたびに新しい箱を確保することになり、`PendingReview` は承認の回数を
-新しい値にコピーしなければなりません。`Post` はテンプレートのままです。
+状態が変わらないときも含めて、遷移のたびに新しい状態を新しい箱に入れて作ることになり、
+`PendingReview` は承認の回数を新しい値にコピーしなければなりません。`Post` はテンプレートのままです。
 
 ```rust
 trait State {
@@ -63,8 +63,9 @@ impl State for PendingReview {
 ```
 
 `self: Box<Self>` を使う場合、`Post` の 3 つの遷移は同じ形をしているので、`take` を 1 つのヘルパーに
-まとめられます。ここでの `State::approve` は `<dyn State as State>::approve` のことで、
-`Box<dyn State>` から `Box<dyn State>` への関数です。`Option::map` は、状態があるときだけそれを適用します。
+まとめられます。ここでの `State::approve` はトレイトのメソッドで、`Self` は `f` の型から
+`dyn State` と推論されます。つまり `<dyn State as State>::approve` のことで、`Box<dyn State>` から
+`Box<dyn State>` への関数です。`Option::map` は、状態があるときだけそれを適用します。
 
 ```rust
 pub fn request_review(&mut self) {

@@ -69,7 +69,7 @@ impl State for Draft {
     }
 
     fn approve(self: Box<Self>) -> Box<dyn State> {
-        // `Box<Draft>` coerces to `Box<dyn State>`: the same allocation is reused.
+        // `Box<Draft>` coerces to `Box<dyn State>`, so the box is returned as it is.
         self
     }
 

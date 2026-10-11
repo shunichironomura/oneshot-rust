@@ -14,7 +14,7 @@ can be called on a `Box<dyn State>`, and it still consumes the old state, which 
 transition needs. Each implementation then receives its own concrete box, such as `Box<Draft>`.
 `Box::new(self)` would now put that box into another box, and `Box<Draft>` does not implement
 `State` (E0277). Return `self` as it is: `Box<Draft>` coerces to `Box<dyn State>` (an unsizing
-coercion), and the old allocation is reused. `PendingReview::approve` takes `mut self: Box<Self>`
+coercion), so the old box is reused. `PendingReview::approve` takes `mut self: Box<Self>`
 and increments `approvals` through the box.
 
 Two tempting fixes do not work:
@@ -28,8 +28,8 @@ Two tempting fixes do not work:
 ### Alternatives
 
 The transitions can also take `&self` and build the next state. That works, but every transition
-allocates a new box, even when the state does not change, and `PendingReview` has to copy its
-approvals into the new value. `Post` stays as in the template.
+builds a new state in a new box, even when the state does not change, and `PendingReview` has to
+copy its approvals into the new value. `Post` stays as in the template.
 
 ```rust
 trait State {
@@ -63,8 +63,9 @@ impl State for PendingReview {
 ```
 
 With `self: Box<Self>`, the three transitions of `Post` share one shape, so a helper can do the
-`take` once. Here `State::approve` means `<dyn State as State>::approve`, a function from
-`Box<dyn State>` to `Box<dyn State>`, and `Option::map` applies it only when there is a state.
+`take` once. Here `State::approve` is the trait's method, with `Self` inferred as `dyn State` from
+the type of `f`: it is `<dyn State as State>::approve`, a function from `Box<dyn State>` to
+`Box<dyn State>`. `Option::map` applies it only when there is a state.
 
 ```rust
 pub fn request_review(&mut self) {

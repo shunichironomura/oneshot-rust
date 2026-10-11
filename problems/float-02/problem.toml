@@ -1,5 +1,5 @@
 id = "float-02"
-title = { en = "Saturated colors", ja = "はみ出した色" }
+title = { en = "Colors out of range", ja = "はみ出した色" }
 difficulty = 1
 concepts = ["float-to-int as casts saturate", "NaN as u8 is 0", "to_int_unchecked is UB out of range", "f32::clamp keeps NaN", "f32::round"]
 kind = "implement"

@@ -26,8 +26,9 @@ pub fn sum_first_two(nums: &[u8]) -> Option<u8>
 2. `tok` が、開きのシングルクォート `'`、`'` を含まないテキスト `text`、閉じの `'` をこの順に
    つなげたものなら、トークンは `Quoted(text)` です。`text` はそのまま使います。空でもよく
    （`''` は `Quoted("")`）、`:` を含めてほかのどんな文字を含んでいても構いません。
-3. `tok` に `:` が含まれていたら、**最初の** `:` で 2 つに分けます。`:` より前の部分と後ろの部分が
-   どちらも空でなければ、トークンは `Pair(before, after)` です。`:` 自体はどちらの部分にも含めません。
+3. `tok` に `:` が含まれていたら、**最初の** `:` で 2 つに分けます。`:` より前の部分 `before` と
+   後ろの部分 `after` がどちらも空でなければ、トークンは `Pair(before, after)` です。`:` 自体は
+   どちらの部分にも含めません。
 4. どれにも当てはまらなければ、トークンは `Word(tok)` です。空文字列もこれに当たります。
 
 `sum_first_two(nums)` は、`nums` の最初の 2 つの要素を `a`、`b` として `Some(a + b)` を返します。
@@ -41,7 +42,7 @@ pub fn sum_first_two(nums: &[u8]) -> Option<u8>
 | `classify("7")` | `Tiny(7)` |
 | `classify("+250")` | `Small(250)` |
 | `classify("'a:b'")` | `Quoted("a:b")` |
-| `classify("'it's'")` | `Word("'it's'")`（3 つ目の `'` がある） |
+| `classify("'it's'")` | `Word("'it's'")`（3 つ目の `'` があります） |
 | `classify("a:b:c")` | `Pair("a", "b:c")` |
 | `sum_first_two(&[200, 55, 9])` | `Some(255)` |
 | `sum_first_two(&[200, 56])` | `None`（`256` は `u8` に収まりません） |

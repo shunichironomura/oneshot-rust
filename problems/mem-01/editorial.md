@@ -1,11 +1,11 @@
 `match self.state` with patterns that bind by value (`queue`, `session`) moves the payload out of
 `self.state`. But `self` is only a `&mut Client`: the client belongs to the caller, and Rust never
-lets a place behind a reference be left empty, not even until an arm puts a new value back (if
-something in between panicked, the caller would be left holding a client whose state had been
-moved away). That is E0507, and `take_closed` runs into it a second time with
+lets a place behind a reference be left empty, not even for the moment before an arm puts a new
+value back (if something in between panicked, the caller would be left holding a client whose
+state had been moved away). That is E0507, and `take_closed` runs into it a second time with
 `let closed = self.closed;`. The compiler's suggestions lead nowhere: `ref queue` or `&self.closed`
 only borrow, but the next state has to **own** the queue (it becomes `sent` or `unsent`), and the
-list of closed sessions has to own the `Session`, which may not implement `Clone`.
+list of closed sessions has to own the `Session`, which you are not allowed to make `Clone`.
 
 `std::mem::take(&mut self.state)` puts the default value in place and hands out the old state by
 value, in a single step. `Conn` derives `Default` with `#[default]` on `Offline`, so the placeholder

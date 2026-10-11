@@ -1,5 +1,5 @@
 id = "uninit-01"
-title = { en = "Length before values", ja = "値より先に長さ" }
+title = { en = "Filled out of order", ja = "ばらばらの順に埋める" }
 difficulty = 2
 concepts = [
     "uninitialized memory",

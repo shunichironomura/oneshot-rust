@@ -22,8 +22,9 @@ Find the boundary with `position` and cut the slice with `split_at` instead. (`f
 `partition` would move `"# x"` into the header.)
 
 `scan` is a `map` that carries a mutable state. Its closure returns an `Option`, and `None` ends the
-iteration, which is exactly "stop at the first rejected transaction". `filter` would skip only that
-transaction and keep going, giving `[70, 120, 130]`.
+iteration, which is exactly "stop at the first rejected transaction". The closure of `filter_map`
+returns an `Option` too, but there `None` only skips that transaction and the iteration goes on,
+giving `[70, 120, 130]`.
 
 `iter::successors` builds a sequence in which each item is computed from the previous one, and ends
 when the closure returns `None`. `checked_mul` returns `None` exactly when the product would
@@ -31,8 +32,9 @@ overflow, so the sequence ends after the largest power that fits. With `p * base
 panics ("attempt to multiply with overflow") in a debug build such as the judge's, and silently
 wraps around in a release build. Write the start as `Some(1u64)`: with `Some(1)`, the type of `p` is
 not known yet when the closure calls `checked_mul` on it, and that is a compile error. Floating-point
-logarithms are no way out either: `u64::MAX as f64` rounds up to exactly 2⁶⁴, so for bases such as
-`2` or `16` the count depends on rounding errors.
+logarithms are no way out either: `u64::MAX as f64` rounds up to exactly 2⁶⁴, so for a base such as
+`2` or `16` the logarithm comes out as exactly `64` or `16`, and 2⁶⁴, which does not fit, is
+counted too.
 
 ### Alternatives
 

@@ -1,7 +1,16 @@
 id = "atomic-03"
 title = { en = "Lock-free stats", ja = "ロックフリーな統計" }
 difficulty = 2
-concepts = ["AtomicU64", "fetch_add / fetch_max / fetch_min", "race condition from load + store (not a data race)", "mutation through &self", "const fn new for statics", "statics must be Sync", "Relaxed ordering + join happens-before", "sentinel for no samples"]
+concepts = [
+    "no atomic float types: f64 stored as bits in an AtomicU64 (to_bits / from_bits, both const fn)",
+    "fetch_add / fetch_max on the bits do integer arithmetic, wrong for the encoded f64 (sign bit)",
+    "compare-and-swap loop: AtomicU64::update / compare_exchange_weak",
+    "race condition from load + store (not a data race)",
+    "order-preserving u64 key for fetch_max / fetch_min (total_cmp trick)",
+    "starting values -inf / +inf, None from the count, 0.0 is a valid sample",
+    "statics must be Sync, const fn new",
+    "Relaxed ordering + join happens-before",
+]
 kind = "implement"
 
 [judge]
