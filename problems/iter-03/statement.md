@@ -2,15 +2,16 @@ Implement four small functions. Each one fits in a few lines, but every detail o
 matters.
 
 ```rust
-pub fn longest<'a>(words: &[&'a str]) -> Option<&'a str>
+pub fn last_long(words: &[&str], min: usize) -> Option<usize>
 pub fn split_header<'a>(lines: &[&'a str]) -> (Vec<&'a str>, Vec<&'a str>)
 pub fn running_balance(start: i64, txns: &[i64]) -> Vec<i64>
 pub fn powers_of(base: u64) -> Vec<u64>
 ```
 
-- `longest` returns the word with the most characters. Characters are counted as `char`s (Unicode
-  scalar values), not bytes: `"é"` and `"日"` are one character each. If several words share the
-  largest count, the **first** of them is returned. An empty slice gives `None`.
+- `last_long` returns the position of the **last** word that has at least `min` characters. The
+  position is counted from the start of `words`: the first word is at position `0`. Characters are
+  counted as `char`s (Unicode scalar values), not bytes: `"é"` and `"日"` are one character each.
+  If no word is long enough (or `words` is empty), it returns `None`.
 - `split_header` splits `lines` into a header and a body. The header is the longest run of lines at
   the start of `lines` that begin with `#` (the first character of the line is `#`; leading spaces
   are not skipped). The body is all the remaining lines, starting with the first line that does not
@@ -26,8 +27,8 @@ pub fn powers_of(base: u64) -> Vec<u64>
 
 ### Examples
 
-- `longest(&["hi", "hello", "world"])` returns `Some("hello")`.
-- `longest(&["éé", "abc"])` returns `Some("abc")`.
+- `last_long(&["tea", "coffee", "milk", "juice"], 5)` returns `Some(3)`.
+- `last_long(&["abc", "日本"], 3)` returns `Some(0)`.
 - `split_header(&["# a", "# b", "body", "# x"])` returns
   `(vec!["# a", "# b"], vec!["body", "# x"])`.
 - `running_balance(100, &[-30, 50, -200, 10])` returns `vec![70, 120]`.

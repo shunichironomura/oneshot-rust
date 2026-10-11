@@ -50,8 +50,8 @@ A `Username` stands for its name everywhere:
   of usernames with `join(", ")`.)
 - `u == "alice"`, which compares a `Username` with a `&str`, is true exactly when the name is
   `alice`.
-- Two usernames are equal when their names are equal, and usernames are ordered like their names
-  (as `str`s): for example, `al_x` < `alice` < `bob`.
+- Two usernames are equal exactly when their names are equal, and usernames are ordered like their
+  names (as `str`s): for example, `al_x` < `alice` < `bob`.
 - The tests put usernames in `HashSet`s, `HashMap`s and `BTreeMap`s and query them with a `&str`:
   `set.contains("alice")`, `map.get("bob")`, `map.remove("carol")` and the like must find the
   username with that name.

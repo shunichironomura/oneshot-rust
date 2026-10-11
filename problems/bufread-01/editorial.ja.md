@@ -29,7 +29,7 @@
 
 Book のように、空行までの行を先に集める書き方です。`take_while` は最初の `Ok("")` で止まりますが、
 エラーは通すので、`Result<Vec<_>, _>` に `collect` すると最初のエラーが `Err` になります。
-ヘッダーも `Option<_>` に `collect` すれば同じように扱えます。
+ヘッダも `Option<_>` に `collect` すれば同じように扱えます。
 
 ```rust
 use std::io::{BufRead, BufReader};

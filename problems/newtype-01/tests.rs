@@ -98,6 +98,11 @@ pub fn run() {
         let ann = user(" ann ");
         check(ann == user("ann"), "equal names should give equal usernames")?;
         check(ann != u, "different names should give different usernames")?;
+        // Same length, same first char, and a prefix in both directions.
+        check(
+            ann != user("amy") && ann != user("anna") && user("anna") != ann,
+            "different names should give different usernames",
+        )?;
         check_eq([ann, u].join(", "), "ann, dave_42")
     });
     case("hidden-5", || {

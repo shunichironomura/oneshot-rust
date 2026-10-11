@@ -9,7 +9,9 @@ using the `Ord` of `str`, in a tree that was arranged with the `Ord` of `Usernam
 The easiest way to keep the contract is to derive. On a struct with a single field, the derived
 `PartialEq`, `Eq`, `PartialOrd`, `Ord` and `Hash` only call those of the field, and `String`
 compares and hashes exactly like `str`. Implementing them by hand works too, as long as each one
-delegates to `self.0` (see the alternatives). Code that looks just as reasonable breaks lookups:
+delegates to `self.0` (see the alternatives) and not to `self`: `self == other` inside `eq` or
+`self.cmp(other)` inside `cmp` calls the very impl being written and recurses forever. Other code
+that looks just as reasonable compiles and runs, but breaks lookups:
 `state.write(self.0.as_bytes())` misses the extra `0xff` byte that the `Hash` of `str` writes after
 the bytes, `self.0.as_bytes().hash(state)` hashes the length of the slice first, and ordering by
 length first disagrees with the order of `str`.
@@ -33,7 +35,7 @@ also accept letters such as `é` and digits such as `٣`.
 
 `fmt::Display::fmt(&self.0, f)` forwards to the `Display` of `str`, which also honors width and
 alignment such as `{:>10}`. `f.write_str(&self.0)` prints the same name but ignores them (the tests
-do not use them).
+do not use them). `write!(f, "{self}")` would call this `fmt` again, forever.
 
 ### Alternatives
 

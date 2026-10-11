@@ -1,10 +1,13 @@
 Each function here is short with the right adapter, and subtly wrong with an adapter that only
 looks right.
 
-`max_by_key` returns the **last** element when several are equally large (`min_by_key` returns the
-first). So `words.iter().max_by_key(|w| w.chars().count())` returns `"world"` for
-`["hi", "hello", "world"]`. Reversing the iterator first turns "last" into "first". Count with
-`chars().count()`: `len()` is the length in bytes, and `"éé"` is 4 bytes long but only 2 characters.
+`position` returns how many items came before the match in the iterator it is called on, so after
+`rev()` it counts from the back. `words.iter().rev().position(|w| w.chars().count() >= 5)` returns
+`Some(0)` for `["tea", "coffee", "milk", "juice"]`, because `"juice"` is the first item of the
+reversed iterator. `rposition` searches from the back too, but returns the position from the front.
+It needs an iterator that knows its length and can be walked from the back (`ExactSizeIterator` and
+`DoubleEndedIterator`), as `slice::Iter` does. Count with `chars().count()`: `len()` is the length
+in bytes, and `"日本"` is 6 bytes long but only 2 characters.
 
 `take_while` has to look at the first line that fails the test to know where to stop, and that line
 is then gone from the underlying iterator. This loses `"body"`:
@@ -33,14 +36,17 @@ logarithms are no way out either: `u64::MAX as f64` rounds up to exactly 2⁶⁴
 
 ### Alternatives
 
-`min_by_key` returns the first minimum, so you can make the largest count the smallest key with
-`std::cmp::Reverse`.
+`enumerate` before `rev` attaches the positions from the front, and they stay attached when the
+order is reversed. (`rev().enumerate()` would number the items from the back again.)
 
 ```rust
-use std::cmp::Reverse;
-
-pub fn longest<'a>(words: &[&'a str]) -> Option<&'a str> {
-    words.iter().copied().min_by_key(|w| Reverse(w.chars().count()))
+pub fn last_long(words: &[&str], min: usize) -> Option<usize> {
+    words
+        .iter()
+        .enumerate()
+        .rev()
+        .find(|(_, w)| w.chars().count() >= min)
+        .map(|(i, _)| i)
 }
 ```
 

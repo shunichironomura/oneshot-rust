@@ -1,82 +1,85 @@
-`Option::unwrap` takes the option **by value**. `self.state` sits behind `&mut self` (or `&self` in
-`content`), and you cannot move a field out of a borrowed struct: that would leave `*self` with a
-hole in it. So every `self.state.unwrap()` is error E0507, and so is `if let Some(s) = self.state`,
-which moves the box into `s`.
+`Post` itself is fine: `take()` moves the box out of the `Option` and leaves `None` until the next
+state is stored, and `add_text` and `content` only borrow the state. The errors are the three calls
+`s.request_review()`, `s.approve()` and `s.reject()`, on an `s` of type `Box<dyn State>`.
 
-How to fix each one depends on what the call needs:
+These methods take `self` **by value**. Method lookup goes through the box to the `dyn State`
+inside, so the call would have to move that state out of the box and pass it as an argument. But
+the size of a `dyn State` is only known at run time (it may be a `Draft` or a `PendingReview`), and
+a value whose size is not known statically cannot be moved. That is E0161 ("cannot move a value of
+type `dyn State`"). The trait itself is accepted, and the methods can be called on a `Draft`, just
+not through the trait object.
 
-- The transitions (`request_review`, `approve`, `reject`) call methods that take `self: Box<Self>`:
-  they **consume** the old state and return the new one, so they need the box itself, not a
-  reference to it. `Option::take` moves the value out and leaves `None` in its place, which is
-  exactly why the field is an `Option`. Then store the new state.
-- `content` and `add_text` only look at the state. `Option::as_ref` turns `&Option<Box<dyn State>>`
-  into `Option<&Box<dyn State>>`, and the method call goes through the box to the state. In
-  `add_text`, reading `self.state` while pushing onto `self.content` is fine because they are
-  different fields, and the `&'a str` returned by `text_to_add` borrows `text`, not the state.
+The receiver `self: Box<Self>` makes the method take the box itself, which has a known size. It
+can be called on a `Box<dyn State>`, and it still consumes the old state, which is what a
+transition needs. Each implementation then receives its own concrete box, such as `Box<Draft>`.
+`Box::new(self)` would now put that box into another box, and `Box<Draft>` does not implement
+`State` (E0277). Return `self` as it is: `Box<Draft>` coerces to `Box<dyn State>` (an unsizing
+coercion), and the old allocation is reused. `PendingReview::approve` takes `mut self: Box<Self>`
+and increments `approvals` through the box.
 
-Following the compiler's suggestions blindly does not work for the transitions: `as_ref()` or
-`as_mut()` only gives a reference, and calling a `self: Box<Self>` method through it is E0507
-again, because it would move the box out from behind that reference. The suggested `ref s` in
-`if let Some(ref s)` fails the same way. `clone()` is not available either: `Box<dyn State>` does
-not implement `Clone`.
+Two tempting fixes do not work:
 
-Using `take()` in `add_text` compiles, but if you forget to put the state back, the post is left
-with `None` and stops working.
+- `where Self: Sized` on the transitions. It is the usual cure for a method that makes a trait
+  unusable as `dyn Trait` (one that returns `Self`, or a generic one), but this trait is already
+  usable. It only removes the methods from `dyn State`, and the calls fail with "the `approve`
+  method cannot be invoked on a trait object".
+- `(*s).approve()`. That spells out the same move out of the box, and fails the same way.
 
 ### Alternatives
 
-The three transitions share one shape, so a helper can do the `take` once. `Option::map` applies
-the transition only when there is a state, and `as_deref` gives an `Option<&dyn State>`.
+The transitions can also take `&self` and build the next state. That works, but every transition
+allocates a new box, even when the state does not change, and `PendingReview` has to copy its
+approvals into the new value. `Post` stays as in the template.
 
 ```rust
-pub fn add_text(&mut self, text: &str) {
-    if let Some(state) = &self.state {
-        self.content.push_str(state.text_to_add(text));
+trait State {
+    fn request_review(&self) -> Box<dyn State>;
+    fn approve(&self) -> Box<dyn State>;
+    fn reject(&self) -> Box<dyn State>;
+
+    // `text_to_add` and `content` as before.
+}
+
+impl State for PendingReview {
+    fn request_review(&self) -> Box<dyn State> {
+        Box::new(PendingReview { approvals: self.approvals })
+    }
+
+    fn approve(&self) -> Box<dyn State> {
+        if self.approvals + 1 >= 2 {
+            Box::new(Published)
+        } else {
+            Box::new(PendingReview { approvals: self.approvals + 1 })
+        }
+    }
+
+    fn reject(&self) -> Box<dyn State> {
+        Box::new(Draft)
     }
 }
 
-pub fn content(&self) -> &str {
-    self.state.as_deref().map_or("", |s| s.content(self))
-}
-
-pub fn request_review(&mut self) {
-    self.transition(|s| s.request_review());
-}
-
-pub fn approve(&mut self) {
-    self.transition(|s| s.approve());
-}
-
-pub fn reject(&mut self) {
-    self.transition(|s| s.reject());
-}
-
-fn transition(&mut self, f: impl FnOnce(Box<dyn State>) -> Box<dyn State>) {
-    self.state = self.state.take().map(f);
-}
+// `Draft` and `Published` return `Box::new(Draft)` and `Box::new(Published)` where they do not
+// change the state.
 ```
 
-The trait methods themselves can be passed as functions: here `State::approve` means
-`<dyn State as State>::approve`, a function from `Box<dyn State>` to `Box<dyn State>`.
-`request_review` and `reject` are written the same way.
+With `self: Box<Self>`, the three transitions of `Post` share one shape, so a helper can do the
+`take` once. Here `State::approve` means `<dyn State as State>::approve`, a function from
+`Box<dyn State>` to `Box<dyn State>`, and `Option::map` applies it only when there is a state.
 
 ```rust
+pub fn request_review(&mut self) {
+    self.transition(State::request_review);
+}
+
 pub fn approve(&mut self) {
     self.transition(State::approve);
 }
 
-fn transition(&mut self, f: fn(Box<dyn State>) -> Box<dyn State>) {
-    if let Some(s) = self.state.take() {
-        self.state = Some(f(s));
-    }
+pub fn reject(&mut self) {
+    self.transition(State::reject);
 }
-```
 
-If you prefer to keep the original one-liners, `take().unwrap()` also works, since the state is
-always put back:
-
-```rust
-pub fn approve(&mut self) {
-    self.state = Some(self.state.take().unwrap().approve());
+fn transition(&mut self, f: fn(Box<dyn State>) -> Box<dyn State>) {
+    self.state = self.state.take().map(f);
 }
 ```

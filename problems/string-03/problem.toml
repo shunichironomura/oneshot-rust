@@ -1,5 +1,5 @@
 id = "string-03"
-title = { en = "Characters, not bytes", ja = "バイトではなく文字で" }
+title = { en = "Cut to fit", ja = "収まるように切り詰める" }
 difficulty = 1
 concepts = ["UTF-8 byte indices", "char boundaries", "char_indices", "str::floor_char_boundary", "returning subslices"]
 kind = "implement"

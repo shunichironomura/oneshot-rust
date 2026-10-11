@@ -27,8 +27,8 @@ impl Post {
 - Every other call does nothing. In particular, `request_review` on a post pending review keeps its
   approval, and a published post stays published.
 
-The `State` trait and the state structs are correct. Do not change them or the public signatures,
-and keep `Post` delegating to its state object.
+Do not change the public signatures or the state structs, and keep `Post` delegating to its state
+object.
 
 ### Examples
 

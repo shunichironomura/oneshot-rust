@@ -1,5 +1,5 @@
 id = "peek-01"
-title = { en = "Tokens one peek ahead", ja = "一つ先をのぞくトークナイザ" }
+title = { en = "Expression tokenizer", ja = "式のトークナイザ" }
 difficulty = 2
 concepts = ["Iterator::peekable", "Peekable::peek", "next_if / next_if_eq", "by_ref", "take_while pitfall", "checked arithmetic", "char classification", "char vs byte index"]
 kind = "implement"

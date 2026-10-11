@@ -1,5 +1,5 @@
 id = "iter-02"
-title = { en = "Layers of references", ja = "参照は何重？" }
+title = { en = "Questions about slices", ja = "スライスについての質問" }
 difficulty = 1
 concepts = [
     "Iterator::find and filter pass &Item",

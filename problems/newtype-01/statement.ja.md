@@ -48,7 +48,7 @@ impl Hash for Username { /* 実装する */ }
 - `as_ref()` と `borrow()` は名前を返し、`Display` は名前を表示します（テストでは、ユーザー名のスライスを
   `join(", ")` でつなぐこともします）。
 - `u == "alice"`（`Username` と `&str` の比較）は、名前がちょうど `alice` のときに限り真です。
-- 2 つのユーザー名は、名前が等しいときに等しくなります。ユーザー名の順序は名前（`str`）の順序と同じです。
+- 2 つのユーザー名は、名前が等しいときに限り等しくなります。ユーザー名の順序は名前（`str`）の順序と同じです。
   たとえば `al_x` < `alice` < `bob` です。
 - テストはユーザー名を `HashSet`、`HashMap`、`BTreeMap` に入れ、`&str` で問い合わせます。
   `set.contains("alice")`、`map.get("bob")`、`map.remove("carol")` などは、その名前のユーザー名を

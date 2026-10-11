@@ -1,6 +1,6 @@
 id = "expr-01"
 title = { en = "Simplify the expression", ja = "式を整理する" }
-difficulty = 3
+difficulty = 2
 concepts = [
     "recursive enums with Box",
     "moving out of a Box with *",

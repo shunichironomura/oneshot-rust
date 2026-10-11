@@ -2,9 +2,10 @@ Stable Rust has no box patterns, so a pattern cannot look inside a `Box`: `Expr:
 is a type error, because the field is a `Box<Expr>`. The solution takes the node apart, simplifies
 the children first (the bottom-up order needs that anyway), and matches on the tuple of the two
 **owned** results. `*l` moves the `Expr` out of the box `l`. Only `Box` allows moving out through
-`*`, and the box is unusable afterwards: writing `Expr::Neg(inner)` after `simplify(*inner)` is a
-"use of moved value". New nodes are therefore built with `Box::new`. For the same reason, once
-`match e` has moved the boxes out of `e`, `e` cannot be returned as a fallback.
+`*`, and the box cannot be used again until a value is put back into it: writing
+`Expr::Neg(inner)` after `simplify(*inner)` is a "use of moved value". New nodes are therefore built
+with `Box::new`. For the same reason, an arm that has moved the boxes out of `e` cannot return `e`
+itself as a fallback.
 
 Details that are easy to get wrong:
 

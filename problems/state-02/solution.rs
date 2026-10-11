@@ -12,12 +12,16 @@ impl Post {
     }
 
     pub fn add_text(&mut self, text: &str) {
-        let accepted = self.state.as_ref().unwrap().text_to_add(text);
-        self.content.push_str(accepted);
+        if let Some(state) = &self.state {
+            self.content.push_str(state.text_to_add(text));
+        }
     }
 
     pub fn content(&self) -> &str {
-        self.state.as_ref().unwrap().content(self)
+        match &self.state {
+            Some(state) => state.content(self),
+            None => "",
+        }
     }
 
     pub fn request_review(&mut self) {
@@ -40,6 +44,8 @@ impl Post {
 }
 
 trait State {
+    // The transitions consume the old state and return the new one. They take the box itself:
+    // a `dyn State` cannot be moved out of its box, because its size is not known statically.
     fn request_review(self: Box<Self>) -> Box<dyn State>;
     fn approve(self: Box<Self>) -> Box<dyn State>;
     fn reject(self: Box<Self>) -> Box<dyn State>;
@@ -63,6 +69,7 @@ impl State for Draft {
     }
 
     fn approve(self: Box<Self>) -> Box<dyn State> {
+        // `Box<Draft>` coerces to `Box<dyn State>`: the same allocation is reused.
         self
     }
 

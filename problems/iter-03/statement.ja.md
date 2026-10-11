@@ -1,15 +1,16 @@
 小さな関数を 4 つ実装してください。どれも数行で書けますが、以下の規則は細部まで大事です。
 
 ```rust
-pub fn longest<'a>(words: &[&'a str]) -> Option<&'a str>
+pub fn last_long(words: &[&str], min: usize) -> Option<usize>
 pub fn split_header<'a>(lines: &[&'a str]) -> (Vec<&'a str>, Vec<&'a str>)
 pub fn running_balance(start: i64, txns: &[i64]) -> Vec<i64>
 pub fn powers_of(base: u64) -> Vec<u64>
 ```
 
-- `longest` は文字数が最も多い単語を返します。文字数はバイト数ではなく `char`（Unicode スカラー値）の
-  個数で数えます。`"é"` も `"日"` も 1 文字です。最大の文字数の単語が複数あるときは、そのうち**最初の**
-  単語を返します。空のスライスなら `None` です。
+- `last_long` は、文字数が `min` 以上の単語のうち**最後の**単語の位置を返します。位置は `words` の
+  先頭から数え、最初の単語の位置が `0` です。文字数はバイト数ではなく `char`（Unicode スカラー値）の
+  個数で数えます。`"é"` も `"日"` も 1 文字です。十分に長い単語がなければ（`words` が空のときも）
+  `None` を返します。
 - `split_header` は `lines` をヘッダと本文に分けます。ヘッダは、`lines` の先頭から `#` で始まる行が
   続く部分のうち最も長いものです（行の最初の文字が `#` であること。先頭の空白は読み飛ばしません）。
   本文は残りのすべての行で、`#` で始まらない最初の行から始まります。それより後の行は、`#` で
@@ -23,8 +24,8 @@ pub fn powers_of(base: u64) -> Vec<u64>
 
 ### 例
 
-- `longest(&["hi", "hello", "world"])` は `Some("hello")` を返します。
-- `longest(&["éé", "abc"])` は `Some("abc")` を返します。
+- `last_long(&["tea", "coffee", "milk", "juice"], 5)` は `Some(3)` を返します。
+- `last_long(&["abc", "日本"], 3)` は `Some(0)` を返します。
 - `split_header(&["# a", "# b", "body", "# x"])` は
   `(vec!["# a", "# b"], vec!["body", "# x"])` を返します。
 - `running_balance(100, &[-30, 50, -200, 10])` は `vec![70, 120]` を返します。
