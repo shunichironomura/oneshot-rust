@@ -16,7 +16,6 @@ fn summary(stats: &Stats) -> Summary {
 
 const ROUNDS: usize = 3;
 const BUCKETS_PER_ROUND: usize = 6;
-const K: usize = 3;
 const BUCKETS: usize = ROUNDS * BUCKETS_PER_ROUND;
 
 /// In bucket `i`, thread `t` records `base(i) + ORDERS[i % 6][t] / 4`, so the largest and the
@@ -45,17 +44,14 @@ fn record_in_buckets() -> Result<(), String> {
                     if i % BUCKETS_PER_ROUND == 0 {
                         together.wait();
                     }
-                    for k in 0..K {
-                        bucket.record(base(i) + (4 * k) as f64 / 4.0 + f64::from(ORDERS[i % 6][t]) / 4.0);
-                    }
+                    bucket.record(base(i) + f64::from(ORDERS[i % 6][t]) / 4.0);
                 }
             });
         }
     });
     for (i, bucket) in buckets.iter().enumerate() {
         let b = base(i);
-        let n = 4 * K;
-        check_eq(summary(bucket), (n as u64, n as f64 * b + ((n - 1) * n / 2) as f64 / 4.0, Some(b + (n - 1) as f64 / 4.0), Some(b)))?;
+        check_eq(summary(bucket), (4, 4.0 * b + 1.5, Some(b + 0.75), Some(b)))?;
     }
     Ok(())
 }

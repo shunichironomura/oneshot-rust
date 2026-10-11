@@ -31,7 +31,8 @@ pub static GLOBAL: Stats = Stats::new();
   それまでに終わったすべての `record` の呼び出しが反映されます。`join` したスレッド
   （たとえば `std::thread::scope` の終わりで `join` されたスレッド）が行った呼び出しも
   含みます。
-- `new` は `const fn` のままにしてください。テストは `GLOBAL` と同じように `Stats` を `static` に置きます。
+- `new` は `const fn` のままにしてください。テストは `GLOBAL` と同じように `Stats` を `static` に
+  置きます。
 
 公開されているシグネチャと `GLOBAL` は変えないでください。`Stats` のフィールド（エディタにあるものは
 たたき台です）と `new` の本体は自由に決めてかまいません。`Mutex` や `RwLock` のようなロックは
