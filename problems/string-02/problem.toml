@@ -1,0 +1,12 @@
+id = "string-02"
+title = { en = "Three string helpers", ja = "3 つの文字列ヘルパー" }
+difficulty = 1
+concepts = ["String + &str (Add<&str>)", "+ moves its left operand", "no integer indexing into str", "chars vs bytes", "to_uppercase"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

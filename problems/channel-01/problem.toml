@@ -1,0 +1,12 @@
+id = "channel-01"
+title = { en = "Channel edge cases", ja = "チャネルの細かな挙動" }
+difficulty = 2
+concepts = ["mpsc channels", "SendError carries the value back", "try_recv: Empty vs Disconnected", "multiple producers (cloned Sender)", "receive loops end only when every Sender is dropped"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,19 @@
+id = "match-03"
+title = { en = "Case by case", ja = "場合分け" }
+difficulty = 1
+concepts = [
+    "match exhaustiveness",
+    "integer range patterns",
+    "exclusive range patterns",
+    "guards do not count for exhaustiveness",
+    "tuple patterns",
+    "catch-all arms",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

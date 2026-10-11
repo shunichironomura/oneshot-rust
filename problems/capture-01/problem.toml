@@ -1,0 +1,18 @@
+id = "capture-01"
+title = { en = "Parallel squares", ja = "スレッドで二乗" }
+difficulty = 3
+concepts = [
+    "disjoint closure captures (edition 2021+)",
+    "move closures capture the fields they use, not the whole struct",
+    "Send wrapper for raw pointers",
+    "auto traits of closures follow their captures",
+    "thread::spawn needs 'static, raw pointers as a workaround",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

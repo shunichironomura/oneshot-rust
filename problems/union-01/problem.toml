@@ -1,0 +1,20 @@
+id = "union-01"
+title = { en = "Reinterpretation", ja = "読み替え" }
+difficulty = 3
+concepts = [
+    "unions",
+    "validity invariants (bool must be 0 or 1)",
+    "producing an invalid value is UB even if it is never used",
+    "reading uninitialized bytes",
+    "padding bytes become uninitialized on a typed write",
+    "f32::to_bits vs numeric as casts",
+    "lossless integer widening",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

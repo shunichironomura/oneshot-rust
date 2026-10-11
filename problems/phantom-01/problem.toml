@@ -1,0 +1,18 @@
+id = "phantom-01"
+title = { en = "Millimeters and inches", ja = "ミリとインチ" }
+difficulty = 2
+concepts = [
+    "orphan rule: uncovered type parameters (E0210)",
+    "impl<U> Mul<Length<U>> for f64 is allowed (local type as a trait parameter)",
+    "operator overloading with a scalar on either side",
+    "PhantomData<U> unit markers",
+    "integer literal fallback with several impls (E0282 on method calls)",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,18 @@
+id = "trait-04"
+title = { en = "Describe everything", ja = "なんでも説明" }
+difficulty = 1
+concepts = [
+    "implementing a local trait for std types (orphan rule)",
+    "generic impls for containers (Vec<T>, [T], Option<T>, tuples)",
+    "impls chain for nested types",
+    "an impl's bounds must cover what its body calls (the Vec impl needs [T]: Describe)",
+    "?Sized on a blanket impl for &T (given)",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

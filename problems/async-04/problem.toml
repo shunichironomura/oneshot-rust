@@ -1,0 +1,12 @@
+id = "async-04"
+title = { en = "A shared log", ja = "共有のログ" }
+difficulty = 3
+concepts = ["Send-ness of async fn futures", "MutexGuard is !Send", "drop() before await is not enough: borrowed locals count as held until the end of their scope", "block scopes in async fns", "temporaries live until the end of the statement, across an .await in it"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

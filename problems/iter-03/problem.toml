@@ -1,0 +1,18 @@
+id = "iter-03"
+title = { en = "Iterator fine print", ja = "イテレータの細則" }
+difficulty = 2
+concepts = [
+    "position after rev() counts from the back; rposition / enumerate().rev()",
+    "take_while consumes the first failing item",
+    "Iterator::scan",
+    "iter::successors with checked_mul",
+    "chars().count() vs len()",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

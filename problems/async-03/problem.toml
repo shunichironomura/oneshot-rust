@@ -1,0 +1,12 @@
+id = "async-03"
+title = { en = "Stores for worker threads", ja = "ワーカースレッドで使うストア" }
+difficulty = 3
+concepts = ["async fn in traits (1.75)", "RPITIT desugaring: fn f() -> impl Future + Send", "Send bounds on futures", "impls may keep async fn", "&S is Send only if S: Sync (Sync supertrait)", "auto traits of RPITIT futures leak only for concrete types"]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = true

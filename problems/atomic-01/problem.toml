@@ -1,0 +1,12 @@
+id = "atomic-01"
+title = { en = "Unique ids from many threads", ja = "スレッドをまたぐ通し番号" }
+difficulty = 2
+concepts = ["static mut", "data races", "AtomicU64", "fetch_add", "Relaxed ordering", "read-modify-write"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

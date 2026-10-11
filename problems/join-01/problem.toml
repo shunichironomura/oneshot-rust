@@ -1,0 +1,12 @@
+id = "join-01"
+title = { en = "Join without a runtime", ja = "ランタイムなしの join" }
+difficulty = 3
+concepts = ["combinator futures", "std::future::poll_fn", "Box::pin for generic !Unpin inputs", "FnMut closures cannot move captures out (Option::take)", "vec![None; n] requires Clone", "never poll a completed future", "poll every pending input (no short-circuit)", "pass the Context through, no self-wake", "manual Unpin impl for a combinator struct"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

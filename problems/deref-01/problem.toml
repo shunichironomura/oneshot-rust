@@ -1,0 +1,12 @@
+id = "deref-01"
+title = { en = "A vector that stays sorted", ja = "いつも整列したベクタ" }
+difficulty = 2
+concepts = ["Deref with Target = [T]", "deref coercion and auto-deref", "read-only invariant (no DerefMut)", "partition_point for lower/upper bounds", "stable sort", "From<Vec<T>>", "closures over non-Copy generic T"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

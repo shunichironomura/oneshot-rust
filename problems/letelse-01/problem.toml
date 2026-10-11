@@ -1,0 +1,12 @@
+id = "letelse-01"
+title = { en = "Order slips", ja = "注文票" }
+difficulty = 1
+concepts = ["let-else", "diverging else (continue)", "slice patterns", "returning &str borrowed from the input", "str::parse"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

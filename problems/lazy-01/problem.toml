@@ -1,0 +1,20 @@
+id = "lazy-01"
+title = { en = "Compute once", ja = "計算は一度だけ" }
+difficulty = 2
+concepts = [
+    "FnOnce stored in a struct",
+    "cannot move out of a field behind &mut self",
+    "Option::take",
+    "get_or_insert_with",
+    "arguments are evaluated eagerly",
+    "disjoint closure captures",
+    "partial moves out of self",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

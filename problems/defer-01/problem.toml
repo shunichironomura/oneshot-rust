@@ -1,0 +1,12 @@
+id = "defer-01"
+title = { en = "Deferred actions", ja = "後回しの処理" }
+difficulty = 3
+concepts = ["Drop", "Drop impl bounds must match the struct (E0367)", "calling a stored FnOnce from &mut self via Option::take", "moving out of a Drop type (E0509) / mut self", "Box<dyn FnOnce()>", "returning Defer<impl FnOnce()>", "drop order and unwinding", "drop glue keeps dropping the remaining elements after a panic", "cancel must not drop guards that run actions"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

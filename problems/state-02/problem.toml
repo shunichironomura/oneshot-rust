@@ -1,0 +1,12 @@
+id = "state-02"
+title = { en = "Blog post workflow", ja = "ブログ記事の承認フロー" }
+difficulty = 2
+concepts = ["state pattern with trait objects", "by-value self cannot be called through dyn Trait (E0161)", "self: Box<Self> receivers", "unsizing coercion Box<Self> -> Box<dyn Trait>", "where Self: Sized removes a method from the trait object", "Option::take"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

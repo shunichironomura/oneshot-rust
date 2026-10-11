@@ -1,0 +1,35 @@
+`Point<X, Y>` は、2 つの座標の型が異なっていてもよい点です（エディタに入っています）。
+メソッドの本体はすでに書かれていますが、`impl` ブロックとメソッドのシグネチャは、`Point` が
+ジェネリックでないかのように書かれているので、コンパイルが通りません。**`impl` の行とメソッドの
+シグネチャだけ**を書き換えて、ハーネス（`tests.rs` タブ）がコンパイルでき、テストに合格するように
+してください。構造体と本体は変更しないでください。レシーバ（`self` と `&self`）はすでに正しいものに
+なっています。`use` 宣言は追加してもかまいません。
+
+- `Point::new(x, y)` は点を作ります。
+- `p.mixup(other)` は、`x` が `p` の `x`、`y` が `other` の `y` である点を返します。2 つの点の
+  座標の型はまったく異なっていてもかまいません。
+- `p.swap()` は座標を入れ替えます。元の `y` が `x` に、元の `x` が `y` になります。
+- `p.convert::<A, B>()` は、`Into` を使って `x` を `A` に、`y` を `B` に変換します。ハーネスは
+  `let q: Point<f64, i64> = p.convert();` のように、`A` と `B` をコンパイラに推論させることもあります。
+- `p.distance_from_origin()` は原点からの距離を返します。ハーネスは、座標が 2 つとも `f64` の点に
+  対してだけ呼び出します。
+- `p.larger()` は大きいほうの座標を表す文字列を返します。`x >= y` なら `"x = <x>"`、そうでなければ
+  `"y = <y>"` です。`<x>` と `<y>` は座標を `{}` で整形したものです。ハーネスは、2 つの座標の型が
+  同じ点に対して呼び出します。座標の型は整数、文字、`f64`、`String`、`&str`、そしてハーネス自身の
+  型 `Grade` です。`Grade` は `PartialEq`、`PartialOrd`、`Display` だけを実装しています。
+- `new`、`mixup`、`swap` は、`Copy` でも `Clone` でもない型を含め、どんな型の座標でも受け付けます。
+  `convert` も、変換ができる限りどんな型の座標でも受け付けます。
+
+### 例
+
+```rust
+Point::new(5, 10.4).mixup(Point::new("Hello", 'c'))  // Point { x: 5, y: 'c' }
+Point::new(1, "a").swap()                            // Point { x: "a", y: 1 }（Point<&str, i32>）
+
+let q: Point<f64, i64> = Point::new(3i32, 4u8).convert();  // Point { x: 3.0, y: 4 }
+Point::new("hi", 'A').convert::<String, u32>()            // Point { x: String::from("hi"), y: 65 }
+
+Point::new(3.0, 4.0).distance_from_origin()  // 5.0
+Point::new('a', 'z').larger()                // "y = z"
+Point::new(7, 3).larger()                    // "x = 7"
+```

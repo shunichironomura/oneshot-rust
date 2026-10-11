@@ -1,0 +1,18 @@
+id = "enum-02"
+title = { en = "A row of mixed cells", ja = "いろいろな型のセル" }
+difficulty = 1
+concepts = [
+    "enums holding data",
+    "Vec of enums",
+    "match ergonomics on &[T] (bindings are &i64 / &String)",
+    "str::parse order (i64 before f64)",
+    "returning borrowed &str via lifetime elision",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

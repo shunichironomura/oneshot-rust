@@ -1,0 +1,20 @@
+id = "collect-01"
+title = { en = "A bag of things", ja = "なんでも入る袋" }
+difficulty = 3
+concepts = [
+    "FromIterator",
+    "Extend<T> and Extend<&T>",
+    "IntoIterator for &Collection",
+    "owning IntoIterator with a nameable IntoIter type",
+    "DoubleEndedIterator",
+    "iter::repeat_n",
+    "fn pointers in iterator types",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

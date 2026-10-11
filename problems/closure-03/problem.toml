@@ -1,0 +1,19 @@
+id = "closure-03"
+title = { en = "Tally and greet", ja = "集計とあいさつ" }
+difficulty = 2
+concepts = [
+    "closures capture by &mut",
+    "the borrow lasts until the closure's last use",
+    "borrow liveness follows control flow (push before break is fine)",
+    "move closures for returned closures",
+    "moving a reference into a closure still borrows",
+    "restructuring around captures",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,19 @@
+id = "result-02"
+title = { en = "Results in bulk", ja = "まとめて Result" }
+difficulty = 2
+concepts = [
+    "collect into Result<Vec<_>, _>",
+    "&&'a str from iterating &[&'a str]",
+    "Option<Result>::transpose",
+    "try_fold with checked_add",
+    "Sum for Option panics on overflow",
+    "ParseIntError equality",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

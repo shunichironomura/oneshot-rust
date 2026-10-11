@@ -1,0 +1,12 @@
+id = "hash-01"
+title = { en = "Case-insensitive tags", ja = "大文字小文字を区別しないタグ" }
+difficulty = 2
+concepts = ["Hash must agree with Eq", "manual PartialEq / Eq / Hash", "eq_ignore_ascii_case", "HashSet and HashMap keep the first key", "Display"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

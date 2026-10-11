@@ -1,0 +1,12 @@
+id = "edition-01"
+title = { en = "Moving to 2024", ja = "2024 エディションへ引っ越し" }
+difficulty = 1
+concepts = ["edition 2024", "reserved keyword gen", "raw identifiers", "keywords as field names", "field init shorthand", "IntoIterator for Box<[T]>", "move"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

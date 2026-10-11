@@ -1,0 +1,12 @@
+id = "borrow-03"
+title = { en = "Two accounts at once", ja = "ふたつの口座を同時に" }
+difficulty = 2
+concepts = ["two &mut into one collection (E0499)", "HashMap::get_disjoint_mut", "slice::get_disjoint_mut", "aliasing case i == j", "validate before mutating"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

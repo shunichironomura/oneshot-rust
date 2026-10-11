@@ -1,0 +1,12 @@
+id = "pin-01"
+title = { en = "Round-robin tasks", ja = "ラウンドロビンで動くタスク" }
+difficulty = 2
+concepts = ["trait objects of futures", "Unpin", "async blocks are !Unpin", "Box::pin vs Box::new", "Box::into_pin", "Pin<Box<dyn Future>>", "Pin::as_mut", "round-robin polling"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

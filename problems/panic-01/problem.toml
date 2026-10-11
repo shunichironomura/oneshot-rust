@@ -1,0 +1,12 @@
+id = "panic-01"
+title = { en = "Insert into a sorted vector", ja = "整列済みのベクタへの挿入" }
+difficulty = 2
+concepts = ["exception safety", "unwinding through unsafe code", "ptr::read / ptr::copy duplicate values", "double drop", "two-phase algorithms", "guard types (Hole)", "upper bound"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

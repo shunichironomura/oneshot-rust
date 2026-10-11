@@ -1,0 +1,12 @@
+id = "vec-01"
+title = { en = "Moving items out of a Vec", ja = "Vec から取り出す" }
+difficulty = 2
+concepts = ["Vec::extract_if", "moving elements out of &mut Vec", "retain / retain_mut", "non-adjacent dedup", "borrowed data escaping a closure", "rotate_right", "saturating_sub"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

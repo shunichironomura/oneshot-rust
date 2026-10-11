@@ -1,0 +1,18 @@
+id = "pattern-01"
+title = { en = "Taking it apart", ja = "分解して取り出す" }
+difficulty = 1
+concepts = [
+    "refutable vs irrefutable patterns",
+    "let-else / if let",
+    "_ vs _name bindings (moves)",
+    ".. used once per tuple pattern",
+    "patterns in for loops",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

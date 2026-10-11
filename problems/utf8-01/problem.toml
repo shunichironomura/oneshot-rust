@@ -1,0 +1,19 @@
+id = "utf8-01"
+title = { en = "Bytes and boundaries", ja = "バイト列から文字列へ" }
+difficulty = 2
+concepts = [
+    "str::from_utf8, Utf8Error::valid_up_to and error_len",
+    "<[u8]>::utf8_chunks",
+    "String::from_utf8_lossy returns Cow<str>; U+FFFD",
+    "maximal invalid subparts",
+    "decoding across chunk boundaries",
+    "&str borrowed from &[u8] by elision",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

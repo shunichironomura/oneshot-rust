@@ -1,0 +1,18 @@
+id = "vecdeque-01"
+title = { en = "Undo with a limit", ja = "回数制限つきの取り消し" }
+difficulty = 1
+concepts = [
+    "VecDeque push_back / pop_front / pop_back",
+    "bounded history",
+    "iter().rev()",
+    "rotate_left",
+    "returning &str from a collection",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,18 @@
+id = "lookup-01"
+title = { en = "Borrowed lookups", ja = "借用型で引く" }
+difficulty = 3
+concepts = [
+    "K: Borrow<Q> (HashMap::get's signature)",
+    "Q: ?Sized for str and [u8]",
+    "Hash + Eq on the query type",
+    "one lifetime for two possible return sources",
+    "keeping the key's lifetime separate from the result",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

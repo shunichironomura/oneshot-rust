@@ -1,0 +1,19 @@
+id = "rwlock-01"
+title = { en = "Versioned settings", ja = "バージョンつきの設定" }
+difficulty = 2
+concepts = [
+    "RwLock read/write guards",
+    "several readers at once",
+    "try_write and TryLockError::WouldBlock",
+    "returning a guard as impl Deref",
+    "Mutex is not reentrant (deadlock)",
+    "Sync is needed to share &Store between threads",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

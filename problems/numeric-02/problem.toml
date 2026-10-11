@@ -1,0 +1,19 @@
+id = "numeric-02"
+title = { en = "Arithmetic at the edges", ja = "端っこの算術" }
+difficulty = 1
+concepts = [
+    "overflow panics in debug",
+    "wrapping_* / checked_* / saturating_*",
+    "rem_euclid / div_euclid",
+    "div_ceil",
+    "midpoint",
+    "abs_diff",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,18 @@
+id = "mutex-01"
+title = { en = "Memo under lock", ja = "ロックの中のメモ" }
+difficulty = 3
+concepts = [
+    "temporaries in a match scrutinee live to the end of the match",
+    "while-let scrutinee temporaries live through the body",
+    "edition 2024 if-let rescoping",
+    "Mutex is not reentrant",
+    "never hold a lock while calling user code",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

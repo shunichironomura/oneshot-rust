@@ -1,0 +1,18 @@
+id = "basics-01"
+title = { en = "Five classic slips", ja = "5 つのうっかり" }
+difficulty = 1
+concepts = [
+    "const items need a type",
+    "immutable bindings vs shadowing",
+    "statements vs expressions (tail expression)",
+    "if as an expression (same arm types)",
+    "break with a value from loop",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

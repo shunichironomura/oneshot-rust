@@ -1,0 +1,12 @@
+id = "trait-03"
+title = { en = "Framed output", ja = "枠で囲む" }
+difficulty = 2
+concepts = ["supertraits", "default methods using supertrait methods", "newtype pattern and the orphan rule", "Display", "chars vs bytes"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

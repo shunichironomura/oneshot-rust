@@ -1,0 +1,12 @@
+id = "macro-04"
+title = { en = "Pattern macros", ja = "パターンを受け取るマクロ" }
+difficulty = 2
+concepts = ["macro_rules!", "pat vs pat_param (edition 2021)", "or-patterns", "follow-set restrictions", "missing fragment specifier (hard error since 1.89)", "tt munching", "internal rules"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

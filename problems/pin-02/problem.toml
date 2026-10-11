@@ -1,0 +1,12 @@
+id = "pin-02"
+title = { en = "Poll budget", ja = "ポーリングの回数制限" }
+difficulty = 3
+concepts = ["future combinators that store the inner future inline", "pin projection by hand: get_unchecked_mut + Pin::new_unchecked", "structural pinning: a pinned field is never moved again (Option::take moves it)", "moving a polled self-referential async block leaves dangling pointers (Miri UB)", "Unpin is an auto trait; no impl Unpin for a struct with a structurally pinned field", "Option::as_pin_mut, Pin::set and plain assignment drop in place", "cancellation = drop", "give up in the same poll when the budget runs out", "pass the Context through, no self-wake"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

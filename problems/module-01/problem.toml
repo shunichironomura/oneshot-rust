@@ -1,0 +1,19 @@
+id = "module-01"
+title = { en = "Make it public, just enough", ja = "必要なだけ公開する" }
+difficulty = 1
+concepts = [
+    "module privacy",
+    "pub on struct vs fields and methods",
+    "private modules",
+    "super:: paths in child modules",
+    "descendants see ancestors' private items",
+    "struct literals need visible fields",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

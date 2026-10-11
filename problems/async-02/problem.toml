@@ -1,0 +1,12 @@
+id = "async-02"
+title = { en = "Retry with async closures", ja = "async クロージャで再試行" }
+difficulty = 3
+concepts = ["async closures (1.85)", "AsyncFnMut bound", "futures borrowing the closure's captures", "FnMut() -> Fut cannot express lending", "AsyncFn traits are higher-ranked over borrowed arguments", "unused type parameters cannot be inferred"]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

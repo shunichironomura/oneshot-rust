@@ -1,0 +1,12 @@
+id = "bufread-01"
+title = { en = "Parse a request, write a response", ja = "リクエストを読み、レスポンスを書く" }
+difficulty = 1
+concepts = ["BufRead over &[u8]", "lines() returning io::Result", "take_while", "split_once", "byte length vs char count", "io::Write for Vec<u8>"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

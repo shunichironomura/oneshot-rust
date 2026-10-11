@@ -1,0 +1,12 @@
+id = "atomic-02"
+title = { en = "Spin lock", ja = "スピンロック" }
+difficulty = 3
+concepts = ["Acquire / Release orderings", "happens-before between critical sections", "data races on UnsafeCell contents", "compare_exchange instead of test-then-set", "compare_exchange_weak fails spuriously", "unsafe impl Sync", "guard with Deref / DerefMut / Drop"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

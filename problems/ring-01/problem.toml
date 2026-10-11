@@ -1,0 +1,19 @@
+id = "ring-01"
+title = { en = "Fixed ring buffer", ja = "固定長リングバッファ" }
+difficulty = 2
+concepts = [
+    "const generics on a struct",
+    "array repeat expressions need Copy or a constant ([const { None }; N])",
+    "moving out of an array element (E0507)",
+    "Option::take / Option::replace",
+    "associated consts",
+    "impl Iterator<Item = &T> + '_",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

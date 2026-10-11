@@ -1,0 +1,12 @@
+id = "macro-02"
+title = { en = "Tiny JSON literal", ja = "小さな JSON リテラル" }
+difficulty = 3
+concepts = ["recursive macro_rules!", "tt fragments for nested groups", "opaque forwarded fragments", "expr follow-set restrictions", "rule ordering", "$crate paths", "From-based fallback for expressions"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,19 @@
+id = "error-04"
+title = { en = "Error chains", ja = "エラーの連鎖" }
+difficulty = 3
+concepts = [
+    "std::error::Error::source and its 'static object bound (E0803)",
+    "wrapping a cause without repeating it in Display",
+    "? boxing errors into Box<dyn Error>",
+    "downcast_ref on dyn Error + 'static",
+    "walking a source chain",
+    "impl Error for &T and iter::successors closures",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
