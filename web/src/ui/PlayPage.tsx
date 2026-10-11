@@ -10,6 +10,7 @@ import { type Run, verdictsOf } from "../core/run.ts";
 import { CodeView } from "./CodeView.tsx";
 import { useApp } from "./context.ts";
 import { Confirm } from "./Dialog.tsx";
+import { DifficultyBadge } from "./DifficultyBadge.tsx";
 import { Editor } from "./Editor.tsx";
 import { FinishedDialog } from "./FinishedDialog.tsx";
 import { IconButton } from "./IconButton.tsx";
@@ -179,6 +180,7 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
           />
         )}
         <h1>{localize(problem.title, locale)}</h1>
+        <DifficultyBadge difficulty={problem.difficulty} />
         <ShotChip shots={run === null ? [] : verdictsOf(run)} label={t.shotsTooltip(tries)} />
         {assisted && (
           <span class="chip" title={t.assistedTooltip}>

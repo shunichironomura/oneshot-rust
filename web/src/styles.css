@@ -553,6 +553,20 @@ main > section.home {
   font-size: 1.4em;
 }
 
+.round-ladder {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.round-ladder .badge {
+  margin-left: 0;
+}
+
 .link-button.abandon-round {
   color: var(--muted);
   font-size: 0.9em;
@@ -684,6 +698,22 @@ main > section.round-start {
 
 .round-progress .hole.current:not(.solved) {
   background: transparent;
+}
+
+/* The difficulty of the problem, as a bar under its square. */
+.round-progress .hole[class*="difficulty-"] {
+  position: relative;
+}
+
+.round-progress .hole[class*="difficulty-"]::after {
+  content: "";
+  position: absolute;
+  right: 15%;
+  bottom: -6px;
+  left: 15%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--level);
 }
 
 /* Shot meter: one slot per submission */
@@ -1319,6 +1349,10 @@ dialog .actions {
   gap: 0.8em;
   padding: 0.45em 0;
   border-bottom: 1px solid var(--border);
+}
+
+.scorecard-rows .badge {
+  margin-left: 0;
 }
 
 .row-number {

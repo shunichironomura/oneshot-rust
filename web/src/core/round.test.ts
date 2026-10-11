@@ -53,8 +53,8 @@ describe("pickRound", () => {
 
   test("climbs the ladder with distinct problems", () => {
     const picked = pickRound(problems(4), nothing, random);
-    expect(picked.map(difficulty)).toEqual([1, 1, 2, 2, 3]);
-    expect(new Set(picked).size).toBe(5);
+    expect(picked.map(difficulty)).toEqual([1, 2, 3]);
+    expect(new Set(picked).size).toBe(3);
   });
 
   test("prefers problems not seen yet, then unsolved ones, then solved ones", () => {
@@ -64,9 +64,9 @@ describe("pickRound", () => {
     };
     for (let i = 0; i < 10; i++) {
       const picked = pickRound(problems(3), played, random);
-      expect(picked.slice(0, 2)).toEqual(["1c", "1b"]);
-      expect(picked.slice(2, 4).sort()).toEqual(["2b", "2c"]);
-      expect(["3b", "3c"]).toContain(picked[4]);
+      expect(picked[0]).toBe("1c");
+      expect(["2b", "2c"]).toContain(picked[1]);
+      expect(["3b", "3c"]).toContain(picked[2]);
     }
   });
 
@@ -77,10 +77,10 @@ describe("pickRound", () => {
       random,
     );
     const difficulties = picked.map(difficulty);
-    expect(difficulties).toHaveLength(5);
+    expect(difficulties).toHaveLength(3);
     expect(difficulties).toEqual([...difficulties].sort((a, b) => a - b));
-    expect(difficulties.filter((d) => d === 1).length).toBeGreaterThanOrEqual(2);
-    expect(difficulties.filter((d) => d === 2).length).toBeGreaterThanOrEqual(2);
+    expect(difficulties).toContain(1);
+    expect(difficulties).toContain(2);
   });
 
   test("returns every problem when there are fewer than a round needs", () => {

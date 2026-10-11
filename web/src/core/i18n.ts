@@ -44,8 +44,10 @@ export interface Messages {
   heroTagline: string;
   play: string;
   continueRound: string;
-  /** e.g. "Problem 2 of 5" */
+  /** e.g. "Problem 2 of 3" */
   roundPosition: (i: number, n: number) => string;
+  /** Leads the difficulties of the problems of a round, by the Play button. */
+  roundLadder: (n: number) => string;
   demoAccepted: (n: number) => string;
   demoWrongAnswer: (passed: number, n: number) => string;
   demoSubmitHint: string;
@@ -162,6 +164,7 @@ const en: Messages = {
   play: "Play",
   continueRound: "Continue",
   roundPosition: (i, n) => `Problem ${i} of ${n}`,
+  roundLadder: (n) => `${n} problems:`,
   demoAccepted: (n) => `Accepted · ${n}/${n} tests passed`,
   demoWrongAnswer: (passed, n) => `Wrong answer · ${passed}/${n} tests passed`,
   demoSubmitHint: "Submit",
@@ -302,6 +305,7 @@ const ja: Messages = {
   play: "プレイ",
   continueRound: "続きから",
   roundPosition: (i, n) => `${n} 問中 ${i} 問目`,
+  roundLadder: (n) => `全 ${n} 問：`,
   demoAccepted: (n) => `正解 · ${n}/${n} テスト通過`,
   demoWrongAnswer: (passed, n) => `不正解 · ${passed}/${n} テスト通過`,
   demoSubmitHint: "提出",
