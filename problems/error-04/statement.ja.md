@@ -34,7 +34,8 @@ pub fn report(e: &dyn Error) -> String
 
 - `s` を前後の空白を取り除かずに、`str::parse` で `u32` として解釈します。失敗したら、エラーは
   `BadPort { value, source }` です。`value` は `s`、`source` は `parse` が返した `ParseIntError` です。
-- 数が `0` か `65535` より大きいときは `OutOfRange(n)` です。それ以外の数はそのままポート番号です。
+- 数が `0` のときと `65535` より大きいときは `OutOfRange(n)` です。それ以外の数はそのまま
+  ポート番号です。
 
 `load(pairs)`：
 
@@ -44,8 +45,9 @@ pub fn report(e: &dyn Error) -> String
   1. `host` は必須で、ないときのエラーは `Missing("host")` です。値は空文字列でもそのまま使います。
   2. `port` は必須で、ないときのエラーは `Missing("port")` です。値は `parse_port` で読み、
      `parse_port` のエラーはそのまま返します。
-  3. `timeout` は省略でき、省略時は `30` です。値は `str::parse` で `u64` として解釈します。
-     失敗したときのエラーは `ParseIntError` そのものです。`ConfigError` には包みません。
+  3. `timeout` は省略でき、省略時は `30` です。値も前後の空白を取り除かずに、
+     `str::parse` で `u64` として解釈します。失敗したときのエラーは `ParseIntError` そのものです。
+     `ConfigError` には包みません。
 - 結果は `(host, port, timeout)` です。エラーはボックスに入れて返します。テストは
   `downcast_ref::<ConfigError>()` と `downcast_ref::<ParseIntError>()` でエラーの型を確かめます。
 

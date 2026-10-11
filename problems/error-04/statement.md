@@ -46,8 +46,9 @@ pub fn report(e: &dyn Error) -> String
      even if it is empty.
   2. `port` is required; without it, the error is `Missing("port")`. Its value is read with
      `parse_port`, and an error of `parse_port` is returned as it is.
-  3. `timeout` is optional and defaults to `30`. Its value is parsed as a `u64` with `str::parse`.
-     If that fails, the error is the `ParseIntError` itself, not wrapped in a `ConfigError`.
+  3. `timeout` is optional and defaults to `30`. Its value is parsed as a `u64` with `str::parse`,
+     also without trimming it. If that fails, the error is the `ParseIntError` itself, not wrapped
+     in a `ConfigError`.
 - The result is `(host, port, timeout)`. Errors are returned boxed, and the tests check their type
   with `downcast_ref::<ConfigError>()` and `downcast_ref::<ParseIntError>()`.
 
