@@ -1,0 +1,12 @@
+id = "trait-01"
+title = { en = "Measuring shapes", ja = "図形の面積" }
+difficulty = 1
+concepts = ["traits", "impl blocks", "default methods", "dyn Trait"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

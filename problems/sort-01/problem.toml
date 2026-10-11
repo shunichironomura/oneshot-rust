@@ -1,0 +1,12 @@
+id = "sort-01"
+title = { en = "Leaderboard", ja = "ランキング表" }
+difficulty = 2
+concepts = ["sort_by", "Ordering::then_with", "cmp::Reverse", "dedup_by"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,12 @@
+id = "hrtb-01"
+title = { en = "Line by line", ja = "一行ずつ" }
+difficulty = 3
+concepts = ["higher-ranked trait bounds", "Fn traits", "lifetimes", "lifetime elision"]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

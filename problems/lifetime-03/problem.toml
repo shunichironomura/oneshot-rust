@@ -1,0 +1,12 @@
+id = "lifetime-03"
+title = { en = "A lazy grep", ja = "ものぐさな grep" }
+difficulty = 3
+concepts = ["lifetimes", "impl Trait", "lifetime capture", "use<..> precise capturing"]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

@@ -1,0 +1,12 @@
+id = "borrow-02"
+title = { en = "Cart checkout", ja = "カートの会計" }
+difficulty = 2
+concepts = ["borrow checker", "disjoint field borrows", "methods vs fields", "&mut self"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

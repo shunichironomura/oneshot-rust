@@ -1,0 +1,12 @@
+id = "numeric-01"
+title = { en = "Sliding averages", ja = "移動平均" }
+difficulty = 1
+concepts = ["integer types", "as casts", "mutability", "overflow"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

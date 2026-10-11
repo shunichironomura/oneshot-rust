@@ -1,0 +1,12 @@
+id = "result-01"
+title = { en = "Comma-separated sum", ja = "カンマ区切りの合計" }
+difficulty = 1
+concepts = ["Result", "? operator", "str::split", "str::trim", "str::parse"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

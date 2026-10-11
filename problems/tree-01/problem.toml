@@ -1,0 +1,12 @@
+id = "tree-01"
+title = { en = "Planting numbers", ja = "数の木を育てる" }
+difficulty = 3
+concepts = ["Box", "Option", "recursive data", "&mut Option", "recursion", "binary search tree"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

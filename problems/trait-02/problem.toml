@@ -1,0 +1,12 @@
+id = "trait-02"
+title = { en = "Next-door neighbors", ja = "となり合わせ" }
+difficulty = 3
+concepts = ["blanket impls", "extension traits", "generic structs", "associated types", "Iterator"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

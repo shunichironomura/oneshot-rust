@@ -1,0 +1,12 @@
+id = "enum-01"
+title = { en = "Traffic light", ja = "信号機" }
+difficulty = 1
+concepts = ["enums", "match", "exhaustiveness", "Copy"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,12 @@
+id = "ops-01"
+title = { en = "Vector arithmetic", ja = "ベクトルの計算" }
+difficulty = 3
+concepts = ["operator overloading", "std::ops", "associated types", "generic bounds", "Copy"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
