@@ -52,8 +52,6 @@ export interface Messages {
   courseTitle: (name: string) => string;
   /** The course of rounds from before courses existed. */
   courseUnknown: string;
-  moreOptions: string;
-  livesSummary: (lives: number | null) => string;
   startRound: string;
   continueRound: string;
   continueRoundDetail: (course: string, position: string) => string;
@@ -79,7 +77,6 @@ export interface Messages {
   kinds: Record<ProblemKind, string>;
 
   // Play screen
-  lives: (n: number) => string;
   modeChip: (mode: string) => string;
   submit: string;
   judging: string;
@@ -173,11 +170,6 @@ export interface Messages {
   // Settings
   settingsTitle: string;
   modeHeading: string;
-  modeHint: string;
-  rulesHeading: string;
-  livesLabel: string;
-  livesUnlimited: string;
-  confirmLabel: string;
   editorHeading: string;
   syntaxHighlight: string;
   closeBrackets: string;
@@ -225,8 +217,6 @@ const en: Messages = {
   courseSize: (n) => `${n} problem${n === 1 ? "" : "s"}`,
   courseTitle: (name) => `${name} course`,
   courseUnknown: "Random",
-  moreOptions: "More options",
-  livesSummary: (n) => (n === null ? "unlimited lives" : `${n} ${n === 1 ? "life" : "lives"}`),
   startRound: "Start round",
   continueRound: "Continue",
   continueRoundDetail: (course, position) => `${course} course · problem ${position}`,
@@ -257,7 +247,6 @@ const en: Messages = {
   },
   kinds: { implement: "Implement", repair: "Repair", signature: "Signature" },
 
-  lives: (n) => `${n} ${n === 1 ? "life" : "lives"} left`,
   modeChip: (mode) => mode,
   submit: "Submit",
   judging: "Judging…",
@@ -288,8 +277,7 @@ const en: Messages = {
   confirmGiveUpYes: "Give up",
   problemNotFound: (id) => `Problem “${id}” was not found.`,
 
-  solutionLocked:
-    "The model solution unlocks once you finish this problem: solve it, run out of lives or give up.",
+  solutionLocked: "The model solution unlocks once you finish this problem: solve it or give up.",
   solutionGiveUpHint: "Stuck? You can give up and look at it now.",
   solutionGiveUp: "Give up and show",
   confirmRevealSolution:
@@ -382,12 +370,6 @@ const en: Messages = {
 
   settingsTitle: "Settings",
   modeHeading: "Feedback mode",
-  modeHint:
-    "The default for your next round and for practice. Each record keeps the mode it was played in.",
-  rulesHeading: "Rules",
-  livesLabel: "Lives (maximum submissions per problem)",
-  livesUnlimited: "Unlimited",
-  confirmLabel: "Ask for confirmation before each submission",
   editorHeading: "Editor",
   syntaxHighlight: "Syntax highlighting",
   closeBrackets: "Auto-close brackets",
@@ -436,8 +418,6 @@ const ja: Messages = {
   courseSize: (n) => `${n} 問`,
   courseTitle: (name) => `${name}コース`,
   courseUnknown: "ランダム",
-  moreOptions: "詳細設定",
-  livesSummary: (n) => (n === null ? "残機なし" : `残機 ${n}`),
   startRound: "ラウンドを始める",
   continueRound: "続きから",
   continueRoundDetail: (course, position) => `${course}コース · ${position} 問目`,
@@ -467,7 +447,6 @@ const ja: Messages = {
   },
   kinds: { implement: "実装", repair: "修理", signature: "シグネチャ" },
 
-  lives: (n) => `残機 ${n}`,
   modeChip: (mode) => `${mode}モード`,
   submit: "提出",
   judging: "判定中…",
@@ -499,7 +478,7 @@ const ja: Messages = {
   problemNotFound: (id) => `問題「${id}」は見つかりませんでした。`,
 
   solutionLocked:
-    "この問題を終える（正解する、残機を使い切る、ギブアップする）と、模範解答を見られるようになります。",
+    "この問題を終える（正解するか、ギブアップする）と、模範解答を見られるようになります。",
   solutionGiveUpHint: "どうしても解けないときは、ギブアップして今すぐ見ることもできます。",
   solutionGiveUp: "ギブアップして見る",
   confirmRevealSolution:
@@ -592,11 +571,6 @@ const ja: Messages = {
 
   settingsTitle: "設定",
   modeHeading: "診断表示モード",
-  modeHint: "次のラウンドと練習の既定値です。記録には、遊んだときのモードが残ります。",
-  rulesHeading: "ルール",
-  livesLabel: "残機（1 問あたりの提出回数の上限）",
-  livesUnlimited: "なし",
-  confirmLabel: "提出前に確認ダイアログを出す",
   editorHeading: "エディタ",
   syntaxHighlight: "シンタックスハイライト",
   closeBrackets: "括弧の自動補完",

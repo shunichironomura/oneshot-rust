@@ -1,11 +1,11 @@
-import { ArrowLeft, Flag, Heart, History, Lock, Play, RotateCcw, SkipForward } from "lucide-preact";
+import { ArrowLeft, Flag, History, Lock, Play, RotateCcw, SkipForward } from "lucide-preact";
 import type { ComponentChildren } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import { type EditorMarker, present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
-import { remainingLives, type Run, verdictsOf } from "../core/run.ts";
+import { type Run, verdictsOf } from "../core/run.ts";
 import { type SolutionAccess, solutionAccess } from "../core/solution.ts";
 import { CodeView } from "./CodeView.tsx";
 import { useApp } from "./context.ts";
@@ -14,6 +14,7 @@ import { Editor } from "./Editor.tsx";
 import { FinishedDialog } from "./FinishedDialog.tsx";
 import { IconButton } from "./IconButton.tsx";
 import { KindBadge } from "./KindBadge.tsx";
+import { ModeOptions } from "./ModeOptions.tsx";
 import { ShotChip } from "./ShotMeter.tsx";
 import { ResultPanel } from "./ResultPanel.tsx";
 import { SolutionPanel } from "./SolutionPanel.tsx";
@@ -122,16 +123,13 @@ function Confirm({ open, message, confirmLabel, onConfirm, onCancel }: ConfirmPr
 }
 
 export function PlayView({ problem, session }: { problem: Problem; session: Session }) {
-  const { content, storage, settings, toolchain, locale, t, openSettings } = useApp();
+  const { content, storage, settings, toolchain, locale, t } = useApp();
   const round = session.kind === "round" ? session : undefined;
   // A submission made while the compiler is still loading waits for it; the time
   // limit only starts once a Worker has picked the submission up.
   const toolchainFailed =
     toolchain.state.status === "missing" || toolchain.state.status === "error";
-  const practiceRules = useMemo(
-    () => ({ mode: settings.mode, lives: settings.lives }),
-    [settings.mode, settings.lives],
-  );
+  const practiceRules = useMemo(() => ({ mode: settings.mode }), [settings.mode]);
   const rules = round?.rules ?? practiceRules;
   const { state, setCode, submit, restart, giveUp, dismissFinished, revealSolution } = usePlay({
     problem,
@@ -145,6 +143,7 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
   const [confirming, setConfirming] = useState<"submit" | "restart" | "give-up" | "reveal" | null>(
     null,
   );
+  const [choosingMode, setChoosingMode] = useState(false);
   const [tab, setTab] = useState<StatementTab>("statement");
   const solution = solutionAccess({ revealed: state.revealed, finished: state.hasFinished });
 
@@ -152,8 +151,7 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
   const canSubmit = !toolchainFailed && !running && state.loaded;
   const requestSubmit = () => {
     if (!canSubmit) return;
-    if (settings.confirmSubmit) setConfirming("submit");
-    else void submit();
+    setConfirming("submit");
   };
 
   const presentation = useMemo(
@@ -171,7 +169,6 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
   const run = state.run;
   const playing = run?.status === "playing";
   const runMode = playing ? run.mode : rules.mode;
-  const lives = playing ? remainingLives(run) : rules.lives;
   // A finished run keeps showing its count; in practice, the next submission starts a new run.
   const tries = run?.attempts.length ?? 0;
   const finishedInRound = round !== undefined && run !== null && !playing;
@@ -205,7 +202,7 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
           type="button"
           class="chip"
           title={t.modeHeading}
-          onClick={round === undefined ? openSettings : undefined}
+          onClick={round === undefined ? () => setChoosingMode(true) : undefined}
           disabled={round !== undefined}
         >
           {t.modeChip(t.modes[runMode])}
@@ -214,11 +211,6 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
         {assisted && (
           <span class="chip" title={t.assistedTooltip}>
             {t.assistedChip}
-          </span>
-        )}
-        {lives !== null && (
-          <span class="chip" title={t.lives(lives)}>
-            <Heart size={14} aria-hidden="true" /> {lives}
           </span>
         )}
         <span class="spacer" />
@@ -304,6 +296,15 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
       </div>
       <ResultPanel phase={state.phase} last={state.last} presentation={presentation} />
 
+      <Dialog open={choosingMode} onClose={() => setChoosingMode(false)} class="confirm">
+        <h2>{t.modeHeading}</h2>
+        <ModeOptions />
+        <div class="actions">
+          <button type="button" class="primary" onClick={() => setChoosingMode(false)}>
+            {t.close}
+          </button>
+        </div>
+      </Dialog>
       <Confirm
         open={confirming === "submit"}
         message={t.confirmSubmit(playing ? tries + 1 : 1)}

@@ -555,26 +555,8 @@ main > section.home {
   cursor: pointer;
 }
 
-.more-options fieldset {
-  margin: 0.8em 0 0;
-  padding: 0.6em 1em 0.9em;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-
-.more-options legend {
-  padding: 0 0.3em;
-  font-weight: 700;
-}
-
-.more-options label.row {
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
-}
-
-.more-options label.row span {
-  flex: 1;
+.more-options .mode-options {
+  margin-top: 0.8em;
 }
 
 main > section.round-start {

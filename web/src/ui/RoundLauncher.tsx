@@ -15,7 +15,7 @@ import { routeHref } from "../core/route.ts";
 import type { Settings } from "../core/settings.ts";
 import type { Storage } from "../storage/db.ts";
 import { useApp } from "./context.ts";
-import { LivesSelect, ModeOptions } from "./SettingsPanel.tsx";
+import { ModeOptions } from "./ModeOptions.tsx";
 
 /**
  * Starts a round with the course and rules of the settings, unless one is already in
@@ -34,7 +34,6 @@ export async function startRound(
     id: crypto.randomUUID(),
     course: settings.course,
     mode: settings.mode,
-    lives: settings.lives,
     problemIds: pickProblems(
       courseProblemIds(problems, settings.course),
       solved,
@@ -49,7 +48,7 @@ export async function startRound(
 
 /**
  * The way into the game: "Continue" when a round is in progress, and otherwise the course
- * (with the rules under "More options") and "Start round".
+ * (with the feedback mode under a disclosure) and "Start round".
  */
 export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void }) {
   const { content, storage, settings, updateSettings, t } = useApp();
@@ -112,16 +111,9 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
       </div>
       <details class="more-options">
         <summary>
-          {t.moreOptions}: {t.modes[settings.mode]} · {t.livesSummary(settings.lives)}
+          {t.modeHeading}: {t.modes[settings.mode]}
         </summary>
-        <fieldset>
-          <legend>{t.modeHeading}</legend>
-          <ModeOptions />
-        </fieldset>
-        <fieldset>
-          <legend>{t.rulesHeading}</legend>
-          <LivesSelect />
-        </fieldset>
+        <ModeOptions />
       </details>
       <button
         type="button"

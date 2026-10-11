@@ -1,62 +1,13 @@
 import { LOCALE_NAMES, LOCALES } from "../core/i18n.ts";
-import { MODES } from "../core/mode.ts";
 import {
   DEFAULT_SETTINGS,
   type EditorSettings,
   FONT_FAMILIES,
-  LIVES_OPTIONS,
   notepadEditor,
 } from "../core/settings.ts";
 import { X } from "lucide-preact";
-import { useId } from "preact/hooks";
 import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
-
-/** The default feedback mode, as one option per mode with its description. */
-export function ModeOptions() {
-  const { settings, updateSettings, t } = useApp();
-  // The options also appear outside the drawer: each group needs its own name.
-  const name = useId();
-  return (
-    <div class="mode-options">
-      {MODES.map((m) => (
-        <label key={m} class={`mode-option${settings.mode === m ? " selected" : ""}`}>
-          <input
-            type="radio"
-            name={name}
-            checked={settings.mode === m}
-            onChange={() => updateSettings({ ...settings, mode: m })}
-          />
-          <strong>{t.modes[m]}</strong>
-          <span>{t.modeDescriptions[m]}</span>
-        </label>
-      ))}
-    </div>
-  );
-}
-
-/** The default number of lives. */
-export function LivesSelect() {
-  const { settings, updateSettings, t } = useApp();
-  return (
-    <label class="row">
-      <span>{t.livesLabel}</span>
-      <select
-        value={String(settings.lives)}
-        onChange={(e) => {
-          const v = e.currentTarget.value;
-          updateSettings({ ...settings, lives: v === "null" ? null : Number(v) });
-        }}
-      >
-        {LIVES_OPTIONS.map((l) => (
-          <option key={String(l)} value={String(l)}>
-            {l === null ? t.livesUnlimited : String(l)}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
 
 /** Settings as a drawer over the current page. Changes apply immediately. */
 export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -88,27 +39,6 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
             </button>
           ))}
         </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>{t.modeHeading}</legend>
-        <ModeOptions />
-        <p class="hint">{t.modeHint}</p>
-      </fieldset>
-
-      <fieldset>
-        <legend>{t.rulesHeading}</legend>
-        <LivesSelect />
-        <label class="checkbox">
-          <input
-            type="checkbox"
-            checked={settings.confirmSubmit}
-            onChange={(e) =>
-              updateSettings({ ...settings, confirmSubmit: e.currentTarget.checked })
-            }
-          />
-          {t.confirmLabel}
-        </label>
       </fieldset>
 
       <fieldset>

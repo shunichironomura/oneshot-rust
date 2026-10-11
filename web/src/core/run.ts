@@ -1,4 +1,4 @@
-// A "run" is one attempt at solving a problem: submissions until AC (or out of lives).
+// A "run" is one attempt at solving a problem: submissions until AC (or giving up).
 import { isCounted, type Judgement, type VerdictKind } from "./classify.ts";
 import { MODES, type Mode } from "./mode.ts";
 
@@ -14,8 +14,6 @@ export interface Run {
   id: string;
   problemId: string;
   mode: Mode;
-  /** Maximum number of submissions, or `null` for unlimited. */
-  lives: number | null;
   startedAt: number;
   attempts: Attempt[];
   status: RunStatus;
@@ -42,7 +40,6 @@ export function newRun(params: {
   id: string;
   problemId: string;
   mode: Mode;
-  lives: number | null;
   now: number;
   roundId?: string;
   assisted?: boolean;
@@ -51,7 +48,6 @@ export function newRun(params: {
     id: params.id,
     problemId: params.problemId,
     mode: params.mode,
-    lives: params.lives,
     startedAt: params.now,
     attempts: [],
     status: "playing",
@@ -78,10 +74,6 @@ export function ceCount(run: Run): number {
   return verdictsOf(run).filter((k) => k === "CE").length;
 }
 
-export function remainingLives(run: Run): number | null {
-  return run.lives === null ? null : run.lives - run.attempts.length;
-}
-
 /**
  * Records a submission. Uncounted verdicts (internal errors) leave the run unchanged,
  * as do submissions to a finished run.
@@ -89,9 +81,7 @@ export function remainingLives(run: Run): number | null {
 export function recordAttempt(run: Run, attempt: Attempt): Run {
   if (run.status !== "playing" || !isCounted(attempt.judgement.verdict.kind)) return run;
   const attempts = [...run.attempts, attempt];
-  const solved = attempt.judgement.verdict.kind === "AC";
-  const outOfLives = run.lives !== null && attempts.length >= run.lives;
-  const status: RunStatus = solved ? "solved" : outOfLives ? "failed" : "playing";
+  const status: RunStatus = attempt.judgement.verdict.kind === "AC" ? "solved" : "playing";
   return {
     ...run,
     attempts,

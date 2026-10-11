@@ -54,7 +54,7 @@ export function RoundPage() {
     return {
       kind: "round",
       roundId: round.id,
-      rules: { mode: round.mode, lives: round.lives },
+      rules: { mode: round.mode },
       position: roundPosition(round, shownIndex),
       onRunFinished,
       next: last

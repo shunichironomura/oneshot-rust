@@ -69,7 +69,6 @@ test("a round", () => {
     id: "r",
     course: 2,
     mode: "standard",
-    lives: null,
     problemIds: ["a", "b"],
     now: 0,
   });
@@ -89,7 +88,6 @@ function newRunStub(id: string, problemId: string): Run {
     id,
     problemId,
     mode: "standard",
-    lives: null,
     startedAt: 0,
     attempts: [],
     status: "playing",
