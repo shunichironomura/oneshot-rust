@@ -1,9 +1,10 @@
 The code below does not compile. **Without looking at the error message**, predict where the compiler
 complains and fix it.
 
-Each line of a small CSV file holds three columns: an id, an age and a score. `validate_row` checks
-that a line can be read (the values themselves are not needed), and `sum_ids` adds up the ids of a
-list of lines. `BadField` describes the column that could not be read (it is already in the editor).
+Each line of a small CSV file should hold three columns: an id, an age and a score. `validate_row`
+checks that a line can be read (the values themselves are not needed), and `sum_ids` adds up the ids
+of a list of lines. `BadField` describes the column that could not be read (it is already in the
+editor).
 
 ```rust
 #[derive(Debug, PartialEq)]
