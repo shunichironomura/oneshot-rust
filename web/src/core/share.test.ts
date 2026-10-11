@@ -1,4 +1,5 @@
 import { expect, test } from "vite-plus/test";
+import type { Judgement, Verdict } from "./classify.ts";
 import { MESSAGES } from "./i18n.ts";
 import { newRound, recordRun } from "./round.ts";
 import type { Run } from "./run.ts";
@@ -62,34 +63,59 @@ test("a failed run", () => {
   expect(card.rows[0].score).toEqual({ kind: "unsolved" });
 });
 
-test("a round", () => {
-  const run = (id: string, problemId: string, solved: boolean): Run => ({
-    ...newRunStub(id, problemId),
-    status: solved ? "solved" : "failed",
+/** A finished run whose submissions got `kinds`, solved when the last one is `AC`. */
+function run(id: string, problemId: string, kinds: Verdict["kind"][]): Run {
+  const attempts = kinds.map((kind) => {
+    const verdict = (kind === "CE" ? { kind, diagnostics: [] } : { kind, cases: [] }) as Verdict;
+    const judgement: Judgement = { verdict, output: "", stderr: "", warnings: [] };
+    return { submittedAt: 1, code: "", judgement };
   });
-  let round = newRound({ id: "r", problemIds: ["a", "b"], now: 0 });
-  round = recordRun(round, run("1", "a", true));
-  round = recordRun(round, run("2", "b", false));
-  expect(roundShareCard(round, "Oct 11, 2026", MESSAGES.en)).toEqual({
-    headline: "Total 0",
-    solved: false,
-    title: "Oct 11, 2026",
-    detail: "1/2 solved",
-    rows: [
-      { shots: [], score: { kind: "solved", shots: 0 }, seed: "r:0" },
-      { shots: [], score: { kind: "unsolved" }, seed: "r:1" },
-    ],
-  });
-});
-
-function newRunStub(id: string, problemId: string): Run {
   return {
     id,
     problemId,
     mode: "standard",
     startedAt: 0,
-    attempts: [],
-    status: "playing",
+    attempts,
+    status: kinds.at(-1) === "AC" ? "solved" : "failed",
     finishedAt: 1,
   };
 }
+
+test("a round with every problem solved has a total", () => {
+  let round = newRound({ id: "r", problemIds: ["a", "b"], now: 0 });
+  round = recordRun(round, run("1", "a", ["CE", "AC"]));
+  round = recordRun(round, run("2", "b", ["AC"]));
+  expect(roundShareCard(round, "Oct 11, 2026", MESSAGES.en)).toEqual({
+    headline: "Total 3",
+    solved: true,
+    title: "Oct 11, 2026",
+    detail: "+1 over perfect",
+    rows: [
+      {
+        shots: [
+          { label: "CE", tone: "ce" },
+          { label: "AC", tone: "ac" },
+        ],
+        score: { kind: "solved", shots: 2 },
+        seed: "r:0",
+      },
+      { shots: [{ label: "AC", tone: "ac" }], score: { kind: "solved", shots: 1 }, seed: "r:1" },
+    ],
+  });
+});
+
+test("a round with a problem given up has no total, only how far it got", () => {
+  let round = newRound({ id: "r", problemIds: ["a", "b"], now: 0 });
+  round = recordRun(round, run("1", "a", ["AC"]));
+  round = recordRun(round, run("2", "b", []));
+  expect(roundShareCard(round, "Oct 11, 2026", MESSAGES.en)).toEqual({
+    headline: "1/2 solved",
+    solved: false,
+    title: "Oct 11, 2026",
+    detail: "",
+    rows: [
+      { shots: [{ label: "AC", tone: "ac" }], score: { kind: "solved", shots: 1 }, seed: "r:0" },
+      { shots: [], score: { kind: "unsolved" }, seed: "r:1" },
+    ],
+  });
+});

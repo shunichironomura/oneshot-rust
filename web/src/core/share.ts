@@ -1,7 +1,7 @@
 // The result images offered for sharing: their content.
 import type { Messages } from "./i18n.ts";
 import type { Score } from "./marks.ts";
-import { type Round, roundResult, solvedCount, totalSubmissions } from "./round.ts";
+import { isComplete, type Round, roundResult, totalSubmissions } from "./round.ts";
 import { type ShareInput, titleFor, type VerdictTone, verdictTone } from "./scoring.ts";
 
 export const SITE_NAME = "oneshotrust.dev";
@@ -59,13 +59,19 @@ export function shareCard(
   };
 }
 
-/** The scorecard of a finished round, with the date it was played (already formatted). */
+/**
+ * The scorecard of a finished round, with the date it was played (already formatted). A
+ * round with a problem not solved has no total (see `totalScore`): the headline is how far
+ * it got instead.
+ */
 export function roundShareCard(round: Round, date: string, messages: Messages): ShareCard {
+  const complete = isComplete(round);
+  const result = roundResult(round, messages);
   return {
-    headline: messages.roundTotal(totalSubmissions(round)),
-    solved: solvedCount(round) === round.problemIds.length,
+    headline: complete ? messages.roundTotal(totalSubmissions(round)) : result,
+    solved: complete,
     title: date,
-    detail: roundResult(round, messages),
+    detail: complete ? result : "",
     rows: round.entries.map((e, i) => row(e.verdicts, e.solved, `${round.id}:${i}`)),
   };
 }
