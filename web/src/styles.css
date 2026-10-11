@@ -1141,35 +1141,6 @@ dialog .actions {
   margin-top: 1.2em;
 }
 
-dialog.drawer {
-  margin: 0 0 0 auto;
-  width: min(30em, 100vw);
-  max-width: none;
-  height: 100vh;
-  max-height: none;
-  border-radius: 0;
-  border-width: 0 0 0 1px;
-  overflow-y: auto;
-  animation: slide-in 0.2s ease-out;
-}
-
-@keyframes slide-in {
-  from {
-    transform: translateX(100%);
-  }
-}
-
-.drawer-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5em;
-}
-
-.drawer-head h2 {
-  margin: 0;
-}
-
 .link-button {
   display: inline;
   padding: 0;
@@ -1296,33 +1267,6 @@ dialog.drawer {
 
 .diff-line.removed {
   background: var(--removed);
-}
-
-/* Settings */
-
-.settings fieldset {
-  margin: 1.2em 0;
-  padding: 0.8em 1.2em 1.1em;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--panel);
-}
-
-.settings legend {
-  padding: 0 0.3em;
-  font-weight: 700;
-}
-
-.settings label.checkbox,
-.settings label.row {
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
-  margin: 0.5em 0;
-}
-
-.settings label.row span {
-  flex: 1;
 }
 
 .segmented {

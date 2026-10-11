@@ -27,7 +27,6 @@ export function localize(text: Localized, locale: Locale): string {
 export interface Messages {
   // Navigation and app shell
   navRecords: string;
-  navSettings: string;
   language: string;
   storageError: (message: string) => string;
   storageBlocked: string;
@@ -168,17 +167,8 @@ export interface Messages {
   changesFromTemplate: string;
   changesFrom: (i: number) => string;
 
-  // Settings
-  settingsTitle: string;
+  // Mode
   modeHeading: string;
-  editorHeading: string;
-  syntaxHighlight: string;
-  closeBrackets: string;
-  autoIndent: string;
-  notepadMode: string;
-  fontSize: string;
-  font: string;
-  resetSettings: string;
 
   // Rounds
   scorecardTitle: string;
@@ -200,7 +190,6 @@ export interface Messages {
 
 const en: Messages = {
   navRecords: "Records",
-  navSettings: "Settings",
   language: "Language",
   storageError: (m) => `Could not open browser storage (IndexedDB): ${m}`,
   storageBlocked:
@@ -374,16 +363,7 @@ const en: Messages = {
   changesFromTemplate: "Changes from the template",
   changesFrom: (i) => `Changes from submission #${i}`,
 
-  settingsTitle: "Settings",
   modeHeading: "Feedback mode",
-  editorHeading: "Editor",
-  syntaxHighlight: "Syntax highlighting",
-  closeBrackets: "Auto-close brackets",
-  autoIndent: "Auto-indent",
-  notepadMode: "Notepad mode (turn all aids off)",
-  fontSize: "Font size",
-  font: "Font",
-  resetSettings: "Reset to defaults",
 
   scorecardTitle: "Scorecard",
   roundTotal: (t) => `Total ${t}`,
@@ -405,7 +385,6 @@ const en: Messages = {
 
 const ja: Messages = {
   navRecords: "記録",
-  navSettings: "設定",
   language: "言語",
   storageError: (m) => `保存領域（IndexedDB）を開けませんでした: ${m}`,
   storageBlocked:
@@ -581,16 +560,7 @@ const ja: Messages = {
   changesFromTemplate: "テンプレートからの変更",
   changesFrom: (i) => `${i} 回目からの変更`,
 
-  settingsTitle: "設定",
   modeHeading: "診断表示モード",
-  editorHeading: "エディタ",
-  syntaxHighlight: "シンタックスハイライト",
-  closeBrackets: "括弧の自動補完",
-  autoIndent: "自動インデント",
-  notepadMode: "メモ帳モード（すべて OFF）",
-  fontSize: "フォントサイズ",
-  font: "フォント",
-  resetSettings: "既定値に戻す",
 
   scorecardTitle: "スコアカード",
   roundTotal: (t) => `合計 ${t}`,

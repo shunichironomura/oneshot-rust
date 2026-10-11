@@ -58,6 +58,8 @@ export const baseTheme = EditorView.theme({
     color: "var(--fg)",
     backgroundColor: "var(--editor-bg)",
   },
+  // The font is the browser's monospace font, at the size of the page.
+  ".cm-scroller": { lineHeight: "1.55" },
   ".cm-content": { caretColor: "var(--fg)", padding: "8px 0" },
   ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--fg)" },
   ".cm-gutters": {

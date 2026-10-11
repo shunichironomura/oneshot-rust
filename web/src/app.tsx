@@ -1,4 +1,4 @@
-import { LayoutList, Languages, Settings as SettingsIcon } from "lucide-preact";
+import { LayoutList, Languages } from "lucide-preact";
 import content from "virtual:oneshot-content";
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { type Locale, MESSAGES } from "./core/i18n.ts";
@@ -13,7 +13,6 @@ import { PracticePage } from "./ui/PlayPage.tsx";
 import { ProblemsPage } from "./ui/ProblemsPage.tsx";
 import { RoundPage } from "./ui/RoundPage.tsx";
 import { ScorecardPage } from "./ui/ScorecardPage.tsx";
-import { SettingsPanel } from "./ui/SettingsPanel.tsx";
 import { ToolchainStatus } from "./ui/ToolchainStatus.tsx";
 import { useToolchain } from "./ui/useToolchain.ts";
 
@@ -54,8 +53,6 @@ export function App() {
   const [storageError, setStorageError] = useState<string>();
   /** The database upgrade waits for other tabs, or another tab needs this one to close. */
   const [storageWait, setStorageWait] = useState<"blocked" | "outdated">();
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const openSettings = useCallback(() => setSettingsOpen(true), []);
 
   useEffect(() => {
     Storage.open({
@@ -103,7 +100,7 @@ export function App() {
   const other = OTHER_LOCALE[locale];
   return (
     <AppContext.Provider
-      value={{ content, storage, settings, updateSettings, toolchain, locale, t, openSettings }}
+      value={{ content, storage, settings, updateSettings, toolchain, locale, t }}
     >
       <header class="app-header">
         <a class="logo" href={routeHref({ page: "home" })}>
@@ -123,14 +120,12 @@ export function App() {
           >
             <span class="nav-text">{other === "ja" ? "日本語" : "EN"}</span>
           </IconButton>
-          <IconButton icon={SettingsIcon} label={t.navSettings} onClick={openSettings} />
         </nav>
       </header>
       <ToolchainStatus state={toolchain.state} />
       <main>
         <Page route={route} />
       </main>
-      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </AppContext.Provider>
   );
 }
