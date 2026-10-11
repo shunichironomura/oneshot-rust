@@ -2,6 +2,7 @@ import { describe, expect, test } from "vite-plus/test";
 import type { Judgement, Verdict } from "./classify.ts";
 import { MESSAGES } from "./i18n.ts";
 import {
+  abandonRound,
   activeRound,
   courseProblemIds,
   currentProblemId,
@@ -100,6 +101,30 @@ test("skipCurrent records the problem as unsolved", () => {
   r = skipCurrent(r, 4);
   expect(r.finishedAt).toBe(4);
   expect(skipCurrent(r, 5)).toBe(r);
+});
+
+describe("abandonRound", () => {
+  test("records the current run and ends the round", () => {
+    let r = recordRun(start(["a", "b", "c"]), run("r1", "a", "solved", ["AC"]));
+    r = abandonRound(r, run("r2", "b", "failed", ["WA", "CE"]), 9);
+    expect(r.finishedAt).toBe(9);
+    expect(r.abandoned).toBe(true);
+    expect(r.entries.map((e) => e.problemId)).toEqual(["a", "b"]);
+    expect(activeRound([r])).toBeUndefined();
+    expect(roundSummary(r, MESSAGES.en)).toBe("Total 3 · Abandoned (1/3 solved)");
+    expect(roundSummary(r, MESSAGES.ja)).toBe("合計 3 · 棄権（1/3 問正解）");
+  });
+
+  test("leaves a problem without submissions unrecorded", () => {
+    const r = abandonRound(start(), run("r1", "a", "failed", []), 9);
+    expect(r.entries).toEqual([]);
+    expect(abandonRound(start(), undefined, 9).entries).toEqual([]);
+  });
+
+  test("leaves a finished round unchanged", () => {
+    const done: Round = { ...start(), finishedAt: 1 };
+    expect(abandonRound(done, undefined, 9)).toBe(done);
+  });
 });
 
 describe("roundSummary", () => {

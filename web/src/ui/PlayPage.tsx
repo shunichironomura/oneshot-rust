@@ -1,4 +1,4 @@
-import { ArrowLeft, Flag, History, Lock, Play, RotateCcw, SkipForward } from "lucide-preact";
+import { ArrowLeft, Flag, History, Lock, Play, RotateCcw, SkipForward, X } from "lucide-preact";
 import type { ComponentChildren } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
@@ -9,7 +9,7 @@ import { type Run, verdictsOf } from "../core/run.ts";
 import { type SolutionAccess, solutionAccess } from "../core/solution.ts";
 import { CodeView } from "./CodeView.tsx";
 import { useApp } from "./context.ts";
-import { Dialog } from "./Dialog.tsx";
+import { Confirm, Dialog } from "./Dialog.tsx";
 import { Editor } from "./Editor.tsx";
 import { FinishedDialog } from "./FinishedDialog.tsx";
 import { IconButton } from "./IconButton.tsx";
@@ -93,34 +93,10 @@ export type Session =
       onRunFinished: (run: Run) => void;
       /** Moves on after the problem is finished: to the next problem, or the scorecard. */
       next: { label: string; action: () => void };
+      /** Ends the whole round early (after confirmation). */
+      abandon: () => void;
     }
   | { kind: "practice" };
-
-interface ConfirmProps {
-  open: boolean;
-  message: string;
-  confirmLabel: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-function Confirm({ open, message, confirmLabel, onConfirm, onCancel }: ConfirmProps) {
-  const { t } = useApp();
-  return (
-    <Dialog open={open} onClose={onCancel} onEnter={onConfirm} class="confirm">
-      <p>{message}</p>
-      <div class="actions">
-        <button type="button" class="primary" onClick={onConfirm}>
-          <kbd>↵</kbd>
-          {confirmLabel}
-        </button>
-        <button type="button" onClick={onCancel}>
-          {t.cancel}
-        </button>
-      </div>
-    </Dialog>
-  );
-}
 
 export function PlayView({ problem, session }: { problem: Problem; session: Session }) {
   const { content, storage, settings, toolchain, locale, t } = useApp();
@@ -140,9 +116,9 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
     roundId: round?.roundId,
     onRunFinished: round?.onRunFinished,
   });
-  const [confirming, setConfirming] = useState<"submit" | "restart" | "give-up" | "reveal" | null>(
-    null,
-  );
+  const [confirming, setConfirming] = useState<
+    "submit" | "restart" | "give-up" | "reveal" | "abandon" | null
+  >(null);
   const [choosingMode, setChoosingMode] = useState(false);
   const [tab, setTab] = useState<StatementTab>("statement");
   const solution = solutionAccess({ revealed: state.revealed, finished: state.hasFinished });
@@ -194,7 +170,15 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
             </span>
           </>
         ) : (
-          <span class="chip accent">{t.roundChip(round.position)}</span>
+          <>
+            <IconButton
+              icon={X}
+              label={t.abandonRound}
+              onClick={() => setConfirming("abandon")}
+              disabled={running || !state.loaded}
+            />
+            <span class="chip accent">{t.roundChip(round.position)}</span>
+          </>
         )}
         <h1>{localize(problem.title, locale)}</h1>
         <KindBadge kind={problem.kind} />
@@ -343,6 +327,16 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
         onConfirm={() => {
           setConfirming(null);
           void revealSolution();
+        }}
+      />
+      <Confirm
+        open={confirming === "abandon"}
+        message={t.confirmAbandonRound}
+        confirmLabel={t.confirmAbandonRoundYes}
+        onCancel={() => setConfirming(null)}
+        onConfirm={() => {
+          setConfirming(null);
+          round?.abandon();
         }}
       />
       <FinishedDialog

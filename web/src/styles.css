@@ -529,6 +529,11 @@ main > section.home {
   color: var(--muted);
 }
 
+.abandon-round {
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
 .course-options {
   flex-wrap: wrap;
 }
