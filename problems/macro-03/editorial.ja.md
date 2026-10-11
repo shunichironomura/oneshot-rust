@@ -16,8 +16,9 @@
 スコープにないので使えません（「cannot find macro `named_enum` in this scope」）。同じ理由で `$crate` は
 クレートのルートを指すので、用意された型は、定義された場所の `$crate::user::UnknownName` で指します。
 
-展開結果の中のそれ以外のパスは、マクロを呼び出した場所で解決されます。テストは何も `use` していないので
-`fmt::Display` は見つからず、`Result<Self, Self::Err>` はテスト自身の型引数 1 つの別名を指してしまいます
+展開結果の中のそれ以外のパスは、マクロを呼び出した場所で解決されます。テストは標準ライブラリのものを
+何も `use` していないので、`fmt::Display` は見つからず（「cannot find module or crate `fmt` in this scope」）、
+`Result<Self, Self::Err>` はテスト自身の型引数 1 つの別名を指してしまいます
 （「type alias takes 1 generic argument but 2 generic arguments were supplied」）。
 `::std::fmt::Display` や `::std::result::Result` のような絶対パスなら、どのモジュールでも使えます。
 

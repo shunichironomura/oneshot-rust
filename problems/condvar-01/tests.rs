@@ -120,9 +120,10 @@ pub fn run() {
     });
     case("hidden-3", || {
         // Two threads pop until `None`, then wait in push on a full queue. The first queue has room
-        // for 1 item, and the main thread pushes 1 to 6 in a row, so a push often waits for room
-        // while one thread still waits for an item. A pop must then wake the waiting push (waking
-        // only the other waiting pop loses the wakeup). Closing a queue wakes both threads.
+        // for 1 item. Three times, while both threads wait in pop, the main thread pushes two
+        // items right away, so its second push often waits for room while the other thread still
+        // waits for an item. The pop that takes the first item must then wake the waiting push
+        // (waking only the other waiting pop loses the wakeup). Closing a queue wakes both threads.
         let q = &BoundedQueue::new(1);
         let full = &BoundedQueue::new(1);
         check_eq(full.push(Job(0)), Ok(()))?;

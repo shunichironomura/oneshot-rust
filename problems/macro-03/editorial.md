@@ -16,10 +16,11 @@ so the call is `$crate::named_enum!`, not `$crate::user::named_enum!` (the macro
 macro `named_enum` in this scope"). For the same reason, `$crate` is the crate root, and the given
 type is `$crate::user::UnknownName`, where it is defined.
 
-Every other path in the expansion is resolved where the macro is called. The tests import nothing,
-so `fmt::Display` is not found, and `Result<Self, Self::Err>` finds the tests' own one-parameter
-alias ("type alias takes 1 generic argument but 2 generic arguments were supplied"). Absolute paths
-such as `::std::fmt::Display` and `::std::result::Result` work in any module.
+Every other path in the expansion is resolved where the macro is called. The tests import nothing
+from the standard library, so `fmt::Display` is not found ("cannot find module or crate `fmt` in
+this scope"), and `Result<Self, Self::Err>` finds the tests' own one-parameter alias ("type alias
+takes 1 generic argument but 2 generic arguments were supplied"). Absolute paths such as
+`::std::fmt::Display` and `::std::result::Result` work in any module.
 
 The generated items also become items of the caller's module. The tests call the macro several times
 in one module, so a `use std::fmt;` or a helper function with a fixed name in the expansion is

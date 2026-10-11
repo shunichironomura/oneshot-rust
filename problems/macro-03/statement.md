@@ -43,10 +43,11 @@ impl std::str::FromStr for Name {
 - `s.parse::<Name>()` returns `Ok` with the variant whose name is exactly `s`, or
   `Err(UnknownName(s.to_string()))`, which holds `s` unchanged.
 
-The tests call the macro by its path, `crate::named_enum! { ... }`, at the item level of their own
-modules (`#[macro_export]` puts the macro at the root of the crate). Such a module calls the macro
-several times, has no `use` declarations for `named_enum`, `UnknownName` or anything from the
-standard library, and may define its own `type Result<T> = std::result::Result<T, String>;`. The
+Your code is the module `crate::user`. The tests are other modules of the same crate, outside
+`crate::user`. They call the macro by its path, `crate::named_enum! { ... }`, at the item level of
+their own modules (`#[macro_export]` puts the macro at the root of the crate). Such a module calls
+the macro several times, has no `use` declarations for `named_enum`, `UnknownName` or anything from
+the standard library, and may define its own `type Result<T> = std::result::Result<T, String>;`. The
 generated items are also used from other modules.
 
 ### Examples

@@ -18,8 +18,9 @@
 `Vec<Option<T>>` から始めて、`Some(f(i))` を入れていきます。`slots` は普通のローカル変数なので、
 `f` がパニックすれば巻き戻しでドロップされ、中にある値を過不足なくドロップします。
 `slots[i]` への代入も問題ありません。ドロップされるのは `None` だけだからです。最後にはどの要素も
-`Some` なので、`into_iter().map(...).collect()` で値を `Vec<T>` に移します。2 回目の確保が必要に
-なりますが、`unsafe` は要りません。
+`Some` なので、`into_iter().map(...).collect()` で値を `Vec<T>` に移します。`unsafe` は
+要りません。代償は、各値を包む `Option`（`String` や `Box` などの型なら余分な領域すら
+使いません）と、最後にそれを外す 1 回の走査です。
 
 `vec![None; n]` には注意してください。要素を複製するので `Option<T>: Clone`、つまり `T: Clone` が
 必要ですが、`build` にはその境界がありません。`order.iter().map(|_| None).collect()` や
@@ -44,7 +45,7 @@ pub fn build<T>(order: &[usize], mut f: impl FnMut(usize) -> T) -> Vec<T> {
 巻き戻しでガードがドロップされてそれらの値だけをドロップし、その後で `v` がバッファを解放します。
 すべての位置に書き込んだら、`mem::forget` でガードを解除し、`set_len(n)` で値を `v` に引き渡します。
 `v` の型注釈に注意してください。これがないと、その時点ではまだ要素の型がわからないので、
-`v.as_mut_ptr().add(i)` がコンパイルできません。
+`guard.v.as_mut_ptr().add(i)` がコンパイルできません。
 
 ```rust
 use std::mem;

@@ -43,7 +43,8 @@ impl std::str::FromStr for Name {
 - `s.parse::<Name>()` は、名前がちょうど `s` であるバリアントを `Ok` で返します。なければ
   `Err(UnknownName(s.to_string()))` を返します。中身は `s` そのままです。
 
-テストは、テスト側のモジュールのアイテムを書く位置で、`crate::named_enum! { ... }` のようにパスでマクロを呼び出します
+あなたのコードはモジュール `crate::user` です。テストは同じクレートの別のモジュールで、`crate::user` の外にあります。
+テストは、自分のモジュールのアイテムを書く位置で、`crate::named_enum! { ... }` のようにパスでマクロを呼び出します
 （`#[macro_export]` を付けたマクロはクレートのルートに置かれます）。そのようなモジュールはマクロを何度も呼び出し、
 `named_enum` にも `UnknownName` にも標準ライブラリのものにも `use` 宣言がなく、独自の
 `type Result<T> = std::result::Result<T, String>;` を定義していることもあります。

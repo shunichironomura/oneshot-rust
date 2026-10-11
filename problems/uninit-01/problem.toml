@@ -1,6 +1,6 @@
 id = "uninit-01"
 title = { en = "Length before values", ja = "値より先に長さ" }
-difficulty = 3
+difficulty = 2
 concepts = [
     "uninitialized memory",
     "Vec::set_len",

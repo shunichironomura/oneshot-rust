@@ -20,7 +20,9 @@ ones. The model solution leaves that to the type system: it starts with a `Vec<O
 `None`s and stores `Some(f(i))`. `slots` is an ordinary local variable, so if `f` panics, unwinding
 drops it, and it drops exactly the values in it. Assigning to `slots[i]` is fine too, because it
 only drops a `None`. At the end every slot is `Some`, and `into_iter().map(...).collect()` moves the
-values into a `Vec<T>`. No `unsafe` is needed, at the cost of a second allocation.
+values into a `Vec<T>`. No `unsafe` is needed. The price is the `Option` around each value (for
+types like `String` or `Box`, it does not even take extra space) and the last pass that unwraps
+them.
 
 Watch out for `vec![None; n]`: it clones its element, so it requires `Option<T>: Clone`, that is,
 `T: Clone`, which `build` does not have. `order.iter().map(|_| None).collect()` or
@@ -44,8 +46,8 @@ With `unsafe`, write the values into the spare capacity of a `Vec` whose length 
 a **guard** that knows which slots hold values: `order[..written]`. If `f` panics, the guard is
 dropped while unwinding and drops exactly those values, and then `v` frees its buffer. Once every
 slot is written, `mem::forget` disarms the guard, and `set_len(n)` hands the values over to `v`.
-Note the type annotation on `v`: without one, `v.as_mut_ptr().add(i)` does not compile, because the
-type of the elements is not known yet at that point.
+Note the type annotation on `v`: without one, `guard.v.as_mut_ptr().add(i)` does not compile,
+because the type of the elements is not known yet at that point.
 
 ```rust
 use std::mem;
