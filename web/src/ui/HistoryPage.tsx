@@ -20,11 +20,22 @@ function RunStatus({ run }: { run: Run }) {
   const { t } = useApp();
   switch (run.status) {
     case "solved":
-      return <CircleCheck size={16} class="solved" role="img" aria-label={t.solvedHeadline} />;
+      return (
+        <CircleCheck
+          size={16}
+          class="status-icon solved"
+          role="img"
+          aria-label={t.solvedHeadline}
+        />
+      );
     case "failed":
-      return <CircleX size={16} class="failed" role="img" aria-label={t.unsolvedHeadline} />;
+      return (
+        <CircleX size={16} class="status-icon failed" role="img" aria-label={t.unsolvedHeadline} />
+      );
     case "playing":
-      return <CircleDot size={16} class="in-progress" role="img" aria-label={t.runPlaying} />;
+      return (
+        <CircleDot size={16} class="status-icon in-progress" role="img" aria-label={t.runPlaying} />
+      );
   }
 }
 
