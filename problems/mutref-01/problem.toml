@@ -1,0 +1,12 @@
+id = "mutref-01"
+title = { en = "The label cache", ja = "ラベルのキャッシュ" }
+difficulty = 3
+concepts = ["borrow checker", "disjoint field borrows", "closure captures", "entry API", "returning references from &mut self"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

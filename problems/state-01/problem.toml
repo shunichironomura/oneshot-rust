@@ -1,0 +1,12 @@
+id = "state-01"
+title = { en = "Open, send, close", ja = "開いて、送って、閉じる" }
+difficulty = 3
+concepts = ["typestate", "generics", "PhantomData", "consuming self", "zero-sized types"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

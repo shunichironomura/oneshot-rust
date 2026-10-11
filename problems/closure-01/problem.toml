@@ -1,0 +1,12 @@
+id = "closure-01"
+title = { en = "Step counter", ja = "歩数カウンター" }
+difficulty = 2
+concepts = ["closures", "move", "impl Trait", "FnMut", "Fn"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

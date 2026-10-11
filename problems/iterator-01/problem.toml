@@ -1,0 +1,12 @@
+id = "iterator-01"
+title = { en = "Hailstones", ja = "あられ数" }
+difficulty = 2
+concepts = ["Iterator trait", "associated types", "next", "iterator adapters", "Option state"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

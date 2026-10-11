@@ -1,0 +1,12 @@
+id = "dyn-01"
+title = { en = "Assemble the party", ja = "パーティー編成" }
+difficulty = 3
+concepts = ["traits", "trait objects", "dyn compatibility", "where Self: Sized"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

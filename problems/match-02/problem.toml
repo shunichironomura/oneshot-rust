@@ -1,0 +1,12 @@
+id = "match-02"
+title = { en = "Text adventure commands", ja = "アドベンチャーゲームのコマンド" }
+difficulty = 2
+concepts = ["slice patterns", "match guards", "@ bindings", "or-patterns", "Option and ?"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

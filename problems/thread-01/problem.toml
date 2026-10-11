@@ -1,0 +1,12 @@
+id = "thread-01"
+title = { en = "Split the work", ja = "手分けして数える" }
+difficulty = 3
+concepts = ["threads", "scoped threads", "borrowing across threads", "Send/Sync"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

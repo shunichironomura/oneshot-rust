@@ -1,0 +1,12 @@
+id = "error-01"
+title = { en = "Settings file", ja = "設定ファイル" }
+difficulty = 2
+concepts = ["custom error types", "From", "? operator", "Display", "Result"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

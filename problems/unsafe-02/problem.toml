@@ -1,0 +1,12 @@
+id = "unsafe-02"
+title = { en = "Two halves", ja = "ふたつに分ける" }
+difficulty = 3
+concepts = ["unsafe", "raw pointers", "undefined behavior", "aliasing &mut", "Stacked Borrows"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
