@@ -14,6 +14,7 @@ import { useApp } from "./context.ts";
 import { DifficultyBadge } from "./DifficultyBadge.tsx";
 import { startRound } from "./RoundLauncher.tsx";
 import { RoundProgress } from "./RoundProgress.tsx";
+import { ScoreMark } from "./ScoreMark.tsx";
 import { ShotMeter } from "./ShotMeter.tsx";
 
 function BestRecord({ best, run }: { best: Best; run: Run | undefined }) {
@@ -26,7 +27,7 @@ function BestRecord({ best, run }: { best: Best; run: Run | undefined }) {
         }
         label={t.shareTries(best.submissions)}
       />
-      <span class="shot-count">{best.submissions}</span>
+      <ScoreMark score={{ kind: "solved", shots: best.submissions }} seed={best.runId} />
     </span>
   );
 }
@@ -113,7 +114,7 @@ export function ProblemsPage() {
             <li key={r.id}>
               <a href={routeHref({ page: "scorecard", roundId: r.id })}>
                 <RoundProgress round={r} label={roundSummary(r, t)} />
-                <strong class="round-total">{totalSubmissions(r)}</strong>
+                <strong class="round-total hand">{totalSubmissions(r)}</strong>
                 <span class="run-date">{dateFormat.format(r.startedAt)}</span>
               </a>
             </li>

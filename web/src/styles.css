@@ -578,8 +578,9 @@ main > section.home {
   margin-top: 2em;
 }
 
-/* The margin keeps the difficulty marks, drawn below the squares, clear of the button. */
-.launcher .round-progress {
+/* The strip takes a line of its own; the margin keeps the difficulty marks, drawn below
+   its cells, clear of the button. */
+.launcher-strip {
   flex-basis: 100%;
   margin-bottom: 0.6em;
   font-size: 1.4em;
@@ -690,59 +691,44 @@ main > section.round-start {
   color: var(--syn-meta);
 }
 
-/* Round progress: one square per problem */
+/* Round progress: a strip of a scorecard, one cell per problem */
 
 .round-progress {
   display: inline-flex;
-  gap: 0.3em;
   vertical-align: middle;
+  border: 1.5px solid var(--accent);
+  background: var(--panel);
 }
 
 .round-progress .hole {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75em;
-  height: 1.75em;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  background: var(--border);
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 0.8em;
-  font-weight: 700;
-  line-height: 1;
+  width: 2em;
+  height: 1.9em;
+  border-left: 1px solid var(--border);
+  font-size: 0.95em;
 }
 
-.round-progress .hole.solved {
-  border-color: var(--ac);
-  background: var(--ac);
-  color: var(--panel);
-}
-
-.round-progress .hole.unsolved {
-  border-color: var(--border);
-  background: transparent;
+.round-progress .hole:first-child {
+  border-left: none;
 }
 
 .round-progress .hole.current {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-soft);
+  background: var(--accent-soft);
 }
 
-.round-progress .hole.current:not(.solved) {
-  background: transparent;
+.round-progress .hole .score-mark {
+  font-size: 1.1em;
 }
 
-/* The difficulty of the problem, as short marks under its square. */
-.round-progress .hole {
-  position: relative;
-}
+/* The difficulty of the problem, as short marks under its cell. */
 
 .round-progress .hole .marks {
   position: absolute;
   right: 0;
-  bottom: -0.6em;
+  bottom: -0.65em;
   left: 0;
   justify-content: center;
   gap: 0.15em;
@@ -751,6 +737,64 @@ main > section.round-start {
 .round-progress .hole .marks i {
   width: 0.4em;
   height: 0.25em;
+}
+
+/* A shot count in pencil: the digit, and a ring or a box around it against par */
+
+.score-mark {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 1.4em;
+  height: 1.4em;
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 1em;
+  line-height: 1;
+  color: var(--pencil);
+  vertical-align: middle;
+}
+
+.score-digit {
+  font-size: 1.15em;
+  /* Caveat sits low on its line; the digit goes back to the middle. */
+  transform: translateY(-0.04em);
+}
+
+.score-mark svg {
+  position: absolute;
+  inset: -0.3em;
+  width: calc(100% + 0.6em);
+  height: calc(100% + 0.6em);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.score-mark path {
+  fill: none;
+  stroke: var(--pencil);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+
+/* Just written: each line is drawn in turn. */
+.score-mark.fresh path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: pencil 0.5s ease-out forwards;
+  animation-delay: 0.35s;
+}
+
+.score-mark.fresh path:nth-child(2) {
+  animation-delay: 0.8s;
+}
+
+@keyframes pencil {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* Shot meter: one slot per submission */
@@ -814,9 +858,11 @@ main > section.round-start {
 }
 
 .shot-count {
-  color: var(--muted);
-  font-size: 0.78em;
-  font-weight: 600;
+  font-family: var(--hand);
+  font-size: 1.1em;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--pencil);
 }
 
 .best-record {
@@ -1213,27 +1259,38 @@ dialog .actions {
 
 .finished h2 {
   margin: 0;
-  font-size: var(--step-3);
+  font-size: var(--step-4);
 }
 
-.finished h2.solved {
-  color: var(--accent);
+.finished h2.failed {
+  color: var(--fg);
 }
 
 .finished-shots {
   display: flex;
   align-items: center;
-  gap: 0.7em;
-  margin: 0.5em 0 0.2em;
+  gap: 1em;
+  margin: 0.6em 0 0.2em;
+}
+
+.finished-shots .score-mark {
+  font-size: 2.2em;
+  margin-left: 0.2em;
+}
+
+.finished-verdicts {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.3em;
 }
 
 .finished-shots .shot-meter {
-  gap: 6px;
+  gap: 5px;
 }
 
 .finished-shots .shot-meter .slot {
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
 }
 
 .finished-shots .tries {
@@ -1616,8 +1673,13 @@ dialog .actions {
 /* The spinner keeps turning: it is what shows that judging is still going on. */
 @media (prefers-reduced-motion: reduce) {
   .demo-result,
-  .demo-title {
+  .demo-title,
+  .score-mark.fresh path {
     animation: none;
+  }
+
+  .score-mark.fresh path {
+    stroke-dashoffset: 0;
   }
 
   .history summary::before {
