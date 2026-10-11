@@ -594,16 +594,8 @@ main > section.home {
 }
 
 .course-options button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
   min-width: 9em;
   padding: 0.5em 1em;
-}
-
-.course-options button span {
-  color: var(--muted);
-  font-size: 0.82em;
 }
 
 .more-options {
