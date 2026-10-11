@@ -1,0 +1,12 @@
+id = "fmt-01"
+title = { en = "Pretty money", ja = "お金の表示" }
+difficulty = 2
+concepts = ["std::fmt::Display", "Formatter::pad", "width and alignment", "thousands separators", "i64 arithmetic"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
