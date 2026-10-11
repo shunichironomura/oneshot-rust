@@ -4,7 +4,8 @@ export type Route =
   | { page: "problems" }
   /** The round in progress, or the screen to start one. */
   | { page: "round" }
-  | { page: "scorecard"; roundId: string }
+  /** The scorecard of a round; `fresh` right after finishing it (to play one more). */
+  | { page: "scorecard"; roundId: string; fresh?: true }
   /** One problem played on its own, outside a round. */
   | { page: "practice"; problemId: string }
   | { page: "history"; problemId: string };
@@ -24,7 +25,10 @@ export function parseRoute(hash: string): Route {
     case "problems":
       return { page: "problems" };
     case "round":
-      return parts[1] === undefined ? { page: "round" } : { page: "scorecard", roundId: parts[1] };
+      if (parts[1] === undefined) return { page: "round" };
+      return parts[2] === "finished"
+        ? { page: "scorecard", roundId: parts[1], fresh: true }
+        : { page: "scorecard", roundId: parts[1] };
     // Links from before rounds replaced the 連続チャレンジ.
     case "challenge":
       return { page: "round" };
@@ -42,7 +46,7 @@ export function routeHref(route: Route): string {
     case "round":
       return "#/round";
     case "scorecard":
-      return `#/round/${encodeURIComponent(route.roundId)}`;
+      return `#/round/${encodeURIComponent(route.roundId)}${route.fresh ? "/finished" : ""}`;
     case "practice":
       return `#/p/${encodeURIComponent(route.problemId)}`;
     case "history":

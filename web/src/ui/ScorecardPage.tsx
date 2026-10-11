@@ -1,4 +1,4 @@
-import { RotateCcw } from "lucide-preact";
+import { ArrowLeft, RotateCcw } from "lucide-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import {
@@ -12,13 +12,17 @@ import { routeHref } from "../core/route.ts";
 import { roundShareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
 import { DifficultyMarks } from "./DifficultyBadge.tsx";
+import { IconButton } from "./IconButton.tsx";
 import { startRound } from "./RoundLauncher.tsx";
 import { type Score, ScoreMark } from "./ScoreMark.tsx";
 import { ShareButton } from "./ShareButton.tsx";
 import { ShotMeter } from "./ShotMeter.tsx";
 
-/** A golf scorecard: one column per hole, the shots written by hand and marked against par. */
-function Scorecard({ round }: { round: Round }) {
+/**
+ * A golf scorecard: one column per hole, the shots written by hand and marked against par.
+ * Right after the round (`fresh`) it offers one more; opened from the records, the way back.
+ */
+function Scorecard({ round, fresh }: { round: Round; fresh: boolean }) {
   const { content, storage, locale, t } = useApp();
   const [starting, setStarting] = useState(false);
   const text = roundShareText(round, t);
@@ -55,6 +59,15 @@ function Scorecard({ round }: { round: Round }) {
 
   return (
     <section class="scorecard">
+      {!fresh && (
+        <div class="section-head">
+          <IconButton
+            icon={ArrowLeft}
+            label={t.backToRecords}
+            href={routeHref({ page: "problems" })}
+          />
+        </div>
+      )}
       <p class="run-date">{dateFormat.format(round.startedAt)}</p>
       <h1 class="scorecard-result">{roundResult(round, t)}</h1>
       <div class="card-scroll">
@@ -127,18 +140,20 @@ function Scorecard({ round }: { round: Round }) {
         </table>
       </div>
       <div class="actions">
-        <button type="button" class="primary icon-button" onClick={oneMore} disabled={starting}>
-          <RotateCcw size={16} aria-hidden="true" />
-          {t.oneMoreRound}
-        </button>
+        {fresh && (
+          <button type="button" class="primary icon-button" onClick={oneMore} disabled={starting}>
+            <RotateCcw size={16} aria-hidden="true" />
+            {t.oneMoreRound}
+          </button>
+        )}
         <ShareButton text={text} card={card} fileName={`oneshot-rust-round-${round.id}`} />
       </div>
     </section>
   );
 }
 
-/** The results of a finished round, to share and to play again. */
-export function ScorecardPage({ roundId }: { roundId: string }) {
+/** The results of a finished round, to share and (right after finishing it) to play again. */
+export function ScorecardPage({ roundId, fresh }: { roundId: string; fresh: boolean }) {
   const { storage, t } = useApp();
   /** `null` once loaded when the round does not exist. */
   const [round, setRound] = useState<Round | null>();
@@ -159,5 +174,5 @@ export function ScorecardPage({ roundId }: { roundId: string }) {
       </section>
     );
   }
-  return <Scorecard round={round} />;
+  return <Scorecard round={round} fresh={fresh} />;
 }
