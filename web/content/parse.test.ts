@@ -50,6 +50,45 @@ test("parseProblem reads Japanese titles and statements", () => {
   expect(problem.statementHtml).toEqual({ en: "<h1>hi</h1>\n", ja: "<p>こんにちは</p>\n" });
 });
 
+test("parseProblem highlights Rust fences in localized Markdown without changing code text", () => {
+  const code = 'pub fn example() {\n    // <script>&amp;</script>\n    let s = "<tag>&";\n}\n';
+  const md = `\`\`\`rust\n${code}\`\`\``;
+  const { problem, solution } = parseProblem({
+    ...files(MINIMAL),
+    statementMd: md,
+    statementJaMd: md,
+    editorialMd: md,
+    editorialJaMd: md,
+  });
+  for (const html of [
+    problem.statementHtml.en,
+    problem.statementHtml.ja!,
+    solution.editorialHtml!.en,
+    solution.editorialHtml!.ja!,
+  ]) {
+    expect(html).toContain('<span class="syn-keyword">pub</span>');
+    expect(html).toContain('<span class="syn-function">example</span>');
+    expect(html).toContain('<span class="syn-string">');
+    expect(html).toContain('<span class="syn-comment">');
+    expect(html).not.toContain("<script>");
+    const text = html
+      .replace(/<[^>]*>/g, "")
+      .replaceAll("&lt;", "<")
+      .replaceAll("&gt;", ">")
+      .replaceAll("&amp;", "&");
+    expect(text).toBe(`${code}\n`);
+  }
+});
+
+test.each(["text", "unknown", ""])("parseProblem leaves %s fences unhighlighted", (lang) => {
+  const { problem } = parseProblem({
+    ...files(MINIMAL),
+    statementMd: `\`\`\`${lang}\npub fn f() {} // <tag>&\n\`\`\``,
+  });
+  expect(problem.statementHtml.en).not.toContain("<span");
+  expect(problem.statementHtml.en).toContain("pub fn f() {} // &lt;tag&gt;&amp;\n</code>");
+});
+
 test("parseProblem requires an English title", () => {
   const toml = MINIMAL.replace('title = { en = "T" }', 'title = "T"');
   expect(() => parseProblem(files(toml))).toThrow(/`title` must be a table/);
