@@ -462,18 +462,6 @@ main > section.home {
   font-size: 0.85em;
 }
 
-.demo-dots {
-  display: inline-flex;
-  gap: 5px;
-}
-
-.demo-dots span {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--border);
-}
-
 .demo-file {
   flex: 1;
   color: var(--muted);

@@ -60,11 +60,6 @@ export function HeroDemo() {
   return (
     <div class="demo" aria-hidden="true">
       <div class="demo-bar">
-        <span class="demo-dots">
-          <span />
-          <span />
-          <span />
-        </span>
         <span class="demo-file">longest.rs</span>
         <ShotChip shots={frame.shots} label="" />
       </div>
