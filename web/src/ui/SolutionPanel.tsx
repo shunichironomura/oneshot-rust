@@ -72,12 +72,12 @@ function RevealedSolution({ problem, code }: { problem: Problem; code: string })
 
 interface Props {
   problem: Problem;
-  access: Exclude<SolutionAccess, "hidden">;
+  access: SolutionAccess;
   /** The player's current code, to diff against the solution. */
   code: string;
   /** Shows the solution right away (after the problem is finished). */
   onReveal: () => void;
-  /** Asks for confirmation before giving up and showing the solution. */
+  /** Asks for confirmation before giving up to see the solution. */
   onGiveUp: () => void;
 }
 

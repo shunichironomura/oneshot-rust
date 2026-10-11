@@ -59,37 +59,59 @@ function draw(ctx: CanvasRenderingContext2D, card: ShareCard): void {
   ctx.fillText("OneShot Rust", PADDING + 48, 118);
 
   ctx.fillStyle = COLORS.muted;
-  fitFont(ctx, card.problemTitle, 500, 40, SANS, inner);
-  ctx.fillText(card.problemTitle, PADDING, 200);
+  fitFont(ctx, card.title, 500, 40, SANS, inner);
+  ctx.fillText(card.title, PADDING, 190);
 
   ctx.fillStyle = card.solved ? COLORS.accent : TONE_COLORS.ce;
-  fitFont(ctx, card.headline, 800, 96, SANS, inner);
-  ctx.fillText(card.headline, PADDING, 310);
+  fitFont(ctx, card.headline, 800, 88, SANS, inner);
+  ctx.fillText(card.headline, PADDING, 285);
 
-  const row = layoutShots(card.shots.length, inner, 96);
-  const top = 360;
+  // The verdict grid fills the band between the headline and the footer.
+  const top = 320;
+  const grid = layoutShots(
+    // A problem given up without a submission still gets a (placeholder) square.
+    card.rows.map((row) => Math.max(1, row.length)),
+    inner,
+    505 - top,
+    96,
+  );
+  // Labels would be unreadable on small squares; the colors alone carry the verdicts then.
+  const labelled = grid.size >= 40;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `700 ${Math.round(row.size * 0.34)}px ${MONO}`;
-  card.shots.forEach((shot, i) => {
-    const x = PADDING + row.xs[i];
-    ctx.fillStyle = TONE_COLORS[shot.tone];
-    ctx.beginPath();
-    ctx.roundRect(x, top, row.size, row.size, row.size * 0.14);
-    ctx.fill();
-    ctx.fillStyle = COLORS.onTone;
-    ctx.fillText(shot.label, x + row.size / 2, top + row.size / 2);
+  ctx.font = `700 ${Math.round(grid.size * 0.34)}px ${MONO}`;
+  card.rows.forEach((row, r) => {
+    const y = top + r * grid.step;
+    if (row.length === 0) {
+      ctx.strokeStyle = COLORS.muted;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.roundRect(PADDING + 1, y + 1, grid.size - 2, grid.size - 2, grid.size * 0.14);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    row.forEach((shot, i) => {
+      const x = PADDING + i * grid.step;
+      ctx.fillStyle = TONE_COLORS[shot.tone];
+      ctx.beginPath();
+      ctx.roundRect(x, y, grid.size, grid.size, grid.size * 0.14);
+      ctx.fill();
+      if (labelled) {
+        ctx.fillStyle = COLORS.onTone;
+        ctx.fillText(shot.label, x + grid.size / 2, y + grid.size / 2);
+      }
+    });
   });
 
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
   ctx.fillStyle = COLORS.fg;
   ctx.font = `500 34px ${SANS}`;
-  ctx.fillText(card.detail, PADDING, 552);
+  ctx.fillText(card.detail, PADDING, 560);
   ctx.textAlign = "right";
   ctx.fillStyle = COLORS.muted;
   ctx.font = `500 28px ${SANS}`;
-  ctx.fillText(SITE_NAME, WIDTH - PADDING, 552);
+  ctx.fillText(SITE_NAME, WIDTH - PADDING, 560);
 }
 
 /** Renders the card as a PNG. */

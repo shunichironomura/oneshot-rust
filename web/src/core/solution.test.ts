@@ -17,10 +17,10 @@ test.each([
 });
 
 test.each([
-  [{ inChallenge: true, revealed: true, finished: true }, "hidden"],
-  [{ inChallenge: false, revealed: true, finished: false }, "revealed"],
-  [{ inChallenge: false, revealed: false, finished: true }, "unlocked"],
-  [{ inChallenge: false, revealed: false, finished: false }, "locked"],
+  [{ revealed: true, finished: false }, "revealed"],
+  [{ revealed: true, finished: true }, "revealed"],
+  [{ revealed: false, finished: true }, "unlocked"],
+  [{ revealed: false, finished: false }, "locked"],
 ] as const)("solutionAccess(%j) = %s", (params, expected) => {
   expect(solutionAccess(params)).toBe(expected);
 });

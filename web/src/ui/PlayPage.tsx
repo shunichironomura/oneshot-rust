@@ -1,20 +1,9 @@
-import {
-  ArrowLeft,
-  ArrowRight,
-  Flag,
-  Heart,
-  History,
-  Lock,
-  Play,
-  RotateCcw,
-  SkipForward,
-} from "lucide-preact";
+import { ArrowLeft, Flag, Heart, History, Lock, Play, RotateCcw, SkipForward } from "lucide-preact";
 import type { ComponentChildren } from "preact";
 import { useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import { type EditorMarker, present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
-import { nextProblem } from "../core/recommend.ts";
 import { routeHref } from "../core/route.ts";
 import { remainingLives, type Run, verdictsOf } from "../core/run.ts";
 import { type SolutionAccess, solutionAccess } from "../core/solution.ts";
@@ -50,40 +39,34 @@ function Statement({ problem, tab, onTab, solution, solutionPanel }: StatementPr
   const tabs: { id: StatementTab; label: ComponentChildren }[] = [
     { id: "statement", label: t.tabStatement },
     ...(problem.judge.harnessVisible ? [{ id: "harness" as const, label: t.tabHarness }] : []),
-    ...(solution === "hidden"
-      ? []
-      : [
-          {
-            id: "solution" as const,
-            label: (
-              <>
-                {solution === "locked" && <Lock size={12} aria-hidden="true" />}
-                {t.tabSolution}
-              </>
-            ),
-          },
-        ]),
+    {
+      id: "solution",
+      label: (
+        <>
+          {solution === "locked" && <Lock size={12} aria-hidden="true" />}
+          {t.tabSolution}
+        </>
+      ),
+    },
   ];
   return (
     <aside class="statement">
-      {tabs.length > 1 && (
-        <div class="tabs" role="tablist">
-          {tabs.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={tab === id}
-              onClick={() => onTab(id)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
-      {tab === "solution" && solution !== "hidden" ? (
+      <div class="tabs" role="tablist">
+        {tabs.map(({ id, label }) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => onTab(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === "solution" ? (
         <div class="solution">{solutionPanel}</div>
-      ) : tab === "statement" || tab === "solution" ? (
+      ) : tab === "statement" ? (
         <div
           class="markdown"
           // statementHtml is rendered at build time from the repository's own Markdown.
@@ -98,16 +81,19 @@ function Statement({ problem, tab, onTab, solution, solutionPanel }: StatementPr
   );
 }
 
-/** Set when the problem is played as part of a 連続チャレンジ. */
-export interface ChallengeContext {
-  id: string;
-  rules: RunRules;
-  /** e.g. "2 / 5" */
-  position: string;
-  onRunFinished: (run: Run) => void;
-  /** Moves on to the next problem (after solving, failing or giving up). */
-  onNext: () => void;
-}
+/** How the problem is played: as part of a round, or on its own as practice. */
+export type Session =
+  | {
+      kind: "round";
+      roundId: string;
+      rules: RunRules;
+      /** e.g. "2 / 5" */
+      position: string;
+      onRunFinished: (run: Run) => void;
+      /** Moves on after the problem is finished: to the next problem, or the scorecard. */
+      next: { label: string; action: () => void };
+    }
+  | { kind: "practice" };
 
 interface ConfirmProps {
   open: boolean;
@@ -135,39 +121,32 @@ function Confirm({ open, message, confirmLabel, onConfirm, onCancel }: ConfirmPr
   );
 }
 
-export function PlayView({
-  problem,
-  challenge,
-}: {
-  problem: Problem;
-  challenge?: ChallengeContext;
-}) {
+export function PlayView({ problem, session }: { problem: Problem; session: Session }) {
   const { content, storage, settings, toolchain, locale, t, openSettings } = useApp();
+  const round = session.kind === "round" ? session : undefined;
   // A submission made while the compiler is still loading waits for it; the time
   // limit only starts once a Worker has picked the submission up.
   const toolchainFailed =
     toolchain.state.status === "missing" || toolchain.state.status === "error";
-  const freeRules = useMemo(
+  const practiceRules = useMemo(
     () => ({ mode: settings.mode, lives: settings.lives }),
     [settings.mode, settings.lives],
   );
-  const rules = challenge?.rules ?? freeRules;
-  const { state, setCode, submit, restart, dismissFinished, revealSolution } = usePlay({
+  const rules = round?.rules ?? practiceRules;
+  const { state, setCode, submit, restart, giveUp, dismissFinished, revealSolution } = usePlay({
     problem,
     judgeSources: content.judge,
     storage,
     rules,
     pool: toolchain.pool,
-    challengeId: challenge?.id,
-    onRunFinished: challenge?.onRunFinished,
+    roundId: round?.roundId,
+    onRunFinished: round?.onRunFinished,
   });
-  const [confirming, setConfirming] = useState<"submit" | "restart" | "reveal" | null>(null);
+  const [confirming, setConfirming] = useState<"submit" | "restart" | "give-up" | "reveal" | null>(
+    null,
+  );
   const [tab, setTab] = useState<StatementTab>("statement");
-  const solution = solutionAccess({
-    inChallenge: challenge !== undefined,
-    revealed: state.revealed,
-    finished: state.hasFinished,
-  });
+  const solution = solutionAccess({ revealed: state.revealed, finished: state.hasFinished });
 
   const running = state.phase.kind !== "idle";
   const canSubmit = !toolchainFailed && !running && state.loaded;
@@ -193,32 +172,32 @@ export function PlayView({
   const playing = run?.status === "playing";
   const runMode = playing ? run.mode : rules.mode;
   const lives = playing ? remainingLives(run) : rules.lives;
-  // A finished run keeps showing its count; the next submission starts a new run.
+  // A finished run keeps showing its count; in practice, the next submission starts a new run.
   const tries = run?.attempts.length ?? 0;
-  const finishedInChallenge = challenge !== undefined && run !== null && !playing;
-  const nextId =
-    challenge === undefined
-      ? nextProblem(
-          content.problems.map((p) => p.id),
-          problem.id,
-        )
-      : undefined;
-  const nextProblemHref =
-    nextId === undefined ? undefined : routeHref({ page: "play", problemId: nextId });
-  // Seeing the solution turns the current and all later runs into practice.
-  const practice = playing ? run.assisted === true : state.revealed;
+  const finishedInRound = round !== undefined && run !== null && !playing;
+  // Seeing the solution turns the current and all later runs into assisted ones.
+  const assisted = playing ? run.assisted === true : state.revealed;
+  const showSolution = () => {
+    dismissFinished();
+    setTab("solution");
+  };
 
   return (
     <div class="play">
       <div class="play-header">
-        {challenge === undefined ? (
-          <IconButton
-            icon={ArrowLeft}
-            label={t.backToProblems}
-            href={routeHref({ page: "problems" })}
-          />
+        {round === undefined ? (
+          <>
+            <IconButton
+              icon={ArrowLeft}
+              label={t.backToRecords}
+              href={routeHref({ page: "problems" })}
+            />
+            <span class="chip" title={t.practiceTooltip}>
+              {t.practiceChip}
+            </span>
+          </>
         ) : (
-          <span class="chip accent">{t.challengeChip(challenge.position)}</span>
+          <span class="chip accent">{t.roundChip(round.position)}</span>
         )}
         <h1>{localize(problem.title, locale)}</h1>
         <KindBadge kind={problem.kind} />
@@ -226,15 +205,15 @@ export function PlayView({
           type="button"
           class="chip"
           title={t.modeHeading}
-          onClick={challenge === undefined ? openSettings : undefined}
-          disabled={challenge !== undefined}
+          onClick={round === undefined ? openSettings : undefined}
+          disabled={round !== undefined}
         >
           {t.modeChip(t.modes[runMode])}
         </button>
         <ShotChip shots={run === null ? [] : verdictsOf(run)} label={t.shotsTooltip(tries)} />
-        {practice && (
-          <span class="chip" title={t.practiceTooltip}>
-            {t.practiceChip}
+        {assisted && (
+          <span class="chip" title={t.assistedTooltip}>
+            {t.assistedChip}
           </span>
         )}
         {lives !== null && (
@@ -243,35 +222,39 @@ export function PlayView({
           </span>
         )}
         <span class="spacer" />
-        {challenge === undefined && (
+        {round === undefined && (
           <IconButton
             icon={History}
             label={t.history}
             href={routeHref({ page: "history", problemId: problem.id })}
           />
         )}
-        {nextProblemHref !== undefined && run?.status === "solved" && (
-          <IconButton icon={ArrowRight} label={t.nextProblem} href={nextProblemHref}>
-            {t.nextProblem}
-          </IconButton>
-        )}
-        {finishedInChallenge ? (
+        {finishedInRound ? (
           <IconButton
             icon={SkipForward}
-            label={t.nextInChallenge}
-            onClick={challenge.onNext}
+            label={round.next.label}
+            onClick={round.next.action}
             class="primary"
           >
-            {t.nextInChallenge}
+            {round.next.label}
           </IconButton>
         ) : (
           <>
-            <IconButton
-              icon={challenge === undefined ? RotateCcw : Flag}
-              label={challenge === undefined ? t.startOver : t.giveUp}
-              onClick={() => setConfirming("restart")}
-              disabled={running}
-            />
+            {round === undefined ? (
+              <IconButton
+                icon={RotateCcw}
+                label={t.startOver}
+                onClick={() => setConfirming("restart")}
+                disabled={running}
+              />
+            ) : (
+              <IconButton
+                icon={Flag}
+                label={t.giveUp}
+                onClick={() => setConfirming("give-up")}
+                disabled={running || !state.loaded}
+              />
+            )}
             <IconButton
               icon={Play}
               label={`${t.submit} (${SUBMIT_SHORTCUT})`}
@@ -285,7 +268,7 @@ export function PlayView({
           </>
         )}
       </div>
-      {challenge === undefined && playing && run.mode !== settings.mode && (
+      {round === undefined && playing && run.mode !== settings.mode && (
         <p class="notice">{t.runModeNotice(t.modes[run.mode])}</p>
       )}
       <div class="play-body">
@@ -295,15 +278,14 @@ export function PlayView({
           onTab={setTab}
           solution={solution}
           solutionPanel={
-            solution !== "hidden" && (
-              <SolutionPanel
-                problem={problem}
-                access={solution}
-                code={state.code}
-                onReveal={() => void revealSolution()}
-                onGiveUp={() => setConfirming("reveal")}
-              />
-            )
+            <SolutionPanel
+              problem={problem}
+              access={solution}
+              code={state.code}
+              onReveal={() => void revealSolution()}
+              // In a round, looking at the solution ends the problem.
+              onGiveUp={() => setConfirming(round === undefined ? "reveal" : "give-up")}
+            />
           }
         />
         <div class="editor-pane">
@@ -334,16 +316,22 @@ export function PlayView({
       />
       <Confirm
         open={confirming === "restart"}
-        message={
-          challenge === undefined
-            ? `${t.confirmStartOver}${playing ? ` ${t.startOverAbandons}` : ""}`
-            : t.confirmGiveUp
-        }
-        confirmLabel={challenge === undefined ? t.confirmStartOverYes : t.confirmGiveUpYes}
+        message={`${t.confirmStartOver}${playing ? ` ${t.startOverAbandons}` : ""}`}
+        confirmLabel={t.confirmStartOverYes}
         onCancel={() => setConfirming(null)}
         onConfirm={() => {
           setConfirming(null);
-          void restart().then(() => challenge?.onNext());
+          void restart();
+        }}
+      />
+      <Confirm
+        open={confirming === "give-up"}
+        message={t.confirmGiveUp}
+        confirmLabel={t.confirmGiveUpYes}
+        onCancel={() => setConfirming(null)}
+        onConfirm={() => {
+          setConfirming(null);
+          void giveUp();
         }}
       />
       <Confirm
@@ -357,20 +345,11 @@ export function PlayView({
         }}
       />
       <FinishedDialog
-        problem={problem}
         finished={state.finished}
-        nextProblemHref={nextProblemHref}
         onClose={dismissFinished}
-        onShowSolution={
-          solution === "hidden"
-            ? undefined
-            : () => {
-                dismissFinished();
-                setTab("solution");
-              }
-        }
+        onShowSolution={showSolution}
         next={
-          challenge === undefined
+          round === undefined
             ? {
                 label: t.tryAgain,
                 action: () => {
@@ -379,10 +358,10 @@ export function PlayView({
                 },
               }
             : {
-                label: t.nextInChallenge,
+                label: round.next.label,
                 action: () => {
                   dismissFinished();
-                  challenge.onNext();
+                  round.next.action();
                 },
               }
         }
@@ -391,17 +370,20 @@ export function PlayView({
   );
 }
 
-export function PlayPage({ problemId }: { problemId: string }) {
+const PRACTICE: Session = { kind: "practice" };
+
+/** A problem played on its own, as practice. */
+export function PracticePage({ problemId }: { problemId: string }) {
   const { content, t } = useApp();
   const problem = content.problems.find((p) => p.id === problemId);
   if (problem === undefined) {
     return (
       <section>
         <p>{t.problemNotFound(problemId)}</p>
-        <a href={routeHref({ page: "problems" })}>{t.backToProblems}</a>
+        <a href={routeHref({ page: "problems" })}>{t.backToRecords}</a>
       </section>
     );
   }
   // Remount per problem so that all per-problem state starts fresh.
-  return <PlayView key={problem.id} problem={problem} />;
+  return <PlayView key={problem.id} problem={problem} session={PRACTICE} />;
 }

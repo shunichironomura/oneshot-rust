@@ -501,48 +501,84 @@ main > section.home {
   }
 }
 
-.choices {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.2em;
-}
-
-.choice {
+.launcher {
   display: flex;
   flex-direction: column;
-  padding: 1.3em 1.5em;
+  align-items: flex-start;
+  gap: 1em;
+  padding: 1.4em 1.6em;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--panel);
 }
 
-.choice h2 {
+.launcher h2 {
   display: flex;
   align-items: center;
   gap: 0.4em;
-  margin: 0 0 0.3em;
+  margin: 0;
   font-size: 1.2em;
 }
 
-.choice h2 svg {
+.launcher h2 svg {
   color: var(--accent);
 }
 
-.choice-next {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.6em;
-  flex: 1;
-  margin: 0 0 1em;
+.launcher-text {
+  margin: 0;
   color: var(--muted);
 }
 
-.choice-actions {
+.course-options {
+  flex-wrap: wrap;
+}
+
+.course-options button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 9em;
+  padding: 0.5em 1em;
+}
+
+.course-options button span {
+  color: var(--muted);
+  font-size: 0.82em;
+}
+
+.more-options {
+  width: 100%;
+}
+
+.more-options summary {
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.more-options fieldset {
+  margin: 0.8em 0 0;
+  padding: 0.6em 1em 0.9em;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.more-options legend {
+  padding: 0 0.3em;
+  font-weight: 700;
+}
+
+.more-options label.row {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 1em;
+  gap: 0.6em;
+}
+
+.more-options label.row span {
+  flex: 1;
+}
+
+main > section.round-start {
+  max-width: 44em;
 }
 
 .subtle-link {
@@ -1122,20 +1158,12 @@ dialog.drawer {
   margin: 0.2em 0;
 }
 
-.finished dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.2em 1.2em;
-  margin: 0.8em 0 0;
-}
-
-.finished dt {
+.finished .tries {
+  margin-left: 0.4em;
   color: var(--muted);
-}
-
-.finished dd {
-  margin: 0;
+  font-size: 0.7em;
   font-weight: 600;
+  letter-spacing: normal;
 }
 
 .new-best {
@@ -1172,6 +1200,13 @@ dialog.drawer {
   grid-template-columns: 10em 1fr;
   gap: 1em;
   margin-top: 0.7em;
+}
+
+.run-detail > .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  grid-column: 1 / -1;
 }
 
 .attempts {
@@ -1292,46 +1327,94 @@ dialog.drawer {
   outline-offset: 2px;
 }
 
-/* Challenge */
+/* Scorecard */
 
-.challenge h1 {
+.scorecard-meta {
   display: flex;
   align-items: center;
-  gap: 0.4em;
+  flex-wrap: wrap;
+  gap: 0.6em;
+  color: var(--muted);
 }
 
-.challenge h1 svg {
+.scorecard-meta .badge {
+  margin-left: 0;
+}
+
+.scorecard-total {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.8em;
+  margin: 0.4em 0 1em;
+}
+
+.scorecard-total strong {
+  font-size: 2.2em;
   color: var(--accent);
 }
 
-.challenge-total {
-  font-size: 1.2em;
+.scorecard-total span {
+  font-size: 1.15em;
   font-weight: 600;
 }
 
-.challenge .share {
+.scorecard-table {
+  border-collapse: collapse;
+  margin-bottom: 1.2em;
+}
+
+.scorecard-table th,
+.scorecard-table td {
+  padding: 0.35em 0.9em 0.35em 0;
+  text-align: left;
+}
+
+.scorecard-table th {
+  color: var(--muted);
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.scorecard-table .squares {
+  letter-spacing: 0.1em;
+}
+
+.scorecard .share {
   display: inline-block;
   padding: 0.8em 1.1em;
   background: var(--code-bg);
   border-radius: var(--radius);
 }
 
-.challenge .actions {
+.scorecard .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5em;
   margin: 1.2em 0;
 }
 
-.challenge-history {
+/* Records */
+
+.problems h2 {
+  margin: 1.6em 0 0.3em;
+}
+
+.round-history {
   padding: 0;
   list-style: none;
 }
 
-.challenge-history li {
+.round-history li {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.7em;
   padding: 0.3em 0;
+}
+
+.round-history .badge {
+  margin-left: 0;
 }
 
 /* Narrow screens */
@@ -1341,8 +1424,7 @@ dialog.drawer {
     display: none;
   }
 
-  .hero,
-  .choices {
+  .hero {
     grid-template-columns: 1fr;
   }
 

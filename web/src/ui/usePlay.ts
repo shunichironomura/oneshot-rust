@@ -34,7 +34,7 @@ export interface PlayState {
   finished: { run: Run; newBest: Best | undefined } | null;
   /** Some run of this problem has ended (which unlocks the model solution). */
   hasFinished: boolean;
-  /** The model solution has been seen: runs from then on are practice. */
+  /** The model solution has been seen: runs from then on are assisted. */
   revealed: boolean;
 }
 
@@ -50,8 +50,8 @@ interface Params {
   storage: Storage;
   rules: RunRules;
   pool: Promise<RunnerPool>;
-  /** Runs inside a 連続チャレンジ are kept apart from free play. */
-  challengeId?: string;
+  /** The round being played; runs and drafts of a round are kept apart from practice. */
+  roundId?: string;
   onRunFinished?: (run: Run) => void;
 }
 
@@ -72,10 +72,10 @@ export function usePlay({
   storage,
   rules,
   pool,
-  challengeId,
+  roundId,
   onRunFinished,
 }: Params) {
-  const draft = draftKey(problem.id, challengeId);
+  const draft = draftKey(problem.id, roundId);
   const [state, setState] = useState<PlayState>({
     loaded: false,
     code: problem.template,
@@ -98,8 +98,7 @@ export function usePlay({
       storage.isRevealed(problem.id),
     ]).then(([savedCode, runs, revealed]) => {
       if (cancelled) return;
-      const playing =
-        runs.find((r) => r.status === "playing" && r.challengeId === challengeId) ?? null;
+      const playing = runs.find((r) => r.status === "playing" && r.challengeId === roundId) ?? null;
       const lastAttempt = playing?.attempts.at(-1);
       setState((s) => ({
         loaded: true,
@@ -120,7 +119,7 @@ export function usePlay({
       cancelled = true;
       clearTimeout(saveTimer.current);
     };
-  }, [problem, storage, draft, challengeId]);
+  }, [problem, storage, draft, roundId]);
 
   const setCode = useCallback(
     (code: string) => {
@@ -152,7 +151,7 @@ export function usePlay({
             mode: rules.mode,
             lives: rules.lives,
             now: Date.now(),
-            challengeId,
+            roundId,
             assisted: state.revealed,
           });
     const previousRun = state.run;
@@ -211,29 +210,12 @@ export function usePlay({
         last: { kind: "error", message: errorMessage(e) },
       }));
     }
-  }, [pool, state, problem, judgeSources, rules, storage, challengeId, onRunFinished]);
+  }, [pool, state, problem, judgeSources, rules, storage, roundId, onRunFinished]);
 
-  /** Abandons the current run (if any) and starts over with the template. */
+  /** Practice: abandons the current run (if any) and starts over with the template. */
   const restart = useCallback(async () => {
-    const now = Date.now();
-    // In a challenge, giving up before the first submission still ends the problem.
-    const current =
-      state.run?.status === "playing"
-        ? state.run
-        : challengeId !== undefined && state.run === null
-          ? newRun({
-              id: crypto.randomUUID(),
-              problemId: problem.id,
-              ...rules,
-              now,
-              challengeId,
-              assisted: state.revealed,
-            })
-          : null;
-    if (current !== null) {
-      const abandoned: Run = { ...current, status: "failed", finishedAt: now };
-      await storage.saveRun(abandoned);
-      onRunFinished?.(abandoned);
+    if (state.run?.status === "playing") {
+      await storage.saveRun({ ...state.run, status: "failed", finishedAt: Date.now() });
     }
     clearTimeout(saveTimer.current);
     await storage.deleteDraft(draft);
@@ -244,11 +226,39 @@ export function usePlay({
       run: null,
       last: null,
       finished: null,
-      hasFinished: s.hasFinished || current !== null,
+      hasFinished: s.hasFinished || s.run?.status === "playing",
     }));
-  }, [state.run, state.revealed, storage, problem, draft, rules, challengeId, onRunFinished]);
+  }, [state.run, storage, problem, draft]);
 
-  /** Marks the model solution as seen. A run in progress goes on as practice. */
+  /**
+   * Ends the problem unsolved, even before the first submission, and reports it like a
+   * finished run.
+   */
+  const giveUp = useCallback(async () => {
+    const now = Date.now();
+    const current =
+      state.run?.status === "playing"
+        ? state.run
+        : newRun({
+            id: crypto.randomUUID(),
+            problemId: problem.id,
+            ...rules,
+            now,
+            roundId,
+            assisted: state.revealed,
+          });
+    const abandoned: Run = { ...current, status: "failed", finishedAt: now };
+    await storage.saveRun(abandoned);
+    setState((s) => ({
+      ...s,
+      run: abandoned,
+      finished: { run: abandoned, newBest: undefined },
+      hasFinished: true,
+    }));
+    onRunFinished?.(abandoned);
+  }, [state.run, state.revealed, storage, problem, rules, roundId, onRunFinished]);
+
+  /** Marks the model solution as seen. A run in progress goes on as an assisted run. */
   const revealSolution = useCallback(async () => {
     const run = state.run?.status === "playing" ? { ...state.run, assisted: true } : state.run;
     if (run !== null && run !== state.run) await storage.saveRun(run);
@@ -258,5 +268,5 @@ export function usePlay({
 
   const dismissFinished = useCallback(() => setState((s) => ({ ...s, finished: null })), []);
 
-  return { state, setCode, submit, restart, dismissFinished, revealSolution };
+  return { state, setCode, submit, restart, giveUp, dismissFinished, revealSolution };
 }

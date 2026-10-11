@@ -1,6 +1,6 @@
 // A "run" is one attempt at solving a problem: submissions until AC (or out of lives).
 import { isCounted, type Judgement, type VerdictKind } from "./classify.ts";
-import type { Mode } from "./mode.ts";
+import { MODES, type Mode } from "./mode.ts";
 
 export interface Attempt {
   submittedAt: number;
@@ -20,7 +20,10 @@ export interface Run {
   attempts: Attempt[];
   status: RunStatus;
   finishedAt?: number;
-  /** Set when the run is part of a 連続チャレンジ. */
+  /**
+   * The round the run is part of; unset for practice. (Stored under the name it had
+   * when rounds were called challenges, so that older runs keep their round.)
+   */
   challengeId?: string;
   /** Set when the model solution was seen before or during the run: it cannot set a best record. */
   assisted?: boolean;
@@ -41,7 +44,7 @@ export function newRun(params: {
   mode: Mode;
   lives: number | null;
   now: number;
-  challengeId?: string;
+  roundId?: string;
   assisted?: boolean;
 }): Run {
   return {
@@ -52,7 +55,7 @@ export function newRun(params: {
     startedAt: params.now,
     attempts: [],
     status: "playing",
-    challengeId: params.challengeId,
+    challengeId: params.roundId,
     ...(params.assisted === true && { assisted: true }),
   };
 }
@@ -115,4 +118,26 @@ export function improvedBest(prev: Best | undefined, run: Run): Best | undefined
     candidate.submissions < prev.submissions ||
     (candidate.submissions === prev.submissions && candidate.ceCount < prev.ceCount);
   return better ? candidate : undefined;
+}
+
+/**
+ * The best of the per-mode records of a problem: fewest submissions, then the harder
+ * mode, then the newer one.
+ */
+export function bestOverall(bests: readonly Best[]): Best | undefined {
+  const rank = (b: Best) => MODES.indexOf(b.mode);
+  return bests.reduce<Best | undefined>((best, b) => {
+    if (best === undefined) return b;
+    const better =
+      b.submissions - best.submissions || rank(best) - rank(b) || best.achievedAt - b.achievedAt;
+    return better < 0 ? b : best;
+  }, undefined);
+}
+
+/** The best record of each problem across modes. */
+export function bestsByProblem(bests: readonly Best[]): Map<string, Best> {
+  return bests.reduce((map, b) => {
+    const best = bestOverall([map.get(b.problemId), b].filter((x) => x !== undefined));
+    return best === undefined ? map : map.set(b.problemId, best);
+  }, new Map<string, Best>());
 }

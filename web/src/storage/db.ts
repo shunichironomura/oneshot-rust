@@ -1,7 +1,7 @@
-// IndexedDB persistence: drafts, runs, best records, challenges, seen solutions and settings.
+// IndexedDB persistence: drafts, runs, best records, rounds, seen solutions and settings.
 import { type DBSchema, type IDBPDatabase, openDB } from "idb";
-import type { Challenge } from "../core/challenge.ts";
 import type { Mode } from "../core/mode.ts";
+import type { Round } from "../core/round.ts";
 import type { Best, Run } from "../core/run.ts";
 import { normalizeSettings, type Settings } from "../core/settings.ts";
 
@@ -22,16 +22,17 @@ interface OneShotDB extends DBSchema {
   drafts: { key: string; value: Draft };
   runs: { key: string; value: Run; indexes: { byProblem: string } };
   bests: { key: [string, Mode]; value: Best };
-  challenges: { key: string; value: Challenge };
+  /** Rounds (kept under the name they had when they were called challenges). */
+  challenges: { key: string; value: Round };
   reveals: { key: string; value: Reveal };
   settings: { key: string; value: unknown };
 }
 
 const SETTINGS_KEY = "settings";
 
-/** Drafts are kept per problem, and separately per challenge. */
-export function draftKey(problemId: string, challengeId?: string): string {
-  return challengeId === undefined ? problemId : `challenge:${challengeId}:${problemId}`;
+/** Practice drafts are kept per problem, and round drafts per round and problem. */
+export function draftKey(problemId: string, roundId?: string): string {
+  return roundId === undefined ? problemId : `challenge:${roundId}:${problemId}`;
 }
 
 export class Storage {
@@ -103,7 +104,7 @@ export class Storage {
     return runs.sort((a, b) => b.startedAt - a.startedAt);
   }
 
-  /** Problems with an unfinished free-play run. */
+  /** Problems with an unfinished practice run. */
   async problemsInProgress(): Promise<Set<string>> {
     const runs = await this.db.getAll("runs");
     return new Set(
@@ -125,14 +126,18 @@ export class Storage {
     await this.db.put("bests", best);
   }
 
-  /** Challenges, newest first. */
-  async challenges(): Promise<Challenge[]> {
+  /** Rounds, newest first. */
+  async rounds(): Promise<Round[]> {
     const all = await this.db.getAll("challenges");
     return all.sort((a, b) => b.startedAt - a.startedAt);
   }
 
-  async saveChallenge(challenge: Challenge): Promise<void> {
-    await this.db.put("challenges", challenge);
+  async round(id: string): Promise<Round | undefined> {
+    return this.db.get("challenges", id);
+  }
+
+  async saveRound(round: Round): Promise<void> {
+    await this.db.put("challenges", round);
   }
 
   async isRevealed(problemId: string): Promise<boolean> {
