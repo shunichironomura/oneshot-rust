@@ -65,11 +65,13 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
     const position = active.entries.length;
     return (
       <div class="launcher">
-        <RoundProgress
-          round={active}
-          current={position}
-          label={t.roundPosition(position + 1, active.problemIds.length)}
-        />
+        <div class="launcher-strip">
+          <RoundProgress
+            round={active}
+            current={position}
+            label={t.roundPosition(position + 1, active.problemIds.length)}
+          />
+        </div>
         <a class="button primary large" href={routeHref({ page: "round" })}>
           {t.continueRound}
           <ArrowRight size={18} aria-hidden="true" />

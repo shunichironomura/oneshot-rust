@@ -2,7 +2,7 @@ import { expect, test } from "vite-plus/test";
 import { MESSAGES } from "./i18n.ts";
 import { newRound, recordRun } from "./round.ts";
 import type { Run } from "./run.ts";
-import { layoutShots, roundShareCard, shareCard } from "./share.ts";
+import { roundShareCard, shareCard } from "./share.ts";
 
 test("a solved run", () => {
   const card = shareCard(
@@ -20,11 +20,15 @@ test("a solved run", () => {
     title: "Longest word",
     detail: "3 tries",
     rows: [
-      [
-        { label: "CE", tone: "ce" },
-        { label: "WA", tone: "miss" },
-        { label: "AC", tone: "ac" },
-      ],
+      {
+        shots: [
+          { label: "CE", tone: "ce" },
+          { label: "WA", tone: "miss" },
+          { label: "AC", tone: "ac" },
+        ],
+        score: { kind: "solved", shots: 3 },
+        seed: "lifetime-01",
+      },
     ],
   });
 });
@@ -55,6 +59,7 @@ test("a failed run", () => {
   );
   expect(card.headline).toBe(MESSAGES.ja.unsolvedHeadline);
   expect(card.detail).toBe("2回");
+  expect(card.rows[0].score).toEqual({ kind: "unsolved" });
 });
 
 test("a round", () => {
@@ -70,7 +75,10 @@ test("a round", () => {
     solved: false,
     title: "Oct 11, 2026",
     detail: "1/2 solved",
-    rows: [[], []],
+    rows: [
+      { shots: [], score: { kind: "solved", shots: 0 }, seed: "r:0" },
+      { shots: [], score: { kind: "unsolved" }, seed: "r:1" },
+    ],
   });
 });
 
@@ -85,22 +93,3 @@ function newRunStub(id: string, problemId: string): Run {
     finishedAt: 1,
   };
 }
-
-test("few squares keep their maximum size", () => {
-  expect(layoutShots([3], 1000, 1000, 80)).toEqual({ size: 80, step: 100 });
-});
-
-test("many squares shrink to fit the width", () => {
-  const grid = layoutShots([20, 2], 990, 1000, 80);
-  expect(grid.size).toBeCloseTo(40);
-  expect(19 * grid.step + grid.size).toBeCloseTo(990);
-});
-
-test("many rows shrink to fit the height", () => {
-  const grid = layoutShots([1, 1, 1, 1, 1], 1000, 195, 96);
-  expect(4 * grid.step + grid.size).toBeCloseTo(195);
-});
-
-test("no squares", () => {
-  expect(layoutShots([], 1000, 1000, 80).size).toBe(80);
-});

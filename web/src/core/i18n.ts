@@ -143,6 +143,8 @@ export interface Messages {
   roundUnfinished: string;
   roundNotFound: string;
   roundSkipDeleted: (id: string) => string;
+  /** The row labels of the scorecard. */
+  card: { hole: string; problem: string; level: string; par: string; shots: string; total: string };
 }
 
 const en: Messages = {
@@ -282,6 +284,14 @@ const en: Messages = {
   roundUnfinished: "This round is not finished yet.",
   roundNotFound: "This round was not found.",
   roundSkipDeleted: (id) => `Problem “${id}” no longer exists and is skipped.`,
+  card: {
+    hole: "Hole",
+    problem: "Problem",
+    level: "Level",
+    par: "Par",
+    shots: "Shots",
+    total: "Total",
+  },
 };
 
 const ja: Messages = {
@@ -423,6 +433,14 @@ const ja: Messages = {
   roundUnfinished: "このラウンドはまだ終わっていません。",
   roundNotFound: "ラウンドが見つかりませんでした。",
   roundSkipDeleted: (id) => `問題「${id}」は削除されたため、スキップします。`,
+  card: {
+    hole: "ホール",
+    problem: "問題",
+    level: "難易度",
+    par: "パー",
+    shots: "打数",
+    total: "合計",
+  },
 };
 
 export const MESSAGES: Record<Locale, Messages> = { en, ja };

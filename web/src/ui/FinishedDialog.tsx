@@ -3,6 +3,7 @@ import { type Run, verdictsOf } from "../core/run.ts";
 import { titleFor } from "../core/scoring.ts";
 import { useApp } from "./context.ts";
 import { Dialog } from "./Dialog.tsx";
+import { ScoreMark } from "./ScoreMark.tsx";
 import { ShotMeter } from "./ShotMeter.tsx";
 
 interface Props {
@@ -37,12 +38,19 @@ export function FinishedDialog({ finished, onClose, onShowSolution, next }: Prop
       <h2 class={solved ? "solved" : "failed"}>
         {solved ? `${titleFor(n) ?? t.solvedHeadline}!` : t.unsolvedHeadline}
       </h2>
-      {n > 0 && (
-        <p class="finished-shots">
-          <ShotMeter shots={verdictsOf(run)} label={t.shareTries(n)} />
-          <span class="tries">{t.shareTries(n)}</span>
-        </p>
-      )}
+      <p class="finished-shots">
+        <ScoreMark
+          score={solved ? { kind: "solved", shots: n } : { kind: "unsolved" }}
+          seed={run.id}
+          fresh
+        />
+        {n > 0 && (
+          <span class="finished-verdicts">
+            <ShotMeter shots={verdictsOf(run)} label={t.shareTries(n)} />
+            <span class="tries">{t.shareTries(n)}</span>
+          </span>
+        )}
+      </p>
       {beatBest && <p class="new-best">{t.newBest}</p>}
       {run.assisted === true && <p class="practice-note">{t.assistedRun}</p>}
       <div class="actions">

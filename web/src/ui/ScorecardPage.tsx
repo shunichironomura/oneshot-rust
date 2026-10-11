@@ -1,15 +1,23 @@
 import { RotateCcw } from "lucide-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
-import { type Round, roundResult, roundShareText, totalSubmissions } from "../core/round.ts";
+import {
+  type Round,
+  roundResult,
+  roundShareText,
+  solvedCount,
+  totalSubmissions,
+} from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
 import { roundShareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
-import { DifficultyBadge } from "./DifficultyBadge.tsx";
+import { DifficultyMarks } from "./DifficultyBadge.tsx";
 import { startRound } from "./RoundLauncher.tsx";
+import { type Score, ScoreMark } from "./ScoreMark.tsx";
 import { ShareButton } from "./ShareButton.tsx";
 import { ShotMeter } from "./ShotMeter.tsx";
 
+/** A golf scorecard: one column per hole, the shots written by hand and marked against par. */
 function Scorecard({ round }: { round: Round }) {
   const { content, storage, locale, t } = useApp();
   const [starting, setStarting] = useState(false);
@@ -27,41 +35,97 @@ function Scorecard({ round }: { round: Round }) {
     });
   };
 
+  const holes = round.problemIds.map((problemId, i) => {
+    const entry = round.entries[i];
+    const problem = content.problems.find((p) => p.id === problemId);
+    const score: Score =
+      entry === undefined
+        ? { kind: "empty" }
+        : entry.solved
+          ? { kind: "solved", shots: entry.verdicts.length }
+          : { kind: "unsolved" };
+    return { key: `${i}:${problemId}`, seed: `${round.id}:${i}`, problemId, problem, entry, score };
+  });
+  const count = round.problemIds.length;
+  const total = totalSubmissions(round);
+  const totalScore: Score =
+    solvedCount(round) === count
+      ? { kind: "solved", shots: total, par: count }
+      : { kind: "plain", shots: total };
+
   return (
     <section class="scorecard">
       <p class="run-date">{dateFormat.format(round.startedAt)}</p>
-      <h1 class="scorecard-total">
-        {t.roundTotal(totalSubmissions(round))}
-        <span>{roundResult(round, t)}</span>
-      </h1>
-      <ol class="scorecard-rows">
-        {round.problemIds.map((problemId, i) => {
-          const entry = round.entries[i];
-          const problem = content.problems.find((p) => p.id === problemId);
-          const n = entry?.verdicts.length ?? 0;
-          return (
-            <li key={`${i}:${problemId}`} class={entry === undefined ? "dim" : undefined}>
-              <span class="row-number">{i + 1}</span>
-              {entry === undefined ? (
-                // Not reached (the round was abandoned): it may come up in a later round.
-                <span>—</span>
-              ) : problem === undefined ? (
-                <span>{problemId}</span>
-              ) : (
-                <a href={routeHref({ page: "history", problemId })}>
-                  {localize(problem.title, locale)}
-                </a>
-              )}
-              {problem !== undefined && <DifficultyBadge difficulty={problem.difficulty} />}
-              <span class="scorecard-shots">
-                {n > 0 && <ShotMeter shots={entry?.verdicts} label={t.shareTries(n)} />}
-                {entry !== undefined && <span class="shot-count">{n}</span>}
-                {entry?.solved === false && <span class="unsolved-mark">✗</span>}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
+      <h1 class="scorecard-result">{roundResult(round, t)}</h1>
+      <div class="card-scroll">
+        <table class="card">
+          <thead>
+            <tr>
+              <th scope="row">{t.card.hole}</th>
+              {holes.map((h, i) => (
+                <th key={h.key} scope="col">
+                  {i + 1}
+                </th>
+              ))}
+              <th scope="col">{t.card.total}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">{t.card.problem}</th>
+              {holes.map(({ key, problemId, problem, entry }) => (
+                <td key={key} class="name">
+                  {entry === undefined ? (
+                    // Not reached (the round was abandoned): it may come up in a later round.
+                    <span class="dim">—</span>
+                  ) : problem === undefined ? (
+                    problemId
+                  ) : (
+                    <a href={routeHref({ page: "history", problemId })}>
+                      {localize(problem.title, locale)}
+                    </a>
+                  )}
+                </td>
+              ))}
+              <td />
+            </tr>
+            <tr>
+              <th scope="row">{t.card.level}</th>
+              {holes.map(({ key, problem }) => (
+                <td key={key}>
+                  {problem !== undefined && (
+                    <span title={t.difficulties[problem.difficulty]}>
+                      <DifficultyMarks difficulty={problem.difficulty} />
+                    </span>
+                  )}
+                </td>
+              ))}
+              <td />
+            </tr>
+            <tr>
+              <th scope="row">{t.card.par}</th>
+              {holes.map(({ key }) => (
+                <td key={key}>1</td>
+              ))}
+              <td class="total">{count}</td>
+            </tr>
+            <tr>
+              <th scope="row">{t.card.shots}</th>
+              {holes.map(({ key, seed, entry, score }) => (
+                <td key={key} class="score">
+                  <ScoreMark score={score} seed={seed} />
+                  {entry !== undefined && entry.verdicts.length > 0 && (
+                    <ShotMeter shots={entry.verdicts} label={t.shareTries(entry.verdicts.length)} />
+                  )}
+                </td>
+              ))}
+              <td class="score total">
+                <ScoreMark score={totalScore} seed={round.id} />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div class="actions">
         <button type="button" class="primary icon-button" onClick={oneMore} disabled={starting}>
           <RotateCcw size={16} aria-hidden="true" />

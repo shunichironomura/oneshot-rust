@@ -1,29 +1,32 @@
 // Draws the share card on a canvas, and shares it with the Web Share API (or copies the text).
+import { BOX, digitOf, marksFor } from "../core/marks.ts";
 import type { VerdictTone } from "../core/scoring.ts";
-import { layoutShots, type ShareCard, SITE_NAME } from "../core/share.ts";
+import { type ShareCard, type ShareRow, SITE_NAME } from "../core/share.ts";
 
 const WIDTH = 1200;
 const HEIGHT = 630;
 const PADDING = 72;
 const SANS = 'system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif';
-const MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+const DISPLAY = `"Barlow Condensed", "Arial Narrow", ${SANS}`;
+const HAND = '"Caveat", "Segoe Print", "Bradley Hand", cursive';
 
-// The dark theme of styles.css: the card looks the same whatever the viewer's theme.
+// The light theme of styles.css: the card looks the same whatever the viewer's theme.
 const COLORS = {
-  bg: "#111317",
-  panel: "#181b20",
-  border: "#2d333b",
-  fg: "#e6edf3",
-  muted: "#8d96a0",
-  accent: "#f0883e",
-  onTone: "#111317",
+  paper: "#f4f4f1",
+  card: "#fdfdfb",
+  navy: "#1e3966",
+  soft: "#e4eaf4",
+  rule: "#d5dbe5",
+  fg: "#1c2230",
+  muted: "#5d6676",
+  pencil: "#3b3b3e",
 };
 
 const TONE_COLORS: Record<VerdictTone, string> = {
-  ac: "#3fb950",
-  ce: "#f85149",
-  miss: "#d29922",
-  ie: "#8b949e",
+  ac: "#1a7f37",
+  ce: "#cf222e",
+  miss: "#b35900",
+  ie: "#6e7781",
 };
 
 /** Sets the largest font up to `maxSize` px in which `text` fits in `maxWidth`. */
@@ -42,85 +45,115 @@ function fitFont(
   }
 }
 
+/** The pencil mark of a hole, `size` wide, with its top left corner at (x, y). */
+function drawMark(
+  ctx: CanvasRenderingContext2D,
+  row: ShareRow,
+  x: number,
+  y: number,
+  size: number,
+) {
+  const digit = digitOf(row.score);
+  if (digit !== undefined) {
+    ctx.fillStyle = COLORS.pencil;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `700 ${Math.round(size * 0.82)}px ${HAND}`;
+    ctx.fillText(String(digit), x + size / 2, y + size / 2 - size * 0.04);
+  }
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(size / BOX, size / BOX);
+  ctx.strokeStyle = COLORS.pencil;
+  ctx.lineWidth = 1.7;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.globalAlpha = 0.9;
+  for (const d of marksFor(row.score, row.seed)) ctx.stroke(new Path2D(d));
+  ctx.restore();
+}
+
+/** The verdicts of a hole as a row of small squares centered on `cx`. */
+function drawShots(ctx: CanvasRenderingContext2D, row: ShareRow, cx: number, y: number) {
+  const side = 18;
+  const gap = 6;
+  const width = row.shots.length * side + (row.shots.length - 1) * gap;
+  row.shots.forEach((shot, i) => {
+    ctx.fillStyle = TONE_COLORS[shot.tone];
+    ctx.beginPath();
+    ctx.roundRect(cx - width / 2 + i * (side + gap), y, side, side, 4);
+    ctx.fill();
+  });
+}
+
 function draw(ctx: CanvasRenderingContext2D, card: ShareCard): void {
   const inner = WIDTH - 2 * PADDING;
-  ctx.fillStyle = COLORS.bg;
+  ctx.fillStyle = COLORS.paper;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  ctx.strokeStyle = COLORS.border;
-  ctx.lineWidth = 2;
+  ctx.fillStyle = COLORS.card;
+  ctx.fillRect(24, 24, WIDTH - 48, HEIGHT - 48);
+  ctx.strokeStyle = COLORS.navy;
+  ctx.lineWidth = 4;
   ctx.strokeRect(24, 24, WIDTH - 48, HEIGHT - 48);
   ctx.textBaseline = "alphabetic";
+  ctx.textAlign = "left";
 
-  // Logo
-  ctx.font = `700 36px ${SANS}`;
-  ctx.fillStyle = COLORS.accent;
-  ctx.fillText("◎", PADDING, 118);
-  ctx.fillStyle = COLORS.fg;
-  ctx.fillText("OneShot Rust", PADDING + 48, 118);
+  // Logo, with the site at the far end.
+  ctx.fillStyle = COLORS.navy;
+  ctx.font = `700 44px ${DISPLAY}`;
+  ctx.fillText("◎ OneShot Rust", PADDING, 118);
+  ctx.textAlign = "right";
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = `600 30px ${DISPLAY}`;
+  ctx.fillText(SITE_NAME, WIDTH - PADDING, 118);
+  ctx.textAlign = "left";
 
   ctx.fillStyle = COLORS.muted;
-  fitFont(ctx, card.title, 500, 40, SANS, inner);
-  ctx.fillText(card.title, PADDING, 190);
+  fitFont(ctx, card.title, 500, 30, SANS, inner);
+  ctx.fillText(card.title, PADDING, 172);
 
-  ctx.fillStyle = card.solved ? COLORS.accent : TONE_COLORS.ce;
-  fitFont(ctx, card.headline, 800, 88, SANS, inner);
-  ctx.fillText(card.headline, PADDING, 285);
+  ctx.fillStyle = card.solved ? COLORS.navy : COLORS.fg;
+  fitFont(ctx, card.headline, 700, 92, DISPLAY, inner);
+  ctx.fillText(card.headline, PADDING, 262);
 
-  // The verdict grid fills the band between the headline and the footer.
-  const top = 320;
-  const grid = layoutShots(
-    // A problem given up without a submission still gets a (placeholder) square.
-    card.rows.map((row) => Math.max(1, row.length)),
-    inner,
-    505 - top,
-    96,
-  );
-  // Labels would be unreadable on small squares; the colors alone carry the verdicts then.
-  const labelled = grid.size >= 40;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = `700 ${Math.round(grid.size * 0.34)}px ${MONO}`;
-  card.rows.forEach((row, r) => {
-    const y = top + r * grid.step;
-    if (row.length === 0) {
-      ctx.strokeStyle = COLORS.muted;
-      ctx.setLineDash([6, 6]);
-      ctx.beginPath();
-      ctx.roundRect(PADDING + 1, y + 1, grid.size - 2, grid.size - 2, grid.size * 0.14);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-    row.forEach((shot, i) => {
-      const x = PADDING + i * grid.step;
-      ctx.fillStyle = TONE_COLORS[shot.tone];
-      ctx.beginPath();
-      ctx.roundRect(x, y, grid.size, grid.size, grid.size * 0.14);
-      ctx.fill();
-      if (labelled) {
-        ctx.fillStyle = COLORS.onTone;
-        ctx.fillText(shot.label, x + grid.size / 2, y + grid.size / 2);
-      }
-    });
+  // One cell per hole, as on the card: the mark, and the verdicts beneath.
+  const top = 300;
+  const cellHeight = 200;
+  const gap = 20;
+  const cellWidth = Math.min(170, (inner - gap * (card.rows.length - 1)) / card.rows.length);
+  const mark = Math.min(118, cellWidth - 40);
+  card.rows.forEach((row, i) => {
+    const x = PADDING + i * (cellWidth + gap);
+    ctx.fillStyle = COLORS.card;
+    ctx.fillRect(x, top, cellWidth, cellHeight);
+    ctx.strokeStyle = COLORS.rule;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, top, cellWidth, cellHeight);
+    const cx = x + cellWidth / 2;
+    drawMark(ctx, row, cx - mark / 2, top + 16, mark);
+    drawShots(ctx, row, cx, top + cellHeight - 40);
   });
 
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
-  ctx.fillStyle = COLORS.fg;
-  ctx.font = `500 34px ${SANS}`;
-  ctx.fillText(card.detail, PADDING, 560);
-  ctx.textAlign = "right";
-  ctx.fillStyle = COLORS.muted;
-  ctx.font = `500 28px ${SANS}`;
-  ctx.fillText(SITE_NAME, WIDTH - PADDING, 560);
+  ctx.fillStyle = COLORS.navy;
+  ctx.font = `600 40px ${DISPLAY}`;
+  ctx.fillText(card.detail, PADDING, 566);
 }
 
 /** Renders the card as a PNG. */
-export function renderShareImage(card: ShareCard): Promise<Blob> {
+export async function renderShareImage(card: ShareCard): Promise<Blob> {
+  // The card's typefaces, which may not have been needed on screen yet. A face that fails
+  // to load falls back, as on screen.
+  await Promise.allSettled([
+    document.fonts.load(`700 44px ${DISPLAY}`),
+    document.fonts.load(`700 100px ${HAND}`),
+  ]);
   const canvas = document.createElement("canvas");
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
   const ctx = canvas.getContext("2d");
-  if (ctx === null) return Promise.reject(new Error("Canvas 2D is not available"));
+  if (ctx === null) throw new Error("Canvas 2D is not available");
   draw(ctx, card);
   return new Promise((resolve, reject) =>
     canvas.toBlob(
