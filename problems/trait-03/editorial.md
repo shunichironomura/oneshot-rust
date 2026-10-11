@@ -10,7 +10,7 @@ the trait's own methods may use it. `to_string` then comes from the standard bla
 The width is the number of `char`s, not `len()`: `len()` counts UTF-8 bytes, and `é` takes two
 bytes, so `len()` would make the frame around `héllo` one column too wide.
 
-`Tags` is a *newtype*. `impl fmt::Display for Vec<String>` is rejected by the orphan rule (E0117),
+`Tags` is a **newtype**. `impl fmt::Display for Vec<String>` is rejected by the orphan rule (E0117),
 because both the trait and the type come from another crate. A tuple struct around the `Vec` is a
 local type, so it may implement `Display`. Inside, `self.0` is the vector, and `join(", ")` builds
 the list, which is empty for no strings, so `[]` needs no special case.

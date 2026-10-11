@@ -1,0 +1,21 @@
+id = "forget-01"
+title = { en = "Persist without delete", ja = "消さずに残す" }
+difficulty = 3
+concepts = [
+    "cannot move out of a type that implements Drop (E0509)",
+    "functional record update `..self` moves fields too (E0509)",
+    "mem::forget skips the destructors of the remaining fields (leak)",
+    "ManuallyDrop + ptr::read of every field",
+    "a flag that Drop honors",
+    "mem::take on Rc<T: Default> allocates a new Rc",
+    "Rc strong_count and Miri leak check",
+    "drop flags",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

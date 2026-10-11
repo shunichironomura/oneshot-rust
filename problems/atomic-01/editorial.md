@@ -12,10 +12,11 @@ the **previous** value as one indivisible read-modify-write: no other thread can
 read and the write, so every call gets a different value. `reserve(n)` uses `fetch_add(n)` the same
 way and claims the whole block `start..start + n` at once.
 
-`Ordering::Relaxed` is enough. All operations on one atomic variable happen in a single total order
-(its modification order), which already makes the results unique, and an operation never comes
-before an earlier operation of the same thread in that order, so each thread sees increasing values.
-Stronger orderings matter only when the counter is also used to pass other data between threads.
+`Ordering::Relaxed` is enough. All modifications of one atomic variable happen in a single total
+order (its modification order), and each `fetch_add` reads the value written just before it in that
+order, which already makes the results unique. An operation never comes before an earlier operation
+of the same thread in that order, so each thread sees increasing values. Stronger orderings matter
+only when the counter is also used to pass other data between threads.
 
 Pitfalls:
 
@@ -52,9 +53,9 @@ pub fn reserve(n: u64) -> Range<u64> {
 }
 ```
 
-`try_update` (called `fetch_update` before Rust 1.95) retries a closure in a compare-and-swap loop
-until no other thread has changed the value in between. It helps when the new value needs a check,
-for example to refuse to overflow.
+`try_update` (stable since Rust 1.95; the older name `fetch_update` is deprecated) retries a closure
+in a compare-and-swap loop until no other thread has changed the value in between. It helps when the
+new value needs a check, for example to refuse to overflow.
 
 ```rust
 pub fn reserve(n: u64) -> Range<u64> {

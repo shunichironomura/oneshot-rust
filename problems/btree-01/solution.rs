@@ -7,7 +7,9 @@ pub struct Timeline {
 
 impl Timeline {
     pub fn new() -> Self {
-        Timeline { events: BTreeMap::new() }
+        Timeline {
+            events: BTreeMap::new(),
+        }
     }
 
     pub fn add(&mut self, t: u32, what: &str) -> Option<String> {
@@ -44,7 +46,9 @@ impl Timeline {
     }
 
     pub fn split_from(&mut self, t: u32) -> Timeline {
-        Timeline { events: self.events.split_off(&t) }
+        Timeline {
+            events: self.events.split_off(&t),
+        }
     }
 
     pub fn prune_before(&mut self, t: u32) -> usize {

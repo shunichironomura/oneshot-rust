@@ -10,7 +10,11 @@ pub fn run() {
     });
     case("hidden-1", || {
         // Rounded to the nearest level, not truncated: 0.51 -> 1, 0.255 -> 0, 254.49 -> 254.
-        check_eq(to_levels(&[0.002, 0.001, 0.998, 0.25, 0.75]), vec![1, 0, 254, 64, 191])
+        // 0.3 gives exactly 76.5 in f32, and halves round away from zero (not to even): 77.
+        check_eq(
+            to_levels(&[0.002, 0.001, 0.998, 0.25, 0.75, 0.3]),
+            vec![1, 0, 254, 64, 191, 77],
+        )
     });
     case("hidden-2", || check_eq(to_levels(&[]), Vec::new()));
     case("hidden-3", || {

@@ -7,7 +7,7 @@ The solution first drops the NaN readings with `filter(|x| !x.is_nan())`. It the
 with `f64::total_cmp`, a total order on all `f64` values, which can be passed directly to `max_by`,
 `min_by` and `sort_by`. It orders `-∞` and `∞` as expected. `total_cmp` orders NaN too (a
 positive NaN after `∞`, a negative NaN before `-∞`), so the filter is still needed: without it,
-`max_by` would return a NaN.
+a positive NaN would become the maximum and a negative NaN the minimum.
 
 `spread` reuses the maximum and the minimum. `?` returns `None` early when there is no reading.
 

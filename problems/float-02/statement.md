@@ -9,7 +9,7 @@ pub fn to_levels(samples: &[f32]) -> Vec<u8>
 ```
 
 - A sample `s` becomes the level `(s * 255.0).round()`. `round` is `f32::round`, which rounds
-  halves away from zero: `0.5` gives `127.5`, which becomes `128`.
+  halves away from zero: the sample `0.5` gives `127.5`, which becomes `128`.
 - A level below 0 becomes 0, and a level above 255 becomes 255. A NaN sample becomes 0.
 - Samples are **not** guaranteed to be in `0.0..=1.0`: they may be negative, larger than 1,
   infinite or NaN.

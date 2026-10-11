@@ -26,4 +26,4 @@ pub fn png_magic() -> &'static [u8]
 ### 例
 
 - `number_pattern()` は `\`、`d`、`+`、`\`、`.`、`\`、`d`、`+` の 8 文字を返します。
-- `windows_path().len()` は `21` で、`windows_path()` の 3 文字目はバックスラッシュです。
+- `windows_path()` は 21 文字の `C:\new\table\data.txt` を返します（`len()` は `21`）。

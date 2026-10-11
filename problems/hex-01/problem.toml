@@ -1,0 +1,19 @@
+id = "hex-01"
+title = { en = "Hex colors", ja = "カラーコード" }
+difficulty = 1
+concepts = [
+    "u8::from_str_radix accepts a leading +",
+    "strip_prefix",
+    "UTF-8 byte indices vs chars",
+    "char::to_digit / is_ascii_hexdigit",
+    "{:02x} formatting",
+    "arrays and slice patterns",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,19 @@
+id = "static-02"
+title = { en = "Per-type counters", ja = "型ごとのカウンタ" }
+difficulty = 2
+concepts = [
+    "a static inside a generic fn is one item shared by every monomorphization",
+    "TypeId as a map key, T: 'static",
+    "type_name is not a unique identifier",
+    "const constructors for statics (BTreeMap::new is const, HashMap::new is not)",
+    "Mutex in a static (statics must be Sync)",
+    "LazyLock alternative",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

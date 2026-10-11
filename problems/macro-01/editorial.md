@@ -25,16 +25,18 @@ side effects run twice, and a non-`Copy` variable is used after it has been move
 and `std::cmp::max` need `Ord`, which `f64` does not implement, and both return the *last* of equal
 maxima.
 
-`count!` must be a constant expression, so `vec![...].len()` does not work: a `Vec` cannot be built
-in a constant. `1usize + $crate::user::count!($($tail)*)` is constant. Each token tree adds one level
-of recursion, and the default recursion limit is 128, which is plenty here. Matching with `$t:tt`
-takes a whole group such as `(b c)` as one token tree.
+`count!` must be a constant expression, so `vec![...].len()` does not work: `vec!` allocates on the
+heap, which a constant cannot do. `1usize + $crate::user::count!($($tail)*)` is constant. Each token
+tree adds one level of recursion, and the default recursion limit is 128, which is plenty here.
+Matching with `$t:tt` takes a whole group such as `(b c)` as one token tree.
 
 ### Alternatives
 
-`HashMap::from` takes an array of pairs. Array elements are evaluated from left to right, and later
-duplicates overwrite earlier ones. For `hashmap! {}`, the type of the empty array is inferred from
-the context, so a single rule is enough.
+`HashMap::from` takes an array of pairs. Array elements are evaluated from left to right. For equal
+keys, the documentation only promises that one of the values is kept; the current standard library
+inserts the pairs in order, so the last one wins, but the `insert` version above does not depend on
+this. For `hashmap! {}`, the type of the empty array is inferred from the context, so a single rule
+is enough.
 
 ```rust
 macro_rules! hashmap {

@@ -20,9 +20,10 @@
 - `partition_point(|x| x < value)` は `value` 以上の最初の要素で、等しい要素があればそのいちばん左のものです。
   `self.items.get(index) == Some(value)` でそれを確かめられ、`index == len` の場合も扱えます。
 
-これらのクロージャの `x` は `&T` なので、`&value` と比べます（`*x <= value` でも構いません。比較演算子は
-オペランドを参照で受け取ります）。`|&x| x <= value` は参照から `T` をムーブしようとするので、`i32` のような
-`Copy` 型でしか使えません。`|x| x <= value` は `&T` と `T` を比べることになり、型が合いません。
+`insert` のクロージャでは `x` は `&T`、`value` は `T` なので、`x` と `&value` を比べます
+（`*x <= value` でも構いません。比較演算子はオペランドを参照で受け取るので、ムーブは起きません）。
+`|x| x <= value` は `&T` と `T` を比べることになり、コンパイルが通りません。`|&x| x <= value` は
+参照から `T` をムーブしようとするので、`i32` のような `Copy` 型でしか使えません。
 
 `sort` は安定ですが、`sort_unstable` は等しい要素の順序を入れ替えることがあります
 （長めの入力では実際に入れ替わります）。ベクタをその場で並べ替えるには、`from` の引数を `mut items` と
@@ -57,8 +58,8 @@ pub fn remove(&mut self, value: &T) -> bool {
 
 `Equal` を決して返さない比較を渡すと、`binary_search_by` は境界の位置を `Err` で返します。
 `then(Ordering::Less)` は等しい要素を小さいものとして扱うので、挿入位置が得られます
-（`use std::cmp::Ordering;` が必要です）。`then(Ordering::Greater)` にすると、等しい要素のいちばん左の
-位置になります。
+（`use std::cmp::Ordering;` が必要です）。`then(Ordering::Greater)` にすると等しい要素を大きいものとして扱うので、
+等しい要素があればそのいちばん左の位置が得られます。
 
 ```rust
 pub fn insert(&mut self, value: T) -> usize {

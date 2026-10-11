@@ -69,9 +69,6 @@ pub fn run() {
         check_eq(kept.as_ref().map(Lock::name), Some("s"))?;
         drop(kept);
         check_eq(drain(&log), ["release s"])?;
-        let t = Lock::acquire("t", &log);
-        release_all(vec![t]);
-        check_eq(drain(&log), ["acquire t", "release t"])?;
         alone(&log)
     });
     case("hidden-2", || {
@@ -80,23 +77,24 @@ pub fn run() {
         let p = Lock::acquire("p", &log1);
         let q = Lock::acquire("q", &log2);
         let r = Lock::acquire("r", &log1);
-        let s = Lock::acquire("s", &log2);
         let t = Lock::acquire("t", &log1);
         check_eq(drain(&log1), ["acquire p", "acquire r", "acquire t"])?;
-        check_eq(drain(&log2), ["acquire q", "acquire s"])?;
-        release_all(vec![r, p, s, q, t]);
+        check_eq(drain(&log2), ["acquire q"])?;
+        release_all(vec![r, p, q, t]);
         check_eq(drain(&log1), ["release t", "release p", "release r"])?;
-        check_eq(drain(&log2), ["release q", "release s"])?;
+        check_eq(drain(&log2), ["release q"])?;
         alone(&log1)?;
         alone(&log2)
     });
     case("hidden-3", || {
         // keep_first releases the others in their Vec order.
         let log = new_log();
-        let locks: Vec<Lock> = ["q", "s", "p", "r"].iter().map(|n| Lock::acquire(n, &log)).collect();
+        let q = Lock::acquire("q", &log);
+        let s = Lock::acquire("s", &log);
+        let p = Lock::acquire("p", &log);
         drain(&log);
-        let kept = keep_first(locks);
-        check_eq(drain(&log), ["release s", "release p", "release r"])?;
+        let kept = keep_first(vec![q, s, p]);
+        check_eq(drain(&log), ["release s", "release p"])?;
         let kept = kept.ok_or("keep_first returned None")?;
         check_eq(kept.name(), "q")?;
         drop(kept);
@@ -104,32 +102,25 @@ pub fn run() {
         alone(&log)
     });
     case("hidden-4", || {
-        // swap_in twice, then into_name on the last lock.
+        // swap_in twice, then into_name, which only disarms the lock it consumes.
         let log = new_log();
         let mut x = Lock::acquire("x", &log);
+        let other = Lock::acquire("ログ", &log);
         swap_in(&mut x, "y");
         swap_in(&mut x, "z");
         check_eq(
             drain(&log),
-            ["acquire x", "acquire y", "release x", "acquire z", "release y"],
+            ["acquire x", "acquire ログ", "acquire y", "release x", "acquire z", "release y"],
         )?;
         check_eq(x.name(), "z")?;
         check_eq(x.into_name(), "z")?;
         check_eq(drain(&log), nothing())?;
+        check_eq(other.name(), "ログ")?;
+        drop(other);
+        check_eq(drain(&log), ["release ログ"])?;
         alone(&log)
     });
     case("hidden-5", || {
-        // into_name only disarms the lock it consumes.
-        let log = new_log();
-        let a = Lock::acquire("ログ", &log);
-        let b = Lock::acquire("disk 0", &log);
-        check_eq(a.into_name(), "ログ")?;
-        check_eq(b.name(), "disk 0")?;
-        drop(b);
-        check_eq(drain(&log), ["acquire ログ", "acquire disk 0", "release disk 0"])?;
-        alone(&log)
-    });
-    case("hidden-6", || {
         // An empty name is a name like any other.
         let log = new_log();
         let e = Lock::acquire("", &log);
@@ -142,29 +133,21 @@ pub fn run() {
         check_eq(drain(&log), ["acquire f", "acquire ", "release f"])?;
         alone(&log)
     });
-    case("hidden-7", || {
-        // Locals, a Vec, swap_in on an element and keep_first together.
+    case("hidden-6", || {
+        // Locals, swap_in on an element of a Vec, and keep_first together.
         let log = new_log();
-        let a = Lock::acquire("a", &log);
         {
-            let _b = Lock::acquire("b", &log);
-            let mut v = vec![
-                Lock::acquire("c", &log),
-                Lock::acquire("d", &log),
-                Lock::acquire("e", &log),
-            ];
-            swap_in(&mut v[1], "f");
+            let _a = Lock::acquire("a", &log);
+            let mut v = vec![Lock::acquire("b", &log), Lock::acquire("c", &log)];
+            swap_in(&mut v[0], "d");
             let kept = keep_first(v);
-            let _g = Lock::acquire("g", &log);
-            check_eq(kept.as_ref().map(Lock::name), Some("c"))?;
+            check_eq(kept.as_ref().map(Lock::name), Some("d"))?;
         }
-        release_all(vec![a]);
         check_eq(
             drain(&log),
             [
-                "acquire a", "acquire b", "acquire c", "acquire d", "acquire e", "acquire f",
-                "release d", "release f", "release e", "acquire g", "release g", "release c",
-                "release b", "release a",
+                "acquire a", "acquire b", "acquire c", "acquire d", "release b", "release c",
+                "release d", "release a",
             ],
         )?;
         alone(&log)

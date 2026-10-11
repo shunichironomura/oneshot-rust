@@ -1,0 +1,19 @@
+id = "dyn-02"
+title = { en = "Rules that borrow", ja = "借りるルール" }
+difficulty = 3
+concepts = [
+    "default trait-object lifetime ('static in Box<dyn Trait>)",
+    "dyn Trait + 'a in a struct field",
+    "lifetime parameter on a struct",
+    "impl Trait + 'a parameters",
+    "higher-ranked Fn(&str) vs Fn(&'a str)",
+    "decoupling an output lifetime from &self",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

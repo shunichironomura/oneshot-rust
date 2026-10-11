@@ -9,7 +9,7 @@ pub fn total(input: &str) -> Result<i64, Box<dyn Error>>
 
 - Go through the lines of `input` (as `str::lines` splits them) in order. Trim the whitespace at
   both ends of each line.
-- Skip empty lines and lines that start with `#` (after trimming).
+- Skip a line if, after trimming, it is empty or starts with `#`.
 - Every other line must be a single integer: parse it with `parse::<i64>()`. Return `Ok` with the
   sum of these integers.
 - Stop at the first problem and return an error for it:

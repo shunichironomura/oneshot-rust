@@ -1,0 +1,12 @@
+id = "never-01"
+title = { en = "Validate, don't keep", ja = "確かめるだけ" }
+difficulty = 2
+concepts = ["never type fallback", "type inference through ?", "turbofish", "FromStr", "discarded results"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

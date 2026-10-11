@@ -55,6 +55,7 @@ pub fn run() {
         check_eq(tl.next_at_or_after(MAX), None)?;
         tl.add(MAX, "end");
         tl.add(0, "start");
+        check_eq(tl.last_before(0), None)?;
         check_eq(tl.last_before(MAX), Some((20, "sleep")))?;
         check_eq(tl.last_before(1), Some((0, "start")))?;
         check_eq(tl.next_at_or_after(21), Some((MAX, "end")))?;
@@ -84,12 +85,14 @@ pub fn run() {
         let none = all.split_from(21);
         check_eq((all.len(), none.len()), (3, 0))?;
         all.add(MAX, "end");
+        all.add(0, "start");
         let mut late = all.split_from(20);
-        check_eq(all.between(0, 100), [(5, "wake"), (10, "work")])?;
+        check_eq(all.between(0, 100), [(0, "start"), (5, "wake"), (10, "work")])?;
         check_eq(late.len(), 2)?;
         check_eq(late.prune_before(MAX), 1)?;
         check_eq((late.len(), late.next_at_or_after(0)), (1, Some((MAX, "end"))))?;
         check_eq(all.prune_before(0), 0)?;
+        check_eq(all.prune_before(1), 1)?;
         check_eq(all.prune_before(5), 0)?;
         check_eq(all.prune_before(6), 1)?;
         check_eq((all.len(), all.next_at_or_after(0)), (1, Some((10, "work"))))

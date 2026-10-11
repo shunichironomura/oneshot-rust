@@ -24,9 +24,9 @@ pub fn tag_counts(words: &[&str]) -> HashMap<Tag, usize>
 - Two tags are equal when their spellings are equal **ignoring ASCII case**: `A`–`Z` match `a`–`z`.
   Every other character, non-ASCII letters included, must match exactly. So `Café` equals `CAFé`
   but not `CAFÉ`, `É` and `é` are different tags, and so are `Straße` and `STRASSE`.
-- `Tag` must work as a key of `HashSet` and `HashMap`. Besides calling the two functions, the tests
-  compare tags with `==` and `!=`, put them in sets and maps, look them up with a differently
-  cased spelling, and hash them with `DefaultHasher`.
+- `Tag` must work correctly as a key of `HashSet` and `HashMap`. Besides calling the two functions,
+  the tests compare tags with `==` and `!=`, put them in sets and maps, look them up with a
+  differently cased spelling, and hash them with `DefaultHasher`.
 - `unique_tags` returns one tag for each distinct tag in `words`, in the order of their first
   appearance. Each tag is spelled as it first appeared.
 - `tag_counts` counts how many times each tag appears in `words`. Each key is spelled as the tag

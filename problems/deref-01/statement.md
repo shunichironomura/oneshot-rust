@@ -34,8 +34,8 @@ impl<T> Deref for SortedVec<T> {
   returns the index where `value` now is.
 - `remove` removes one element equal to `value`, the leftmost one, and returns `true`. If no
   element is equal to `value`, it changes nothing and returns `false`.
-- `SortedVec::from(v)` holds the elements of `v` in ascending order. Equal elements keep the order
-  they had in `v`.
+- `SortedVec::from(v)` returns a `SortedVec` that holds the elements of `v`. Equal elements keep the
+  order they had in `v`.
 - `into_vec` returns the elements as a `Vec<T>`, and `deref` as a slice, both in ascending order.
 - `T` can be any type that implements `Ord`. The harness uses `i32`, `String` and a type of its
   own, `Key(u8, char)`, which is ordered by its number only: `Key(2, 'a')` and `Key(2, 'b')` are

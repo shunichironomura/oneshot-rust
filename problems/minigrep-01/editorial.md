@@ -1,5 +1,5 @@
-`args` can be any iterator, so it has no `len()` and cannot be indexed: the only way in is `next()`,
-one item at a time. `next` takes `&mut self`, so the parameter has to be declared `mut args`. That
+`args` can be any iterator, so it has no `len()` and cannot be indexed: you take the items out one
+at a time with `next()`. `next` takes `&mut self`, so the parameter has to be declared `mut args`. That
 `mut` belongs to the local binding, not to the signature, and callers do not see it. Each `next()`
 returns an `Option<String>` whose `String` is moved out of the iterator, so `query` and `file_path`
 are taken over without a `clone`. `ok_or(...)?` turns a `None` into the error and returns early.
@@ -13,12 +13,12 @@ version ignores extra arguments, so remember to check that no fifth item follows
 `str::lines` already handles `\r\n` and a final line ending; `split('\n')` would keep the `\r` and
 produce an extra empty line after a final line ending.
 
-For the case-insensitive search, lowercase `query` once, before the loop. Use `to_lowercase`, not
-`to_ascii_lowercase`, which leaves `É` as it is. `to_lowercase` returns a new `String`, and
-`contains(&query)` takes a reference to it: `&String` can be used as a pattern, `String` cannot.
-Push the original `line`, not `line.to_lowercase()`. The lowercased line is a temporary `String`, not
-a `&'a str`, and a reference to it would not outlive the loop. The `'a` in the signature ties the
-results to `contents` only, which is why they stay valid after `query` is dropped.
+For the case-insensitive search, lowercase `query` once, before going through the lines. Use
+`to_lowercase`, not `to_ascii_lowercase`, which leaves `É` as it is. `to_lowercase` returns a new
+`String`, and `contains(&query)` takes a reference to it: `&String` can be used as a pattern, `String`
+cannot. Return the original `line`, not `line.to_lowercase()`. The lowercased line is a temporary
+`String`, not a `&'a str`, and a reference to it would not live long enough. The `'a` in the
+signature ties the results to `contents` only, which is why they stay valid after `query` is dropped.
 
 ### Alternatives
 

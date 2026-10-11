@@ -1,6 +1,6 @@
 アトミックなフラグ `locked` そのものが競合することはありませんが、`UnsafeCell` の中の値は普通の
 メモリです。スレッド A の後にスレッド B がロックを取るとき、A が値に書き込んだことが B のアクセスより
-**前に起こる（happens-before）**関係になければ、2 つのアクセスはデータ競合になり、UB です。
+**前に起こる**（happens-before）関係になければ、2 つのアクセスはデータ競合になり、UB です。
 `Ordering::Relaxed` は `locked` への各操作をアトミックにするだけで、ほかのメモリアクセスの順序は
 何も保証しません。B は、A がロックを外す前に書いた内容を見ないまま `locked == false` を見ることが
 あります。Miri は happens-before 関係を追跡していて、`deref_mut` が `&mut T` を作るところで競合を
@@ -24,9 +24,10 @@ read-modify-write にする必要があります。`compare_exchange(false, true
 
 詰まりやすい点です。
 
-- Acquire は読む操作に、Release は書く操作に使います。`store(true, Acquire)` や
-  `load(Release)` は実行時にパニックします（"there is no such thing as an acquire store"）。
-  `compare_exchange` の失敗時の順序に `Release` や `AcqRel` を指定した場合も同じです。
+- Acquire は読む操作に、Release は書く操作に使います。`store(true, Ordering::Acquire)`、
+  `load(Ordering::Release)`、`compare_exchange` の失敗時の順序に `Release` や `AcqRel` を
+  指定することは、コンパイラが拒否します（`invalid_atomic_ordering` リント）。順序が定数で
+  ない場合は、実行時にパニックします。
 - `compare_exchange_weak` は、値が `false` でも失敗することがあります（見せかけの失敗）。
   `lock` の再試行ループの中なら問題ありませんが、これで作った `try_lock` は空いているロックに
   対して `None` を返すことがあります。Miri はこの見せかけの失敗を頻繁に起こします。

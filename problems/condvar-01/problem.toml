@@ -1,0 +1,20 @@
+id = "condvar-01"
+title = { en = "Bounded blocking queue", ja = "上限つきの待ち行列" }
+difficulty = 3
+concepts = [
+    "Mutex + Condvar",
+    "Condvar::wait_while and spurious or stolen wakeups",
+    "notify_one vs notify_all (close wakes every waiter)",
+    "one Condvar per condition, or notify_all",
+    "close / shutdown semantics, Result<(), T> gives the item back",
+    "VecDeque as a FIFO",
+    "Sync for T: Send",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

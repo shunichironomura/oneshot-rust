@@ -2,11 +2,6 @@ pub fn char_len<S: AsRef<str>>(s: S) -> usize {
     s.as_ref().chars().count()
 }
 
-pub fn square_in_place<T: AsMut<u32>>(n: &mut T) {
-    let v = n.as_mut();
-    *v = *v * *v;
-}
-
 pub fn join_upper<S: AsRef<str>>(words: &[S], sep: &str) -> String {
     let mut out = String::new();
     for (i, w) in words.iter().enumerate() {
@@ -26,6 +21,11 @@ where
         .into_iter()
         .map(|g| g.into_iter().map(|s| s.as_ref().chars().count()).sum::<usize>())
         .sum()
+}
+
+pub fn square_in_place<T: AsMut<u32>>(n: &mut T) {
+    let v = n.as_mut();
+    *v = *v * *v;
 }
 
 pub fn widen<I>(values: I) -> Vec<i64>

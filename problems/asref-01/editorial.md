@@ -22,7 +22,8 @@ uses: `as_ref()` comes from `AsRef<str>`, `as_mut()` from `AsMut<u32>`, `into_it
 - `square_in_place` takes `&mut T` with `T: AsMut<u32>`. `Box<u32>` implements `AsMut<u32>`, and so
   does `Score`.
 - `widen` takes any `IntoIterator` whose items are `Into<i64>`. Every `u8`, `u16`, `i32` and `u32`
-  fits in an `i64`. (`u64` does not implement `Into<i64>`, because large values would not fit.)
+  fits in an `i64`, and `i64` converts to itself through `impl<T> From<T> for T`. (`u64` does not
+  implement `Into<i64>`, because large values would not fit.)
 
 The bound is also what makes `s.as_ref()` unambiguous. In the template, `s: &str` gives `as_ref`
 several candidates (`str` implements `AsRef<str>`, `AsRef<[u8]>`, `AsRef<OsStr>` and

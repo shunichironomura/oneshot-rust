@@ -1,5 +1,5 @@
 id = "minigrep-01"
-title = { en = "minigrep", ja = "minigrep を作る" }
+title = { en = "Build minigrep", ja = "minigrep を作る" }
 difficulty = 1
 concepts = ["impl Iterator parameters", "Iterator::next", "moving out of an iterator", "&'static str errors", "lifetimes", "str::lines", "to_lowercase"]
 kind = "implement"

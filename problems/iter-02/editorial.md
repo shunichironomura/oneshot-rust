@@ -2,15 +2,16 @@ The six closures look alike, but they do not all receive the same type. Count th
 
 - `v.iter()` yields `&i32`; `words.iter()` yields `&&str` or `&String`.
 - `find` and `filter` still need the item after asking the closure (to return it or to pass it on),
-  so the closure only gets a **reference to the item**: `&&i32`.
+  so the closure only gets a **reference to the item**: `&&i32` for `v.iter()`.
 - `position`, `any` and `map` are done with the item after the call, so the closure gets the item
-  itself: `&i32`.
+  itself: `&i32` for `v.iter()`, `&String` for `words.iter()`.
 
 What each body does with its argument then decides whether it compiles:
 
-- Operators do not look through references. `x < 0` compares a `&&i32` with an integer (E0308), and
-  `x % 2` is not defined for `&&i32` (E0369; it is defined for `i32` and `&i32`, but not for two
-  layers). Writing `|&&x|` or `**x` gets down to the `i32`.
+- Operators do not dereference automatically: they only work for the types they are implemented
+  for. `x < 0` compares a `&&i32` with an integer (E0308), and `x % 2` is not defined for `&&i32`
+  (E0369; it is defined for `i32` and `&i32`, but not for two layers). Writing `|&&x|` or `**x`
+  gets down to the `i32`.
 - `find` returns the item it found, so the result is an `Option<&i32>`, and `filter` passes on
   `&i32` items, which cannot be collected into a `Vec<i32>` (E0277). `copied()` turns `&i32` items
   into `i32` (`i32` is `Copy`). Calling it right after `iter()` fixes both problems at once: the

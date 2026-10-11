@@ -18,8 +18,8 @@ pub fn run() {
         check_eq(total_quantity("", "cups"), 0)
     });
     case("hidden-2", || {
-        // COUNT is whatever parse::<u32> accepts, except 0.
-        let text = "+7 a\n-7 b\n007 c\n00 d\n4294967296 e\n4294967295 f";
+        // COUNT is whatever parse::<u32> accepts, except 0. 2^32 + 1 must not wrap around to 1.
+        let text = "+7 a\n-7 b\n007 c\n00 d\n4294967297 e\n4294967295 f";
         check_eq(parse_orders(text), vec![(7, "a"), (7, "c"), (4294967295, "f")])
     });
     case("hidden-3", || {
@@ -32,13 +32,13 @@ pub fn run() {
         check_eq(parse_orders("2 a b\n5\na 5\n1 ok"), vec![(1, "ok")])
     });
     case("hidden-5", || {
-        // A '#' anywhere starts a comment. The items are slices of the text itself.
-        let text = String::from("3 cups # x\n4 pens#red\n5 #a\n1 a#b c");
+        // The first '#', anywhere in the line, starts a comment. The items are slices of the text.
+        let text = String::from("3 cups # x # y\n4 pens#red\n5 #a\n1 a#b c");
         let orders = parse_orders(&text);
         check_eq(&orders, &vec![(3, "cups"), (4, "pens"), (1, "a")])?;
         let offsets: Vec<usize> =
             orders.iter().map(|(_, item)| item.as_ptr().addr().wrapping_sub(text.as_ptr().addr())).collect();
-        check(offsets == [2, 13, 29], "items must be slices of text")
+        check(offsets == [2, 17, 33], "items must be slices of text")
     });
     case("hidden-6", || {
         // total_quantity matches the item exactly and ignores invalid lines.

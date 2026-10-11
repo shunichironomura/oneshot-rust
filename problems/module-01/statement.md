@@ -23,14 +23,13 @@ crate::user::checkout(cart: &Cart, percent: u32) -> u32
 - `Cart::new` creates an empty cart and `add` puts an item in it. `total` is the sum of the prices
   of all items in the cart (`0` for an empty cart), and `len` is the number of items.
 - `sample_cart` returns a new cart holding a pen for `120` and a book for `1500`.
-- `checkout(cart, percent)` first takes the discount `t * percent / 100` off the cart's total `t`,
-  then adds the tax `d * TAX_RATE / 100` to the discounted price `d`. `percent` is between `0` and
-  `100`.
-- Keep the fields of `Item` and `Cart` private, and do not change what the code computes. You may
-  change visibility, paths and `use` declarations, and rewrite how `sample_cart` and `checkout` do
-  their work.
+- `checkout(cart, percent)` returns the price to pay. It first takes the discount
+  `t * percent / 100` off the cart's total `t`, then adds the tax `d * TAX_RATE / 100` to the
+  discounted price `d`. `percent` is between `0` and `100`.
+- Keep the fields of `Item` and `Cart` private, and do not change what the code computes. Anything
+  else may change, such as visibility, paths, `use` declarations and how a function does its work.
 
 ### Example
 
-`sample_cart().total()` is `1620`, and `checkout(&sample_cart(), 10)` is `1603`: the discount is
-`162`, which leaves `1458`, and the tax on that is `145`.
+`sample_cart().len()` is `2` and `sample_cart().total()` is `1620`. `checkout(&sample_cart(), 10)`
+is `1603`: the discount is `162`, which leaves `1458`, and the tax on that is `145`.

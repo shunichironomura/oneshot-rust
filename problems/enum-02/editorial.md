@@ -22,13 +22,17 @@ one piece, which is why `""` gives `[Empty]`. `Cell::Text` owns a `String`, so t
 needs `to_string()`.
 
 In `numeric_sum`, convert each integer to `f64` before adding it. Summing the `Int`s as `i64` first
-overflows (a panic in debug builds) for values near `i64::MAX`.
+overflows (a panic in debug builds) for values near `i64::MAX`. A wider `i128` sum converted once at
+the end does not overflow, but it rounds differently: for `Int(9_007_199_254_740_993)` (2^53 + 1) and
+`Int(1)`, adding the converted values gives `9007199254740992.0`, while the exact sum converts to
+`9007199254740994.0`.
 
 ### Alternatives
 
 Matching on `*cell` instead of `cell` binds the fields by value. This works because `i64` and `f64`
 are `Copy` and the `_` arm binds nothing. An arm like `Cell::Text(s)` would try to move the `String`
-out of the borrowed row and would not compile.
+out of the borrowed row and would not compile. Note that `sum` of floats starts from `-0.0`, so a row
+without numbers gives `-0.0`; it compares equal to `0.0` (`-0.0 == 0.0` is `true`).
 
 ```rust
 pub fn numeric_sum(row: &[Cell]) -> f64 {

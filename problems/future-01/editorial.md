@@ -4,16 +4,17 @@ assigning one goes through `DerefMut`, which `Pin<&mut T>` implements only when 
 mutably, though, so the parameter must be declared `mut self`; without it, `self.remaining -= 1`
 fails with "cannot borrow `self` as mutable". (`self.get_mut()` is another way, see below.)
 
-A future that returns `Pending` promises that it will be woken when it is worth polling again; a real
-executor sleeps until then. `Countdown` has nothing to wait for, so it wakes the current task right
-away. Always use the waker of the `Context` you were given: the task may be polled with a different
-waker the next time.
+A future that returns `Pending` promises that its task will be woken when it is worth polling again;
+a real executor sleeps until then. `Countdown` has nothing to wait for, so it wakes the current task
+right away. Always use the waker of the `Context` you were given: the task may be polled with a
+different waker the next time.
 
 `block_on` first calls `into_future()`, which is also what `.await` does: that is why
 `Delay::new(1).await` works, and since every `Future` is an `IntoFuture`, `block_on` accepts both.
-Polling needs a `Pin<&mut F>`, and `Pin::new(&mut fut)` requires `F: Unpin`. An `async` block is not
-`Unpin` (it may hold references to its own locals across an `.await`), so for a generic `F` this is
-a compile error ("`F` cannot be unpinned"). `std::pin::pin!` pins the value in place on the stack
+Polling needs a `Pin<&mut F>`, and `Pin::new(&mut fut)` requires `F: Unpin`, so for a generic `F`
+it is a compile error ("`F` cannot be unpinned"). Adding an `F: Unpin` bound is no way out: an
+`async` block is not `Unpin` (it may hold references to its own locals across an `.await`), so the
+tests that pass one would not compile. `std::pin::pin!` pins the value in place on the stack
 instead.
 
 `Future::poll` takes the `Pin<&mut F>` by value, so `fut.poll(&mut cx)` inside a loop moves `fut` in
@@ -41,7 +42,7 @@ an `Arc` of a type that implements `Wake`.
 
 ```rust
 use std::sync::Arc;
-use std::task::{Wake, Waker};
+use std::task::{Context, Poll, Wake, Waker};
 
 struct NoopWaker;
 

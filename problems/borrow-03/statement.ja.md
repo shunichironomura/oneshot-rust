@@ -15,6 +15,8 @@
 `balances[from]` を `balances[to]` に足し、`balances[from]` を 0 にします。
 どちらの添字も `balances.len()` 未満です。`from == to` なら、スライスは変わりません。
 
+`Bank` でもスライスでも、残高の合計は `u64` に収まるので、足し算がオーバーフローすることはありません。
+
 ```rust
 #[derive(Debug, PartialEq)]
 pub enum TransferError {

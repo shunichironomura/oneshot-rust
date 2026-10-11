@@ -19,7 +19,8 @@ job.
   `width` is read as a format trait. Center alignment already puts the odd space on the right.
 
 Starting with `"|"` and appending `cell|` for each cell also gives the right row for an empty slice,
-whereas `format!("|{}|", parts.join("|"))` would give `||` there.
+whereas collecting the centered cells into `parts` and writing `format!("|{}|", parts.join("|"))`
+would give `||` there.
 
 ### Alternatives
 

@@ -1,0 +1,72 @@
+標準ライブラリには `Future` はありますが、`Iterator` の非同期版にあたる `Stream` はありません。
+小さなストリームのライブラリを一から書いてください。下の骨組みはエディタに入っています。
+`Stream` トレイトと `next` のシグネチャは与えられています。`Iter` と `Zip` にはすでにフィールドがありますが、
+変更して構いません。
+
+```rust
+pub trait Stream {
+    type Item;
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>>;
+}
+
+pub trait StreamExt: Stream {
+    fn next(&mut self) -> impl Future<Output = Option<Self::Item>> + '_
+    where
+        Self: Unpin,
+    { /* 実装する */ }
+}
+
+impl<S: Stream + ?Sized> StreamExt for S {}
+
+pub struct Iter<I> { /* フィールド */ }
+pub fn iter<I: IntoIterator>(items: I) -> Iter<I::IntoIter>;
+impl<I: Iterator> Stream for Iter<I> { type Item = I::Item; /* poll_next */ }
+
+pub struct Zip<A: Stream, B: Stream> { /* フィールド */ }
+pub fn zip<A: Stream + Unpin, B: Stream + Unpin>(a: A, b: B) -> Zip<A, B>;
+impl<A: Stream + Unpin, B: Stream + Unpin> Stream for Zip<A, B> {
+    type Item = (A::Item, B::Item);
+    /* poll_next */
+}
+
+pub async fn collect<S: Stream + Unpin>(s: S) -> Vec<S::Item>;
+```
+
+- `poll_next` は、次の要素があれば `Ready(Some(item))`、ストリームが終わっていれば `Ready(None)`、
+  まだ要素がなければ `Pending` を返します。`Pending` を返すストリームは、（`cx` の waker を通して）
+  タスクが後で起こされるようにします。`Ready(None)` を返したストリームが再び poll されることはありません。
+- `s.next()` は Future を返します。この Future は `s` の次の要素に解決し、`s` が終わっていれば `None` に
+  解決します。poll されるたびに、同じ `cx` で `s` を 1 回 poll し、`s` が `Pending` を返したら
+  `Pending` を返します。`next` は `Unpin` なストリームならどれにでも呼べます。
+  `dyn Stream<Item = u32> + Unpin` のようなトレイトオブジェクトにも呼べます。
+- `iter(items)` は `items` の要素を順に返すストリームを返します。`Pending` になることはありません。
+  poll するたびに次の要素を返し、要素がなくなったら `Ready(None)` を返します。
+- `zip(a, b)` は組のストリームを返します。`a` の 1 番目の要素と `b` の 1 番目の要素、
+  次に 2 番目どうし、という順に組にします。poll されるたびに、次のように動きます。
+  1. `a` の要素を持っていなければ、`a` を 1 回 poll します。`a` が `Pending` を返したら、`b` を poll せずに
+     `Pending` を返します。`a` が終わっていたら `Ready(None)` を返します。それ以外の場合は、
+     その `a` の要素を持ちます。
+  2. `b` を 1 回 poll します。`b` が `Pending` を返したら `Pending` を返し、`a` の要素は次の poll のために
+     持ったままにします。`b` が終わっていたら `Ready(None)` を返します。それ以外の場合は 2 つの要素の組を返し、
+     要素を持っていない状態に戻ります。
+
+  `zip` は受け取った `cx` をそのまま `a` と `b` に渡し、自分では何も起こしません。
+- `collect(s)` は `s` のすべての要素を順に並べた `Vec` に解決します。その Future は poll されるたびに、
+  `s` が `Pending` を返す（このとき Future も `Pending` を返す）か `Ready(None)` を返す
+  （このとき Future は完了する）まで、`s` を poll します。
+- トレイトの定義、シグネチャ、与えられた `impl` ブロックの境界は変えないでください。`iter` はどんな
+  イテレータも、`zip` は `Unpin` なストリームならどの 2 つも、要素の型に関係なく受け付けなければなりません。
+  型、`impl` ブロック、関数を自分で追加するのは構いません。
+
+テストハーネスは独自の実行器で Future を動かします。この実行器は、Future が起こされてからでないと
+再び poll しません。ハーネスは独自のストリームも使い、各ストリームが poll された回数を数えます。
+たとえば `slow(items)` は、各要素の前と終わりの前に（タスクを起こしてから）`Pending` を返します。
+つまり `Pending`、1 番目の要素、`Pending`、2 番目の要素、……、`Pending`、`Ready(None)` の順です。
+
+### 例
+
+- `collect(iter(vec![1, 2, 3]))` は最初の poll で `[1, 2, 3]` に解決し、`iter` のストリームは 4 回 poll されます。
+- `let mut s = iter(["x"]);` の後、`s.next().await` は `Some("x")`、その次は `None` です。
+- `zip(iter(1..=3), slow(vec!['a', 'b']))` を終わるまで poll すると、`Pending`、`Ready(Some((1, 'a')))`、
+  `Pending`、`Ready(Some((2, 'b')))`、`Pending`、`Ready(None)` の順に返ります。`iter` のストリームは 3 回
+  （要素 `3` は組になりません）、`slow` は 6 回 poll されます。

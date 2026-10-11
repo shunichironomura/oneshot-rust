@@ -57,10 +57,12 @@ pub fn run() {
         check_eq((a.line(1), b.line(1)), (Some("y"), Some("y")))
     });
     case("hidden-1", || {
-        // Every kind of ASCII whitespace; trimming alone borrows a slice of the input.
+        // Every kind of ASCII whitespace, runs of plain spaces; trimming alone borrows a slice
+        // of the input.
         borrowed(normalize_ws(""), "")?;
         borrowed(normalize_ws(" \t\r\n\x0C"), "")?;
         owned(normalize_ws("a\tb"), "a b")?;
+        owned(normalize_ws(" a  b   c "), "a b c")?;
         owned(normalize_ws("\tx \r\n y\x0Cz  "), "x y z")?;
         let s = String::from("\n  one two three \t");
         match normalize_ws(&s) {

@@ -1,0 +1,20 @@
+id = "bytes-01"
+title = { en = "Packet decoder", ja = "パケットの解析" }
+difficulty = 2
+concepts = [
+    "TryFrom<&'a [u8]> with lifetimes",
+    "u16::from_le_bytes / u32::from_be_bytes / to_le_bytes / to_be_bytes",
+    "slice to array: split_first_chunk, array patterns, try_into",
+    "split_at_checked",
+    "TryFrom<u8> for enum",
+    "u32 vs usize lengths, overflow",
+    "check order of errors",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

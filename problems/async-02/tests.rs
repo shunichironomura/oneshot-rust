@@ -93,12 +93,12 @@ pub fn run() {
         // A log that the closure appends to, read after `retry` returns.
         let mut log: Vec<String> = Vec::new();
         let result = block_on(retry(4, async || {
-            log.push(format!("attempt {}", log.len() + 1));
+            log.push(String::from("try"));
             yield_now().await;
             if log.len() == 4 { Ok(log.len()) } else { Err(log.len()) }
         }));
         check_eq(result, Ok(4))?;
-        check_eq(log, vec!["attempt 1", "attempt 2", "attempt 3", "attempt 4"])
+        check_eq(log, ["try", "try", "try", "try"])
     });
     case("hidden-3", || {
         // An `async move` closure that owns its state: no more calls after the first `Ok`.
@@ -129,11 +129,12 @@ pub fn run() {
         check_eq(scores.len(), 2)
     });
     case("hidden-5", || {
-        // An async function whose future borrows its argument.
+        // An `async fn` instead of a closure.
         check_eq(block_on(fetch_any(&["a", "ok", "b"], "index.html", probe)), Ok(13))?;
         check_eq(block_on(fetch_any(&["x", "y"], "p", probe)), Err("not found"))
     });
     case("hidden-6", || {
+        // Stops at the first mirror that succeeds; a single mirror is tried once.
         let mut tried = Vec::new();
         let first = block_on(fetch_any(&["up", "down"], "v1", async |url: &str| {
             tried.push(url.to_string());

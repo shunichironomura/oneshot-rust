@@ -2,18 +2,20 @@ The judge builds your code with overflow checks, as debug builds do: an arithmet
 result does not fit in its type panics ("attempt to add with overflow") instead of silently
 wrapping around as in a release build. The obvious formulas therefore fail at the edges:
 `xs.iter().sum::<u8>()`, `(level + amount).min(100)`, `(items + per_page - 1) / per_page`,
-`(a + b) / 2` and `(a - b).abs()` all panic for some allowed input. The integer types have a method
-for each of these situations, which makes every function a one-liner:
+`(a + b) / 2` and `(a - b).abs() as u64` all panic for some allowed input. The integer types have
+a method for each of these situations, which makes every function a one-liner:
 
 - `wrapping_add` wraps around (modulo 256 for `u8`). `checked_add` returns `None` on overflow, and
   `try_fold` stops at the first `None`. `saturating_add` stops at `u8::MAX`, and `.min(100)` then
   applies the real cap.
-- `/` and `%` round toward zero: `-1 / 10` is `0`, and `-1 % 5` is `-1`, which `as usize` turns
-  into a huge number. `div_euclid` and `rem_euclid` choose the remainder that is never negative; for
-  a positive divisor, that means division rounded down and a remainder in `0..len`.
+- `/` rounds toward zero, and `%` returns the matching remainder, which has the sign of the
+  dividend: `-1 / 10` is `0`, and `-1 % 5` is `-1`, which `as usize` turns into a huge number.
+  `div_euclid` and `rem_euclid` choose the remainder that is never negative; for a positive
+  divisor, that means division rounded down and a remainder in `0..len`.
 - `div_ceil` divides rounding up (it is stable only for unsigned integers), `midpoint` averages two
-  numbers without overflow, and `abs_diff` returns the distance in the unsigned type. That is
-  needed because `i64::MAX - i64::MIN` does not fit in an `i64`.
+  numbers without overflow (rounding down for unsigned integers), and `abs_diff` returns the
+  distance in the unsigned type. That is needed because `i64::MAX - i64::MIN` does not fit in an
+  `i64`.
 
 Two near misses still panic. In `(a - b).unsigned_abs()`, the subtraction overflows before
 `unsigned_abs` is reached. `xs.iter().map(|&x| Some(x)).sum::<Option<u8>>()` returns `None` only

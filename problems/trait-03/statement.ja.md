@@ -30,7 +30,8 @@ impl Outline for Tags {}
 - `outline` はデフォルトメソッドです。`Point` と `Tags` の `impl Outline` ブロックは空のままにします。
   テストハーネスも `Display` を実装した独自の型を持っていて、その型にも空の
   `impl Outline for ... {}` を書きます。
-- `Point` と `Tags` のフィールド、`outline` のシグネチャは変えないでください。
+- `Point` と `Tags` のフィールド、`outline` の引数（`&self`）と戻り値の型（`String`）は
+  変えないでください。それ以外は必要に応じて変更してかまいません。
 
 ### 例
 

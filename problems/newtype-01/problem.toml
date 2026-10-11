@@ -1,0 +1,21 @@
+id = "newtype-01"
+title = { en = "Username newtype", ja = "ユーザー名の newtype" }
+difficulty = 2
+concepts = [
+  "newtype pattern",
+  "Deref<Target = str> and deref coercion",
+  "Borrow<str> consistency with Hash/Eq/Ord",
+  "derive on a single-field struct delegates to the field",
+  "PartialEq<&str> takes &&str",
+  "AsRef<str> for generic parameters",
+  "Display",
+  "chars vs bytes",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

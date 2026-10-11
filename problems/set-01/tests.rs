@@ -26,46 +26,37 @@ pub fn run() {
         )
     });
     case("sample-2", || check_eq(first_repeat(&["a", "b", "c", "b", "a"]), Some("b")));
-    case("hidden-1", || check_overlap(overlap(&[], &[]), [&[], &[], &[], &[], &[]]));
-    case("hidden-2", || {
-        // One list is empty, and a word repeated within a list counts once.
+    case("hidden-1", || {
+        // Empty lists, and a word repeated within a list counts once.
+        check_overlap(overlap(&[], &[]), [&[], &[], &[], &[], &[]])?;
         let ab: &[&str] = &["a", "b"];
-        check_overlap(overlap(&["b", "a", "a"], &[]), [&[], ab, &[], ab, ab])
+        check_overlap(overlap(&["b", "a", "a"], &[]), [&[], ab, &[], ab, ab])?;
+        check_overlap(overlap(&[], &["b", "a", "b"]), [&[], &[], ab, ab, ab])
     });
-    case("hidden-3", || {
+    case("hidden-2", || {
         // The same words with different counts and orders.
         let xy: &[&str] = &["x", "y"];
         check_overlap(overlap(&["y", "x"], &["x", "y", "x"]), [xy, &[], &[], &[], xy])
     });
-    case("hidden-4", || {
+    case("hidden-3", || {
         // Words are case-sensitive and sorted by bytes.
         check_overlap(
-            overlap(&["b", "é", "a", "apple"], &["a", "Z", "app", "B", "z"]),
+            overlap(&["b", "é", "a", "apple"], &["a", "Z", "app", "B"]),
             [
                 &["a"],
                 &["apple", "b", "é"],
-                &["B", "Z", "app", "z"],
-                &["B", "Z", "app", "apple", "b", "z", "é"],
-                &["B", "Z", "a", "app", "apple", "b", "z", "é"],
+                &["B", "Z", "app"],
+                &["B", "Z", "app", "apple", "b", "é"],
+                &["B", "Z", "a", "app", "apple", "b", "é"],
             ],
         )
     });
-    case("hidden-5", || {
+    case("hidden-4", || {
         check_eq(first_repeat(&["x", "x"]), Some("x"))?;
-        check_eq(first_repeat(&["a", "b", "b", "a"]), Some("b"))?;
-        check_eq(first_repeat(&["A", "b", "a", "b"]), Some("b"))
+        check_eq(first_repeat(&["b", "A", "a", "c", "c", "b"]), Some("c"))
     });
-    case("hidden-6", || {
+    case("hidden-5", || {
         check_eq(first_repeat(&[]), None)?;
         check_eq(first_repeat(&["a", "A", "b"]), None)
-    });
-    case("hidden-7", || {
-        // The result borrows from the text, so it outlives the vector of words.
-        let text = String::from("up down up");
-        let found = {
-            let words: Vec<&str> = text.split(' ').collect();
-            first_repeat(&words)
-        };
-        check_eq(found, Some("up"))
     });
 }

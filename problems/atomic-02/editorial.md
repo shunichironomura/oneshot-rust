@@ -12,7 +12,7 @@ The fix is the classic pair of orderings:
 - Locking is an **Acquire** operation that reads that `false`: everything the Release published
   becomes visible to the new holder.
 
-The second bug is in `try_lock`: `load`, then `store`, are two separate steps ("test, then set"). Two
+The second bug is in `try_lock`: `load` followed by `store` is two separate steps ("test, then set"). Two
 threads can both load `false` before either stores `true`, and both get a guard. Stronger orderings
 do not close this gap; replacing every `Relaxed` with `SeqCst` still leaves it. The test and the set
 must be **one** atomic read-modify-write: `compare_exchange(false, true, Acquire, Relaxed)` changes
@@ -22,9 +22,10 @@ touches nothing protected, so `Relaxed` is enough.
 
 Pitfalls:
 
-- Acquire applies to reads and Release to writes. `store(true, Acquire)` and `load(Release)` panic at
-  run time ("there is no such thing as an acquire store"), and so does a `Release` or `AcqRel`
-  failure ordering in `compare_exchange`.
+- Acquire applies to reads and Release to writes. `store(true, Ordering::Acquire)`,
+  `load(Ordering::Release)` and a `Release` or `AcqRel` failure ordering in `compare_exchange` are
+  rejected by the compiler (the `invalid_atomic_ordering` lint), and panic at run time when the
+  ordering is not a constant.
 - `compare_exchange_weak` may fail even when the value is `false` (a spurious failure). That is fine
   in the retry loop of `lock`, but a `try_lock` built on it can return `None` for a free lock. Miri
   simulates spurious failures often.

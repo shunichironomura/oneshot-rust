@@ -35,9 +35,9 @@ pub(crate) use count;
 
 - `count!(...)` evaluates to the number of token trees in its input, as a `usize`. It must be a
   constant expression, usable in `const N: usize = count!(...);` or as an array length.
-- A token tree is either a single token (an identifier, a literal, a lifetime, or a punctuation
-  token such as `+`, `,`, `::` or `=>`) or a group in `()`, `[]` or `{}` together with everything
-  inside it. `count!()` is `0`.
+- A token tree is either a single token (an identifier or keyword, a literal, a lifetime, or a
+  punctuation token such as `+`, `,`, `::` or `=>`) or a group in `()`, `[]` or `{}` together with
+  everything inside it. `count!()` is `0`.
 
 The tests call each macro by its path, for example `crate::user::max_of!(3, 9, 4)`, from another
 module that has no `use` declarations for the macros or for `HashMap`.

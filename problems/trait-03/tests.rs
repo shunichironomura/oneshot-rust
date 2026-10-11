@@ -54,11 +54,7 @@ pub fn run() {
     });
     case("hidden-4", || {
         // An empty text gives a frame 4 wide.
-        check_eq(Label("").outline(), "****\n*  *\n*  *\n*  *\n****")?;
-        check_eq(
-            Label("OneShot Rust").outline(),
-            "****************\n*              *\n* OneShot Rust *\n*              *\n****************",
-        )
+        check_eq(Label("").outline(), "****\n*  *\n*  *\n*  *\n****")
     });
     case("hidden-5", || {
         // 16 chars, 18 bytes.

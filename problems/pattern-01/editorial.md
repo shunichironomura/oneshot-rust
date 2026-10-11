@@ -1,9 +1,10 @@
-Each function breaks a different rule about patterns, and the compiler reports all four.
+Each function has its own pattern mistake, and the compiler reports all four in one go.
 
 - `first_even`: a plain `let` needs an **irrefutable** pattern, one that matches every possible value.
   `find` returns an `Option<&i32>`, and `Some(x)` does not match `None` (E0005). The compiler will not
   guess what should happen then, so say it with let-else: `let Some(x) = ... else { return None };`.
-  The `else` block must leave the function (or loop), because `x` is used after the statement.
+  The `else` block must not fall through: it has to `return`, `break`, `continue` or panic, because
+  after the statement `x` must hold a value.
 - `title_or_default`: a leading underscore only silences the "unused variable" warning. `_t` is still
   a variable, so `Some(_t)` **moves** the `String` out of `title`, and `title.unwrap_or(...)` then
   uses a partially moved value (E0382). The bare `_` is different: it is not a binding at all, so

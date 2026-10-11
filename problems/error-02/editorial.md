@@ -4,10 +4,11 @@ returns the `ParseIntError` itself, inside a box, and the caller can get it back
 `downcast_ref::<ParseIntError>()`.
 
 Plain messages are the tricky part. `&str` and `String` do not implement `Error`, so
-`Err(Box::new("overflow"))` does not compile, and neither does `Err("no numbers")`, which is a
-`Result<_, &str>`. But there is also `From<&str>` (and `From<String>`) for `Box<dyn Error>`, which
-wraps the text in a hidden error type. So `"no numbers".into()` works, and `?` uses the same
-conversion: `checked_add(n).ok_or("overflow")?` turns `None` into a boxed `"overflow"` error.
+`Err(Box::new("overflow"))` does not compile, and neither does `Err("no numbers")`: it holds a
+`&str`, not a `Box<dyn Error>`. But there is also `From<&str>` (and `From<String>`) for
+`Box<dyn Error>`, which wraps the text in a hidden error type. So `"no numbers".into()` works, and
+`?` uses the same conversion: `checked_add(n).ok_or("overflow")?` turns `None` into a boxed
+`"overflow"` error.
 
 `checked_add` returns `None` instead of overflowing; a plain `sum += n` panics on overflow in debug
 builds. Checking at every addition, in the same loop that parses, takes care of two rules at once:

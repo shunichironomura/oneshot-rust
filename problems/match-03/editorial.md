@@ -23,9 +23,9 @@ Before writing one, ask which values actually reach it and what they should prod
 
 ### Alternatives
 
-The smallest fix keeps the template's style and adds catch-all arms where they are safe. In `grade`,
-`_ => 'F'` is safe only because `90..` now takes every high score first. `parse_answer` is the same as
-in the solution.
+A fix closer to the template keeps its style and uses catch-all arms where they are safe. In
+`grade`, `_ => 'F'` is safe only because `90..` now takes every high score first. `parse_answer` is
+the same as in the solution.
 
 ```rust
 pub fn digits_label(n: u8) -> &'static str {

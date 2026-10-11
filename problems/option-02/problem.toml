@@ -1,0 +1,19 @@
+id = "option-02"
+title = { en = "Session helpers", ja = "セッションの道具箱" }
+difficulty = 1
+concepts = [
+    "Option::is_some_and / is_none_or",
+    "Option::take_if",
+    "bool::then vs then_some (eager evaluation)",
+    "bool::ok_or / Option::ok_or",
+    "? on Result<(), E>",
+    "consuming Option methods through &mut (E0507)",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

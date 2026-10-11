@@ -10,14 +10,15 @@ just wrong, and a lucky collision can even make a lookup succeed now and then.
 So hash exactly what `eq` compares: the bytes with ASCII letters lowercased. `eq_ignore_ascii_case`
 and `to_ascii_lowercase` only change `A`–`Z`, as the rules ask. `to_lowercase` and `to_uppercase`
 follow Unicode instead: comparing with them makes `É` equal to `é`, and `to_uppercase` even makes
-`Straße` equal to `STRASSE`. The final `0xff` byte copies what `str` does, so that a tuple of tags
-hashes well; the tests do not need it. Unequal tags may still get the same hash: that is only a
-collision.
+`Straße` equal to `STRASSE`. The final `0xff` byte copies what `str` does: it marks the end of the
+string, so that the pairs `("ab", "c")` and `("a", "bc")` hash differently (the tests do not need it).
+Unequal tags may still get the same hash: that is only a collision.
 
 Keeping the first spelling needs no extra code. `HashSet::insert` returns `false` and leaves the
 stored value alone when an equal one is already there, and `HashMap::entry` (like `HashMap::insert`)
 keeps the existing key and drops the new one. That is also why `set.get(&Tag::new("rust"))` returns
-the stored `Rust`.
+the stored `Rust`. `Display` simply writes that stored spelling, with `f.write_str(&self.0)` or
+`write!(f, "{}", self.0)`.
 
 The documentation of `Borrow` has a similar `CaseInsensitiveString` example and explains why such a
 type must not implement `Borrow<str>`: `str` compares and hashes with case, so a lookup with

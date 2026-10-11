@@ -1,0 +1,12 @@
+id = "atomic-03"
+title = { en = "Lock-free stats", ja = "ロックフリーな統計" }
+difficulty = 2
+concepts = ["AtomicU64", "fetch_add / fetch_max / fetch_min", "race condition from load + store (not a data race)", "mutation through &self", "const fn new for statics", "statics must be Sync", "Relaxed ordering + join happens-before", "sentinel for no samples"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -1,0 +1,22 @@
+id = "arc-01"
+title = { en = "Arc from scratch", ja = "ゼロから作る Arc" }
+difficulty = 3
+concepts = [
+    "NonNull / *const for covariance (*mut is invariant)",
+    "PhantomData is superfluous for dropck once there is a Drop impl",
+    "Relaxed fetch_add in clone",
+    "Release fetch_sub + Acquire fence in drop",
+    "Acquire load in get_mut",
+    "unsafe impl Send / Sync with T: Send + Sync",
+    "Box::leak / Box::into_raw and Box::from_raw",
+    "Miri data race and leak detection",
+    "ptr_eq with zero-sized values",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

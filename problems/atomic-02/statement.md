@@ -27,9 +27,9 @@ pub struct SpinGuard<'a, T> {
 // SpinGuard<'_, T> implements Deref<Target = T>, DerefMut and Drop.
 ```
 
-- A guard gives access to the value: `*guard` reads it, and `*guard = ...` or `guard.push(...)`
-  changes it. At most one guard of a lock is alive at any time, even when several threads call
-  `lock` and `try_lock` at the same time.
+- A guard gives access to the value: `*guard` reads it, and `*guard = ...` or a method call such as
+  `guard.push_str(...)` changes it. At most one guard of a lock is alive at any time, even when
+  several threads call `lock` and `try_lock` at the same time.
 - A change made through a guard is seen through every later guard of the same lock, whichever thread
   holds it.
 - `lock` waits until the lock is free, takes it and returns a guard. It calls

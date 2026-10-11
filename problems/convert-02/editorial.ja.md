@@ -10,7 +10,8 @@
 `Fahrenheit(50.0).into().0` は E0282（型注釈が必要）になります。`Fahrenheit` は `Celsius` にも、
 反射的な実装によって `Fahrenheit` にもなれるからです。なお、ジェネリックな `t` では `t.into().0` でも
 たまたまコンパイルが通ります。コンパイラが知っている `t` の変換が、境界の `Into<Celsius>` だけだからです。
-`warmest` では `Celsius::from(f)` と書けば迷いません。引数は `&Fahrenheit` ではなく `Fahrenheit` なので、
+`warmest` では `Celsius::from(f)` と書けば変換先の型が決まるので、この問題は起きません。
+`Celsius::from` が受け取るのは `&Fahrenheit` ではなく `Fahrenheit` なので、クロージャでは
 `|&f|` というパターンで受け取ります。
 
 `f64` は `PartialOrd` ですが `Ord` ではありません（NaN は順序づけできません）。そのため、浮動小数点数にも

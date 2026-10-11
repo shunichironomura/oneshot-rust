@@ -24,8 +24,10 @@ be `Sized`"). This is allowed here because the bodies only use `T` behind a poin
 
 Two other tempting fixes fail. Parameters of type `&dyn Debug` do not accept `"x"`: a `&dyn Debug`
 pointing to a `str` would have to carry both its length and a vtable, but a fat pointer has room for
-only one of them, so only sized types can be turned into trait objects. And bounds that the bodies do not need, such as
-`T: Debug + ?Sized` on `byte_size` or `share`, reject the harness's `Rgb` and the boxed closures.
+only one of them, so only sized types can be turned into trait objects. And bounds that the bodies
+do not need reject some of the harness's arguments: `T: Debug + ?Sized` on `byte_size` or `share`
+rejects `Rgb` and the boxed closures, and `T: ?Sized + 'static` on `share` rejects a `Box<&str>`
+that borrows a local variable.
 
 ### Alternatives
 

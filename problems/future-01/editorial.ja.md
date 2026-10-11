@@ -4,16 +4,18 @@
 借用するので、引数を `mut self` と宣言する必要があります。宣言しないと、`self.remaining -= 1` が
 「cannot borrow `self` as mutable」でエラーになります（`self.get_mut()` を使う方法もあります。下の別解を見てください）。
 
-`Pending` を返すフューチャーは、もう一度ポーリングする価値があるときに起こされることを約束します。
+`Pending` を返す Future は、もう一度ポーリングする価値があるときにタスクが起こされることを約束します。
 実際のエグゼキュータは、それまで眠っています。`Countdown` には待つものがないので、現在のタスクをすぐに起こします。
 起こすときは、必ずそのとき渡された `Context` のウェイカーを使ってください。次のポーリングでは別のウェイカーが
 渡されるかもしれません。
 
 `block_on` はまず `into_future()` を呼びます。`.await` も同じことをするので、`Delay::new(1).await` と書けます。
 また、どの `Future` も `IntoFuture` なので、`block_on` はどちらも受け付けます。ポーリングには `Pin<&mut F>` が必要で、
-`Pin::new(&mut fut)` には `F: Unpin` が要ります。`async` ブロックは `Unpin` ではない（`.await` をまたいで
-自分のローカル変数への参照を持つことがある）ので、ジェネリックな `F` ではコンパイルエラー
-（「`F` cannot be unpinned」）になります。代わりに `std::pin::pin!` を使うと、値をその場（スタック上）で固定できます。
+`Pin::new(&mut fut)` には `F: Unpin` が要るので、ジェネリックな `F` ではコンパイルエラー
+（「`F` cannot be unpinned」）になります。`F: Unpin` の境界を足しても解決しません。`async` ブロックは
+`Unpin` ではない（`.await` をまたいで自分のローカル変数への参照を持つことがある）ので、`async` ブロックを
+渡すテストがコンパイルできなくなります。代わりに `std::pin::pin!` を使うと、値をその場（スタック上）で
+固定できます。
 
 `Future::poll` は `Pin<&mut F>` を値で受け取るので、ループの中で `fut.poll(&mut cx)` と書くと、最初の繰り返しで
 `fut` がムーブされてしまいます。`fut.as_mut()` を使えば、1 回の呼び出しの間だけ借用し直せます。
@@ -35,12 +37,12 @@ fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<u32> {
 }
 ```
 
-`Box::pin` を使うと、フューチャーをヒープ上で固定できます。また `Waker::noop` ができる前は、`Wake` を実装した型の
+`Box::pin` を使うと、Future をヒープ上で固定できます。また `Waker::noop` ができる前は、`Wake` を実装した型の
 `Arc` から何もしないウェイカーを作っていました。
 
 ```rust
 use std::sync::Arc;
-use std::task::{Wake, Waker};
+use std::task::{Context, Poll, Wake, Waker};
 
 struct NoopWaker;
 
@@ -63,8 +65,8 @@ pub fn poll_count<F: Future>(fut: F) -> (F::Output, usize) {
 }
 ```
 
-ループを `block_on` に置き、`poll_count` ではポーリング回数を数える別のフューチャーで包む方法もあります。
-ジェネリックな `F` は `Unpin` とは限りませんが、`Pin<Box<F>>` は常に `Unpin` です。そのため包んだフューチャーも
+ループを `block_on` に置き、`poll_count` ではポーリング回数を数える別の Future で包む方法もあります。
+ジェネリックな `F` は `Unpin` とは限りませんが、`Pin<Box<F>>` は常に `Unpin` です。そのため包んだ Future も
 `Unpin` になり、`Countdown` と同じように `DerefMut` を通してカウンタを更新できます。
 
 ```rust

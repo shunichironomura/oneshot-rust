@@ -1,0 +1,18 @@
+id = "mem-01"
+title = { en = "Connection state machine", ja = "接続のステートマシン" }
+difficulty = 2
+concepts = [
+    "moving out of &mut self (E0507)",
+    "mem::take / mem::replace",
+    "#[derive(Default)] with #[default]",
+    "enum state machines with owned payloads",
+    "match guards with by-move bindings",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

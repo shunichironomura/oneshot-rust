@@ -1,0 +1,12 @@
+id = "observer-01"
+title = { en = "Listeners that unsubscribe themselves", ja = "自分で購読をやめるリスナー" }
+difficulty = 3
+concepts = ["Rc<dyn Fn> unsized coercion", "Weak handles to listeners", "subscription handles that unsubscribe on drop", "RefCell re-entrancy (already borrowed panic)", "snapshot before calling callbacks", "Weak::upgrade keeps the value alive during the call", "no reference cycles"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

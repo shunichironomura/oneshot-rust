@@ -31,7 +31,7 @@ The struct `Overlap` is already in the editor.
   (`"app" < "apple"`), and `"z" < "é"`.
 - Either list may be empty.
 - `first_repeat` reads `words` from the start and returns the first word it meets that already
-  appeared earlier in the list. It returns `None` if no word appears twice.
+  appeared earlier in the list. It returns `None` if no word appears more than once.
 
 ### Examples
 

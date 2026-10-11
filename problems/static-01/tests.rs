@@ -41,26 +41,22 @@ pub fn run() {
         check_eq(resolve(0).as_deref(), Some("apple"))
     });
     case("hidden-3", || {
-        // Three threads at the same time; each word is interned by two of them.
-        const WORDS: [&str; 3] = ["t-ant", "t-bee", "t-cat"];
+        // Two threads intern the same two fresh strings at the same time, in opposite orders.
         let n = interned_count() as u32;
         let calls = intern_calls();
-        let got: Vec<[u32; 2]> = thread::scope(|s| {
-            let handles: Vec<_> = (0..3)
-                .map(|t| s.spawn(move || [intern(WORDS[t]), intern(WORDS[(t + 1) % 3])]))
-                .collect();
-            handles.into_iter().map(|h| h.join().unwrap()).collect()
+        let (a, b) = thread::scope(|s| {
+            let a = s.spawn(|| [intern("t-ant"), intern("t-bee")]);
+            let b = s.spawn(|| [intern("t-bee"), intern("t-ant")]);
+            (a.join().unwrap(), b.join().unwrap())
         });
-        let ids = [got[0][0], got[1][0], got[2][0]];
-        check_eq([got[2][1], got[0][1], got[1][1]], ids)?;
-        for (id, word) in ids.into_iter().zip(WORDS) {
-            check_eq(resolve(id).as_deref(), Some(word))?;
-        }
-        let mut sorted = ids;
-        sorted.sort();
-        check_eq(sorted, [n, n + 1, n + 2])?;
-        check_eq(interned_count() as u32, n + 3)?;
-        check_eq(intern_calls(), calls + 6)
+        check_eq(b, [a[1], a[0]])?;
+        check_eq(resolve(a[0]).as_deref(), Some("t-ant"))?;
+        check_eq(resolve(a[1]).as_deref(), Some("t-bee"))?;
+        let mut ids = a;
+        ids.sort();
+        check_eq(ids, [n, n + 1])?;
+        check_eq(interned_count() as u32, n + 2)?;
+        check_eq(intern_calls(), calls + 4)
     });
     case("hidden-4", || {
         // Ids that have not been handed out. (Last, so that a panic here cannot affect the others.)

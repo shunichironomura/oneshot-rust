@@ -1,0 +1,12 @@
+id = "stream-01"
+title = { en = "Streams by hand", ja = "手作りのストリーム" }
+difficulty = 3
+concepts = ["Stream trait (poll_next)", "StreamExt::next via poll_fn", "return-position impl Trait in traits", "?Sized Self in default methods", "Pin<&mut Self> needs Self: Unpin; auto Unpin of generic structs", "impl Unpin for adapters without structural pinning", "Pin::new for Unpin fields", "buffering in a zip adapter"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

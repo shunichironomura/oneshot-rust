@@ -6,7 +6,7 @@ pub fn run() {
         let line = String::from("[INFO]  server started");
         let message;
         {
-            let tag = format!("[{}]", "INFO");
+            let tag = String::from("[INFO]");
             message = strip_tag(&line, &tag);
         }
         check_eq(message, "server started")
@@ -40,8 +40,8 @@ pub fn run() {
     case("hidden-3", || {
         let log = String::from("[INFO] booting\n[WARN]  disk almost full\n[INFO] ready");
         let mut messages = Vec::new();
-        for (line, level) in log.lines().zip(["INFO", "WARN", "INFO"]) {
-            let tag = format!("[{level}]");
+        for (line, name) in log.lines().zip(["[INFO]", "[WARN]", "[INFO]"]) {
+            let tag = String::from(name);
             messages.push(strip_tag(line, &tag));
         }
         check_eq(&messages, &vec!["booting", "disk almost full", "ready"])?;

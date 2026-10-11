@@ -78,6 +78,7 @@ pub fn run() {
         // Empty selections, ranges past the width, start > end, rows out of range.
         let g = one_row(&[1, 2, 3]);
         check_eq(g.row_sum(0, 1..1), Some(0))?;
+        check_eq(g.row_sum(0, 3..3), Some(0))?;
         check_eq(g.row_sum(0, 3..), Some(0))?;
         check_eq(g.row_sum(0, ..0), Some(0))?;
         check_eq(g.row_sum(0, 2..=1), Some(0))?;
@@ -86,6 +87,8 @@ pub fn run() {
         check_eq(g.row_sum(0, ..=3), None)?;
         check_eq(g.row_sum(0, 0..4), None)?;
         check_eq(g.row_sum(0, 4..), None)?;
+        check_eq(g.row_sum(0, 4..4), None)?;
+        check_eq(g.row_sum(0, (Bound::Excluded(3), Bound::Included(3))), None)?;
         check_eq(g.row_sum(0, 2..1), None)?;
         check_eq(g.row_sum(0, (Bound::Excluded(2), Bound::Excluded(2))), None)?;
         check_eq(g.row_sum(1, ..), None)?;

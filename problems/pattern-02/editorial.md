@@ -1,8 +1,8 @@
-When a pattern without `&` meets a reference, the compiler skips the reference and switches the
-**default binding mode** from `move` to `ref`: every binding below that point borrows. This is "match
-ergonomics". Matching `Some(s)` against a `&Option<String>` makes `s` a `&String`, and in
-`for Player { name, score } in players` both bindings are references, which is why the code writes
-`*score`.
+When a non-reference pattern such as `Some(..)`, a tuple or a struct pattern meets a reference, the
+compiler skips the reference and switches the **default binding mode** from `move` to `ref`: every
+binding below that point borrows. This is "match ergonomics". Matching `Some(s)` against a
+`&Option<String>` makes `s` a `&String`, and in `for Player { name, score } in players` both bindings
+are references, which is why the code writes `*score`.
 
 Rust 2024 forbids writing `ref`, `mut` or `&` where the default binding mode is no longer `move`. Each
 broken function trips over one of them.
@@ -13,8 +13,9 @@ broken function trips over one of them.
   made `s` a copied `u32` while `name` stayed a `&String`. Removing `mut` alone makes `s` a `&u32`,
   and `s += 5` no longer compiles; `*s += 5` would write through a shared reference, which is not
   allowed either. Write the outer `&` yourself: `&(ref name, mut s)` matches the reference with a
-  reference pattern, so the mode stays `move` and `ref` and `mut` are allowed again. Copying the value
-  out with `let mut s = *s;` works too.
+  reference pattern, so the mode stays `move` and `ref` and `mut` are allowed again. Here `ref` is
+  required, not redundant: `&(name, mut s)` would move the `String` out of the slice, which does not
+  compile. Copying the value out with `let mut s = *s;` works too.
 - `&` (`rounds_over`): `filter` passes each item **by reference**, so its closure receives an
   `&(usize, &u32)`. The pattern `(_, &s)` skips that outer reference, and a `&` below a skipped
   reference is now an error. `|&(_, &s)|` spells out both references. Dropping the `&` instead

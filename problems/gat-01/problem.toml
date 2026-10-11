@@ -1,0 +1,17 @@
+id = "gat-01"
+title = { en = "Lending windows", ja = "貸し出すイテレータ" }
+difficulty = 3
+concepts = [
+    "generic associated types",
+    "required where Self: 'a on GATs (trait and impls)",
+    "lending iterator vs Iterator",
+    "Self::Item<'_> tied to &mut self",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

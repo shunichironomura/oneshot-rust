@@ -1,0 +1,21 @@
+id = "uninit-01"
+title = { en = "Length before values", ja = "値より先に長さ" }
+difficulty = 3
+concepts = [
+    "uninitialized memory",
+    "Vec::set_len",
+    "assignment drops the old value",
+    "ptr::write vs =",
+    "exception safety when a closure panics",
+    "drop guards",
+    "memory leaks",
+    "vec![x; n] needs Clone",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = false
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

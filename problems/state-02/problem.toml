@@ -1,0 +1,12 @@
+id = "state-02"
+title = { en = "Blog post workflow", ja = "ブログ記事の承認フロー" }
+difficulty = 2
+concepts = ["state pattern with trait objects", "self: Box<Self>", "Option::take", "Option::as_ref", "lifetimes in trait methods", "E0507"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

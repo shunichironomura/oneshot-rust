@@ -1,0 +1,12 @@
+id = "drop-02"
+title = { en = "Committed transactions", ja = "コミット済みのトランザクション" }
+difficulty = 2
+concepts = ["Drop", "cannot move out of a type implementing Drop (E0509)", "consuming self does not skip Drop", "mem::take inside consuming methods", "drop flag / Option field", "mem::forget leaks", "drop order of locals"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

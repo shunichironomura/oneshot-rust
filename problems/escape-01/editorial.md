@@ -3,7 +3,8 @@ because they are found while the source is read, before any type checking. But i
 about something that is still a valid literal, and that is where the real trap is.
 
 - In a normal string literal, `\` starts an escape, and only a few escapes exist: `\n`, `\r`, `\t`,
-  `\\`, `\0`, `\'`, `\"`, `\x41` and `\u{...}`. `\d` and `\.` are errors. In `windows_path` the
+  `\\`, `\0`, `\'`, `\"`, `\x41` and `\u{...}` (plus a `\` at the end of a line, which skips the
+  line break and the whitespace after it). `\d` and `\.` are errors. In `windows_path` the
   compiler reports only `\d`, because `\n` and `\t` are valid: a newline and a tab. If you fix only
   `\d`, the code compiles but returns `C:`, a newline, `ew`, a tab and `able\data.txt`: 19
   characters. A raw string `r"..."` has no escapes at all, so every backslash is just a backslash.

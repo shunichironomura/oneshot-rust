@@ -1,0 +1,12 @@
+id = "letchain-01"
+title = { en = "Token sorter", ja = "トークンの仕分け" }
+difficulty = 1
+concepts = ["let chains (2024)", "exclusive range patterns", "checked arithmetic", "from_str_radix accepts a leading '+'", "split_once", "slice patterns"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

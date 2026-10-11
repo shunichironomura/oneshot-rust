@@ -1,0 +1,12 @@
+id = "macro-03"
+title = { en = "Enums that know their names", ja = "名前を知っている列挙型" }
+difficulty = 3
+concepts = ["macro_rules! generating items", "#[macro_export] and $crate paths", "nested optional repetitions", "internal rules", "stringify!", "call-site path resolution", "item name collisions between invocations", "empty enums and matching on references"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

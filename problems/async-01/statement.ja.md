@@ -14,12 +14,12 @@ pub struct Tree {
 pub async fn depth(t: &Tree) -> usize;
 ```
 
-- `greet(name)` が返す Future は、`Hello, {name}!`（`{name}` は `name` に置き換える）を
-  出力します。`name` は空文字列を含め、どんな文字列でもかまいません。
+- `greet(name)` は、結果が `Hello, {name}!`（`{name}` は `name` に置き換えたもの）になる
+  Future を返します。`name` は空文字列を含め、どんな文字列でもかまいません。
 - `sum_all(futs)` は、ベクタの順に Future を 1 つずつ `await` します。各 Future が完了してから、
-  次の Future を初めてポーリングします。結果は出力の合計で、ベクタが空なら `0` です。
-  合計は必ず `u32` に収まります。ハーネスが渡す Future の中には、最初にポーリングされたときには
-  まだ完了しないもの（`Poll::Pending` を 1 回返すもの）があります。
+  次の Future を初めてポーリングします。結果は各 Future の結果の合計で、ベクタが空なら `0`
+  です。合計は必ず `u32` に収まります。ハーネスが渡す Future の中には、最初にポーリング
+  されたときにはまだ完了しないもの（`Poll::Pending` を 1 回返すもの）があります。
 - `depth(t)` の結果は木の深さ（段の数）です。子のないノードは `1`、そうでなければ子の深さの
   最大値に 1 を足したものです。
 
@@ -28,6 +28,6 @@ pub async fn depth(t: &Tree) -> usize;
 
 ### 例
 
-- `greet("Ann".to_string())` の Future は `"Hello, Ann!"` を出力します。
-- `1`、`2`、`3` を出力する 3 つの Future を渡すと、`sum_all` の結果は `6` です。
+- `greet("Ann".to_string())` の Future の結果は `"Hello, Ann!"` です。
+- 結果がそれぞれ `1`、`2`、`3` になる 3 つの Future を渡すと、`sum_all` の結果は `6` です。
 - 根に子が 2 つあり、1 つ目の子にさらに子が 1 つある木の深さは `3` です。

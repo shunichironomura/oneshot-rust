@@ -1,15 +1,18 @@
 In all four methods, `self` is a reference, so the fields are only borrowed. The template uses
 `self.nickname` and `self.email` as values in three ways: as the scrutinee of a `match` whose pattern
-`Some(nick)` binds by value, as the operand of `?`, and on the right of `let`. Each of them moves the
-`Option<String>` out of the struct, and moving out of something behind a reference is an error
-(E0507). `&mut self` does not change that: the struct belongs to the caller and must never be left
-with a missing field, not even until the next line puts a new value back. So either look at the
-`Option` through a reference, or swap a new value in and take the old one out in a single step.
+`Some(nick)` binds by value, as the operand of `?`, and on the right of `let`. Each of them moves a
+value out of the struct (the `match` moves the `String` inside `Some`, the other two the whole
+`Option<String>`), and moving out of something behind a reference is an error (E0507). `&mut self`
+does not change that: the struct belongs to the caller and must never be left with a missing field,
+not even until the next line puts a new value back. So either look at the `Option` through a
+reference, or swap a new value in and take the old one out in a single step.
 
-- `display_name`: behind the move there is a second error. `nick` is a local variable, dropped when
+- `display_name`: besides the move there is a second error. `nick` is a local variable, dropped when
   the function returns, so `&nick` cannot be returned (E0515). The result has to point into
-  `self.nickname` itself. `as_deref()` turns `&Option<String>` into `Option<&str>` without moving
-  anything, and `unwrap_or(&self.username)` supplies the fallback (`&String` coerces to `&str`).
+  `self.nickname` itself. The compiler's suggestion `Some(ref nick)` does that, because `nick` then
+  borrows from `self.nickname`. Shorter still, `as_deref()` turns `&Option<String>` into
+  `Option<&str>` without moving anything, and `unwrap_or(&self.username)` supplies the fallback
+  (`&String` coerces to `&str`).
 - `email_domain`: `?` takes its operand by value, so `self.email?` moves as well. `&self.email?` does
   not help, because `?` binds tighter than `&`: it means `&(self.email?)`. The compiler's suggestion
   `self.email.clone()?` gets past the move, but then `email` is a local `String` and the returned

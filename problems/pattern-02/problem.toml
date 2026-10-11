@@ -1,5 +1,5 @@
 id = "pattern-02"
-title = { en = "Edition 2024 binding modes", ja = "2024 の束縛モード" }
+title = { en = "Edition 2024 binding modes", ja = "2024 エディションの束縛モード" }
 difficulty = 2
 concepts = [
     "match ergonomics and default binding modes",

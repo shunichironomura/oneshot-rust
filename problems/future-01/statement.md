@@ -21,10 +21,11 @@ pub fn poll_count<F: Future>(fut: F) -> (F::Output, usize);
   `Poll::Ready(n)` on the next one. It is not polled again after it is ready.
 - Each time a `Countdown` returns `Pending`, it first calls `wake_by_ref()` exactly once on the waker
   of the `Context` passed to that `poll` call. It does not wake anything when it returns `Ready`.
-- `Delay` is a builder. `Delay::new(polls)` starts with `polls`, and `extra(k)` adds `k` to it; it
-  can be called any number of times. `into_future()`, which `.await` calls, returns a `Countdown`
-  that behaves like `countdown` of the total: awaiting `Delay::new(2).extra(1)` is like awaiting
-  `countdown(3)`. The total always fits in a `u32`.
+- `Delay` is a builder for a number of polls. `Delay::new(polls)` starts with a total of `polls`,
+  and each call of `extra(k)` adds `k` to the total; `extra` can be called any number of times
+  (including zero). `into_future()`, which `.await` calls, returns a `Countdown` that behaves like
+  `countdown` of the total: awaiting `Delay::new(2).extra(1)` is like awaiting `countdown(3)`. The
+  total always fits in a `u32`.
 - `block_on(f)` turns `f` into a future and polls it on the current thread, over and over, with a
   waker that does nothing, until it is ready. It returns the output.
 - `poll_count(fut)` runs `fut` in the same way and returns its output together with the number of

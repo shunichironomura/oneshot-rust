@@ -51,7 +51,14 @@ pub fn run() {
         // Text: anything neither parser accepts, trimmed but otherwise unchanged.
         check_eq(
             parse_row("1_000,0x10, - 3 ,-,12abc,  café au lait\t"),
-            vec![text("1_000"), text("0x10"), text("- 3"), text("-"), text("12abc"), text("café au lait")],
+            vec![
+                text("1_000"),
+                text("0x10"),
+                text("- 3"),
+                text("-"),
+                text("12abc"),
+                text("café au lait"),
+            ],
         )
     });
     case("hidden-5", || {
@@ -59,7 +66,10 @@ pub fn run() {
         check_eq(numeric_sum(&[text("9"), Empty, text("x")]), 0.0)?;
         check_eq(numeric_sum(&[Float(0.25), Int(-3), text("9"), Empty, Float(1.5)]), -1.25)?;
         // Each value is converted to f64 first, so this does not overflow i64.
-        check_eq(numeric_sum(&[Int(i64::MAX), Int(i64::MAX)]), 18_446_744_073_709_551_616.0)
+        check_eq(numeric_sum(&[Int(i64::MAX), Int(i64::MAX)]), 18_446_744_073_709_551_616.0)?;
+        // 2^53 + 1 becomes 2^53 as f64, and 2^53 + 1.0 rounds to 2^53 again; an exact integer
+        // sum (e.g. in i128) would give 2^53 + 2.
+        check_eq(numeric_sum(&[Int(9_007_199_254_740_993), Int(1)]), 9_007_199_254_740_992.0)
     });
     case("hidden-6", || {
         let row = vec![Empty, text("a"), Int(1), text(""), text("b c"), Float(2.0), Empty];

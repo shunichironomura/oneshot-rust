@@ -31,7 +31,8 @@ impl Outline for Tags {}
 - `outline` is a default method: the `impl Outline` blocks for `Point` and `Tags` stay empty. The
   test harness also has a type of its own that implements `Display`, and it writes an empty
   `impl Outline for ... {}` for it as well.
-- Do not change the fields of `Point` and `Tags` or the signature of `outline`.
+- Do not change the fields of `Point` and `Tags`, or the parameter (`&self`) and the return type
+  (`String`) of `outline`. Anything else may be changed as needed.
 
 ### Examples
 

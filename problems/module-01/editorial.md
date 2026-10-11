@@ -58,6 +58,8 @@ pub use shop::checkout;
 (`pub(crate) mod pricing`).
 
 ```rust
+// `shop` as in the solution.
+
 use shop::cart::Cart;
 use shop::pricing::{discounted, with_tax};
 

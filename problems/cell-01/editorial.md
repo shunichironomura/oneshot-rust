@@ -3,8 +3,8 @@ in use. The only exception is memory inside an `UnsafeCell`. This rule is about 
 about whether some `&mut` exists, so the template's `SAFETY` comment misses the point: writing
 through `&raw const self.hits as *mut u32` is UB even if no other reference to the counter exists.
 The compiler is allowed to rely on the rule, for example by keeping `self.hits` in a register across
-a call. Miri says the same thing: the pointer was derived from `&self`, whose tag "only grants
-SharedReadOnly permission".
+a call. Miri says the same thing: `&raw const self.hits` creates the pointer from `&self`, so its tag
+"only grants SharedReadOnly permission", and casting it to `*mut` does not change that.
 
 The fix is **interior mutability**: types that wrap an `UnsafeCell` and offer a safe API for changing
 their contents through `&self`.

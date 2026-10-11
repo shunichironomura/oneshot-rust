@@ -1,5 +1,5 @@
 id = "basics-01"
-title = { en = "Five classic slips", ja = "五つのうっかり" }
+title = { en = "Five classic slips", ja = "5 つのうっかり" }
 difficulty = 1
 concepts = [
     "const items need a type",

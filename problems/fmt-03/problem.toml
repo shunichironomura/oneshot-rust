@@ -1,0 +1,19 @@
+id = "fmt-03"
+title = { en = "Redacted debug output", ja = "秘密を伏せたデバッグ表示" }
+difficulty = 2
+concepts = [
+  "manual fmt::Debug",
+  "Formatter::debug_struct / debug_tuple",
+  "DebugStruct::finish_non_exhaustive",
+  "format_args! as a Debug field",
+  "{:#?} alternate and {:x?} flags reaching fields",
+  "builder kept in a variable (E0716 on a temporary)",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

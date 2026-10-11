@@ -119,7 +119,7 @@ pub fn run() {
         check_eq((Rc::strong_count(&top), Rc::weak_count(&top), Rc::strong_count(&last)), (1, 1, 2))?;
         let leaf = Rc::downgrade(&last);
         drop(last);
-        check_eq(leaf.upgrade().map(|n| path(&n)), Some(NAMES.join("/")))?;
+        check_eq(leaf.upgrade().map(|n| path(&n)), Some("n0/n1/n2/n3/n4/n5".to_string()))?;
         drop(top);
         check(leaf.upgrade().is_none(), "the whole chain should be freed")
     });

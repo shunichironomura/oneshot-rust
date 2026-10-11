@@ -95,15 +95,17 @@ pub fn run() {
         check_eq(lookup.computations(), 0)?;
         check_eq(lookup.total(), 42)?;
         lookup.insert("b", 0);
-        lookup.insert("c", 5);
         check_eq(lookup.computations(), 1)?;
+        check_eq(lookup.total(), 40)?;
+        lookup.insert("c", 5);
+        check_eq(lookup.computations(), 2)?;
         check_eq(lookup.total(), 45)?;
         check_eq(lookup.total(), 45)?;
         check_eq(lookup.get("c"), Some(5))?;
         check_eq(lookup.get("b"), Some(0))?;
-        check_eq((lookup.hits(), lookup.misses(), lookup.computations()), (2, 0, 2))?;
+        check_eq((lookup.hits(), lookup.misses(), lookup.computations()), (2, 0, 3))?;
         let view = &lookup;
         check_eq((view.get("a"), view.total()), (Some(40), 45))?;
-        check_eq((lookup.hits(), lookup.computations()), (3, 2))
+        check_eq((lookup.hits(), lookup.computations()), (3, 3))
     });
 }

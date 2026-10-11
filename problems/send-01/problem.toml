@@ -1,0 +1,18 @@
+id = "send-01"
+title = { en = "Thread bounds", ja = "スレッドの境界" }
+difficulty = 3
+concepts = [
+    "Send / Sync bounds",
+    "&F shared across threads requires F: Sync (not F: Send)",
+    "'static for thread::spawn but not for scoped threads",
+    "Fn for a shared closure, FnOnce for a closure called once",
+    "JoinHandle<T>",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = true

@@ -15,8 +15,8 @@ do not depend on the order, so `HashSet<Card>` worked either way.
 `#[default]` marks a variant, not a position, so it has to move together with `Spades` and `Ace`.
 If you reverse the lists but leave it on the first line, `Clubs` becomes the default suit, and
 `#[default] Num(u8)` does not even compile: only a unit variant (one without fields) can be the
-default. The derived `Default` of
-`Card` uses the default of each field, which gives the ace of spades.
+default. The derived `Default` of `Card` uses the default of each field, which gives the ace of
+spades.
 
 With the types right, the functions are short: `sort()`, `max()` and `HashSet` all use the derived
 traits. `max()` returns an `Option<&Card>`, and `copied()` turns it into an `Option<Card>`.

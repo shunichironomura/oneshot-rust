@@ -1,0 +1,12 @@
+id = "refcell-01"
+title = { en = "Quota tracker with a mock messenger", ja = "使用量の見張りとモック" }
+difficulty = 1
+concepts = ["RefCell", "interior mutability", "mock objects", "structs with lifetime parameters", "generic trait bounds", "integer percentages"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

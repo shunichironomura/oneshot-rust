@@ -1,5 +1,6 @@
 A text editor remembers your actions so that you can undo them, but only the last `capacity` of
-them. Implement the history `History`, and the function `josephus` for an old counting-off puzzle.
+them. Implement this history, `History`, and the function `josephus`, which solves an old
+counting-off puzzle.
 
 ```rust
 pub struct History { /* up to you */ }
@@ -35,7 +36,7 @@ pub fn josephus(n: usize, k: usize) -> Vec<usize>
   repeats until everyone has left.
 - It returns the numbers of the people in the order they leave.
 - `n` may be `0`; the result is then empty. `k` is at least `1` and may be any `usize` up to
-  `usize::MAX`.
+  `usize::MAX`, and the result must come quickly even for such a large `k`.
 
 The fields of `History` are up to you: the one in the editor is only a starting point. You may use
 anything from `std`, for example `std::collections::VecDeque`, a queue that can add and remove

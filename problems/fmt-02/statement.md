@@ -16,8 +16,9 @@ pub fn table_row(cells: &[&str], width: usize) -> String
      number is printed in full.
   4. `" x "` (a space, `x` and a space).
   5. `price` rounded to the nearest hundredth and always written with exactly two digits after the
-     point, right-aligned in a field of 8 characters. A wider price is printed in full. `price` is
-     finite and non-negative, and never exactly halfway between two hundredths.
+     point, right-aligned in a field of 8 characters (filled with spaces on the left). A wider
+     price is printed in full. `price` is finite and non-negative, and never exactly halfway
+     between two hundredths.
 - `hex_color` returns `#` followed by `r`, `g` and `b`, in this order, each written as exactly two
   uppercase hexadecimal digits.
 - `bits` returns `0b` followed by `n` written as exactly 8 binary digits.

@@ -94,74 +94,67 @@ pub fn run() {
         check_eq(store.read().font_size, 1)
     });
     case("hidden-4", || {
-        // Views on two threads are alive at the same time; meanwhile, try_update fails.
+        // Another thread holds a view, then runs an update. try_update fails both times.
         let store = Store::new(settings("dark", 12));
         let barrier = Barrier::new(2);
-        let (mine, attempt, theirs) = thread::scope(|scope| {
-            let reader = scope.spawn(|| {
+        let (mine, during_view, during_update, theirs) = thread::scope(|scope| {
+            let other = scope.spawn(|| {
                 let view = store.read();
                 barrier.wait(); // the view is alive now
                 barrier.wait(); // main is done
-                view.font_size
-            });
-            barrier.wait();
-            let mine = store.read().font_size;
-            let attempt = try_and_see(&store);
-            barrier.wait();
-            (mine, attempt, reader.join().unwrap())
-        });
-        check_eq((mine, attempt?, theirs), (12, (None, false), 12))?;
-        check_eq(store.try_update(|s| s.font_size = 16), Some(2))
-    });
-    case("hidden-5", || {
-        // While another thread is inside update, try_update fails at once.
-        let store = Store::new(settings("dark", 12));
-        let barrier = Barrier::new(2);
-        let (attempt, other) = thread::scope(|scope| {
-            let writer = scope.spawn(|| {
-                store.update(|s| {
+                let seen = view.font_size;
+                drop(view);
+                let version = store.update(|s| {
                     barrier.wait(); // the update is running now
                     barrier.wait(); // main is done
                     s.font_size = 30;
-                })
+                });
+                (seen, version)
             });
             barrier.wait();
-            let attempt = try_and_see(&store);
+            // Views on two threads are alive at the same time.
+            let mine = store.read().font_size;
+            let during_view = try_and_see(&store);
             barrier.wait();
-            (attempt, writer.join().unwrap())
+            barrier.wait();
+            let during_update = try_and_see(&store);
+            barrier.wait();
+            (mine, during_view, during_update, other.join().unwrap())
         });
-        check_eq((attempt?, other), ((None, false), 2))?;
+        check_eq((mine, during_view?), (12, (None, false)))?;
+        check_eq(during_update?, (None, false))?;
+        check_eq(theirs, (12, 2))?;
         check_eq(store.version(), 2)?;
         check_eq(store.snapshot(), settings("dark", 30))
     });
-    case("hidden-6", || {
-        // Three threads read and update at the same time; no update is lost.
+    case("hidden-5", || {
+        // Three threads (main included) read and update at the same time; no update is lost.
         let store = Store::new(settings("dark", 12));
-        let results: Vec<Result<Vec<u64>, String>> = thread::scope(|scope| {
-            let workers: Vec<_> = (0..3)
-                .map(|_| {
-                    scope.spawn(|| {
-                        let mut versions = Vec::new();
-                        for _ in 0..4 {
-                            {
-                                let view = store.read();
-                                let size = view.font_size;
-                                thread::yield_now();
-                                if view.font_size != size {
-                                    return Err("a view changed while it was alive".to_string());
-                                }
-                            }
-                            let version = store.update(|s| s.font_size += 1);
-                            if store.version() < version {
-                                return Err("version() went back".to_string());
-                            }
-                            versions.push(version);
-                        }
-                        Ok(versions)
-                    })
-                })
-                .collect();
-            workers.into_iter().map(|h| h.join().unwrap()).collect()
+        let work = || -> Result<Vec<u64>, String> {
+            let mut versions = Vec::new();
+            for _ in 0..4 {
+                {
+                    let view = store.read();
+                    let size = view.font_size;
+                    thread::yield_now();
+                    if view.font_size != size {
+                        return Err("a view changed while it was alive".to_string());
+                    }
+                }
+                let version = store.update(|s| s.font_size += 1);
+                if store.version() < version {
+                    return Err("version() went back".to_string());
+                }
+                versions.push(version);
+            }
+            Ok(versions)
+        };
+        let results = thread::scope(|scope| {
+            let others = [scope.spawn(work), scope.spawn(work)];
+            let mine = work();
+            let mut results: Vec<_> = others.into_iter().map(|h| h.join().unwrap()).collect();
+            results.push(mine);
+            results
         });
         let mut all = Vec::new();
         for versions in results {

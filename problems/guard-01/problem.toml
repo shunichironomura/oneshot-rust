@@ -1,0 +1,12 @@
+id = "guard-01"
+title = { en = "A guess that is always valid", ja = "いつも有効な予想" }
+difficulty = 1
+concepts = ["validated newtype", "private fields", "panic! messages", "TryFrom", "Ordering", "parse"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

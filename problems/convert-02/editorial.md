@@ -11,8 +11,9 @@ name the target type: `let c: Celsius = t.into();`. The target type matters even
 types: `Fahrenheit(50.0).into().0` is E0282 (type annotations needed), because a `Fahrenheit` can
 become a `Celsius` or, through the reflexive impl, a `Fahrenheit`. (On the generic `t`,
 `t.into().0` happens to compile, because the bound `Into<Celsius>` is the only conversion the
-compiler knows for it.) In `warmest`, `Celsius::from(f)` avoids the question. It takes a
-`Fahrenheit`, not a `&Fahrenheit`, hence the `|&f|` pattern.
+compiler knows for it.) In `warmest`, `Celsius::from(f)` names the target type, so the question
+does not come up. `Celsius::from` takes a `Fahrenheit`, not a `&Fahrenheit`, hence the `|&f|`
+pattern in the closure.
 
 `f64` is `PartialOrd` but not `Ord` (NaN cannot be ordered), so `Iterator::max` does not compile on
 floats or on the newtypes. Use `max_by` with `f64::total_cmp`, or `reduce(f64::max)`. Folding from

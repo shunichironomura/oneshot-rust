@@ -1,0 +1,20 @@
+id = "itermut-01"
+title = { en = "Mutable runs", ja = "書き換えられる連なり" }
+difficulty = 3
+concepts = [
+    "iterators yielding &'a mut [T]",
+    "lifetimes in iterator structs",
+    "mem::take on &mut [T]",
+    "split_at_mut from the front and the back",
+    "DoubleEndedIterator",
+    "PartialEq without Eq (NaN)",
+    "no unsafe",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

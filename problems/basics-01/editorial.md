@@ -1,4 +1,4 @@
-Each slip takes only a word or a character to fix, but the compiler does not show all five at once.
+Each slip needs only a small fix, but the compiler does not show all five at once.
 
 1. **A `const` needs a type.** Unlike `let`, a `const` (or `static`) item never infers its type, so
    `const BASE = 10;` is an error. The type must be `u64`: `BASE` is compared with `n: u64` and used
@@ -13,7 +13,9 @@ Each slip takes only a word or a character to fix, but the compiler does not sho
    semicolon. With `n;` the body ends with a statement and evaluates to `()`.
 4. **All branches of an `if` must have the same type.** Three branches are `&str` and the last one is
    a `String`. Turn the literals into `String`s with `.to_string()` (or `String::from`). The `if`
-   can then be the final expression of the function by itself.
+   can then be the final expression of the function by itself. The compiler suggests borrowing the
+   last branch as `&n.to_string()` instead, but then the whole `if` is a `&str`, and the error only
+   moves to `label`, which must be returned as a `String`.
 5. **`break` can carry a value.** A `loop` is an expression, and `break value` gives its value. A
    bare `break;` gives `()`, so it must be `break x;`.
 

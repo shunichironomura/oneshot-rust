@@ -1,0 +1,20 @@
+id = "dst-02"
+title = { en = "Custom DST packets", ja = "サイズ不定のパケット" }
+difficulty = 3
+concepts = [
+    "custom dynamically sized types (a struct whose last field is unsized)",
+    "T: ?Sized on a struct's last field",
+    "unsizing coercion Box<Packet<[u8; N]>> -> Box<Packet<[u8]>> at the return site",
+    "&Packet<[u8; N]> -> &Packet<[u8]> and deref coercion at call sites",
+    "Packet<dyn Display> and the 'static default object lifetime",
+    "const generic array parameter",
+    "slice elements must be Sized",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

@@ -1,0 +1,19 @@
+id = "loop-01"
+title = { en = "Breaking out right", ja = "正しく抜け出す" }
+difficulty = 1
+concepts = [
+    "break with a value only from loop and labeled blocks",
+    "for loops evaluate to ()",
+    "labeled block expressions",
+    "labeled breaks out of nested loops",
+    "let-else must diverge",
+    "returning &str borrowed from the input",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

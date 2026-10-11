@@ -28,4 +28,4 @@ Do not change the signatures.
 ### Examples
 
 - `number_pattern()` returns the 8 characters `\`, `d`, `+`, `\`, `.`, `\`, `d`, `+`.
-- `windows_path().len()` is `21`, and the third character of `windows_path()` is a backslash.
+- `windows_path()` returns the 21 characters `C:\new\table\data.txt` (`len()` is `21`).

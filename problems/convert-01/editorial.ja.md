@@ -20,7 +20,7 @@
 `Result` は `FromIterator` を実装しています。`Result<Weekday, DayError>` のイテレータを
 `Result<Vec<Weekday>, DayError>` に `collect` すると、すべての曜日を持つ `Ok` になるか、最初の `Err` で
 止まります。返り値の型から `collect` が作るものが決まり、そこから `parse` が `Weekday` を作ることも
-決まります。`"".split(',')` は 0 個ではなく空の部分を 1 個返すので、空白だけの入力には先頭のチェックが
+決まります。`"".split(',')` は 0 個ではなく空の部分を 1 個返すので、空や空白だけの入力には先頭のチェックが
 必要です。チェックがないと、結果は `Err(Unknown(""))` になってしまいます。
 
 ### 別解

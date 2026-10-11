@@ -1,0 +1,20 @@
+id = "module-02"
+title = { en = "Lost in modules", ja = "モジュールで迷子" }
+difficulty = 2
+concepts = [
+    "module privacy",
+    "crate:: is the crate root, not the player's file",
+    "super:: is relative to the current module",
+    "tuple struct fields are private by default (constructor, .0 and patterns)",
+    "private use vs pub use re-exports",
+    "a re-export cannot be more visible than the item (E0364)",
+    "pub(super) / pub(crate) / pub(in path) only for ancestors",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

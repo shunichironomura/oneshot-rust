@@ -15,9 +15,10 @@ pub fn widen(values: Vec<i32>) -> Vec<i64>
 - `join_upper` converts every word to upper case and joins them, with `sep` between neighbors. The
   harness passes references to arrays of `&str` and to `Vec<String>`s, and a slice of a
   `Vec<String>`. For an empty list it names the element type, as in `join_upper::<String>(&[], ",")`.
-- `total_chars` returns the total number of characters (`char`s) in groups of strings. The harness
-  passes `Vec`s of `Vec`s, arrays of arrays or of `Vec`s, references to these, and iterators whose
-  items are iterators over `&str` (such as `text.lines().map(|l| l.split(' '))`).
+- `total_chars` returns the total number of characters (`char`s) in groups of strings (`&str` or
+  `String`). The harness passes `Vec`s of `Vec`s, arrays of arrays or of `Vec`s, references to
+  these, and iterators whose items are iterators over `&str` (such as
+  `text.lines().map(|l| l.split(' '))`).
 - `square_in_place` replaces a `u32` with its square. The harness passes a `&mut Box<u32>` and a
   mutable reference to its own type `Score`, which implements `AsMut<u32>`.
 - `widen` converts integers to `i64`, keeping their order. The harness passes `Vec`s, arrays and

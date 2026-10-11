@@ -113,17 +113,14 @@ pub fn run() {
         check(r1.end <= r2.start && r2.end <= x && x < r3.start, "ranges overlap")
     });
     case("hidden-3", || {
-        // Threads mixing both functions, including empty and large reservations.
-        let steps: &[Step] = &[
-            NEXT_ID, Some(3), NEXT_ID, Some(0), Some(50),
-            NEXT_ID, Some(2), NEXT_ID, Some(1), NEXT_ID,
-        ];
-        check_threads(&[steps, steps, steps])
-    });
-    case("hidden-4", || {
-        // Four threads taking ids as fast as they can: next_id alternating with reserve(0..=4).
-        let steps: Vec<Step> =
-            (0..60).map(|i| if i % 2 == 0 { NEXT_ID } else { Some(i % 5) }).collect();
+        // Four threads at once, each mixing next_id with reserve(n) for n in 0..=4 and 50.
+        let steps: Vec<Step> = (0..60)
+            .map(|i| match i % 10 {
+                4 => Some(50),
+                k if k % 2 == 0 => NEXT_ID,
+                _ => Some(i % 5),
+            })
+            .collect();
         check_threads(&[&steps, &steps, &steps, &steps])
     });
 }

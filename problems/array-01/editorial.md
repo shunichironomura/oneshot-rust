@@ -9,9 +9,9 @@ The way out is to consume the array. `array.map(f)` takes the array by value, pa
 `shout` needs. Arrays also implement `IntoIterator` by value, so `for x in arr` and (since edition
 2021) `arr.into_iter()` yield owned elements.
 
-`zip_arrays` combines both: `a.map` hands out the elements of `a`, and an iterator over `b` hands out
-the matching element of `b` on each call. The `unwrap` never fails, because both arrays have `N`
-elements, and for `N = 0` the closure is not called at all.
+`zip_arrays` combines both: `a.map` hands out the elements of `a`, and an iterator over `b` hands
+out the matching element of `b` on each call. The `unwrap` never fails, because both arrays have
+`N` elements, and for `N = 0` the closure is not called at all.
 
 `transpose` works with `i32`, which is `Copy`, so `[[0; R]; C]` is fine here. Note the swapped
 lengths in the return type. Take the sizes from `R` and `C` (or let the loops run over `m`) rather

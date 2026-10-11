@@ -1,0 +1,12 @@
+id = "phantom-01"
+title = { en = "Millimeters and inches", ja = "ミリとインチ" }
+difficulty = 3
+concepts = ["#[derive] adds bounds on every type parameter", "PhantomData<U> markers", "manual Clone / Copy / PartialEq / Debug impls without bounds", "operator overloading that keeps the unit"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

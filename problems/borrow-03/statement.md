@@ -17,6 +17,9 @@ When `transfer` returns an error, no balance changes.
 `balances[from]` to `balances[to]` and sets `balances[from]` to 0. Both indices are less than
 `balances.len()`. If `from == to`, the slice is left unchanged.
 
+In a `Bank` and in the slice alike, the total of all balances fits in a `u64`, so no addition
+overflows.
+
 ```rust
 #[derive(Debug, PartialEq)]
 pub enum TransferError {

@@ -68,7 +68,7 @@ impl Triage {
 
 ```rust
 pub fn k_smallest(v: &[i32], k: usize) -> Vec<i32> {
-    // Keep the k smallest values seen so far; the largest of them is on top.
+    // それまでに見た値のうち小さいほうから k 個を持つ（その中で最大の値が先頭）
     let mut heap = BinaryHeap::new();
     for &x in v {
         if heap.len() < k {

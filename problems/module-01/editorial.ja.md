@@ -20,7 +20,8 @@ Rust の可視性はモジュール単位で決まります。`pub` のない要
 
 怪しく見えても問題ない行もあります。`Cart::total` は `Item` の非公開フィールド `item.price` を読んでいます。
 このフィールドは `shop` で非公開になっていて、`shop::cart` は `shop` の中にあるので見えます。
-`price` を `pub` フィールドにしてもコンパイルは通りますが、誰からでも見えるようになってしまい、問題文で禁止されています。
+`price` を `pub` フィールドにしてもコンパイルは通りますが、誰からでも見えるようになってしまいます。
+これは問題文で禁止されています。
 
 ### 別解
 
@@ -56,6 +57,8 @@ pub use shop::checkout;
 （`pub(crate) mod pricing`）。
 
 ```rust
+// shop は模範解答と同じ
+
 use shop::cart::Cart;
 use shop::pricing::{discounted, with_tax};
 

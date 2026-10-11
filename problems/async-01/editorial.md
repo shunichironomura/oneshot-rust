@@ -7,13 +7,14 @@ dropped when `greet` returns (E0597). `async move` moves `name` into the future 
 `name.clone()` inside the block does not help: the clone runs only when the future is polled, so the
 block still borrows `name`.
 
-**`sum_all`**: `.await` is only allowed directly in the body of an `async fn` or an `async` block.
-The closure `|f| f.await` is an ordinary closure, even though it is written inside an async function
-(E0728): `map` and `sum` call it synchronously, so there is nowhere to suspend. Making it an async
-closure (`async |f| f.await`) does not help either: `map` then yields futures, which `sum` cannot
-add up. A `for` loop has no closure, so its body is part of the async function. It also awaits the
-futures one at a time, in order. Popping them with `while let Some(f) = futs.pop()` (after making
-`futs` mutable) compiles too, but awaits them in reverse order.
+**`sum_all`**: `.await` is only allowed directly in the body of an `async fn`, an `async` block or
+an async closure. The closure `|f| f.await` is an ordinary closure, even though it is written
+inside an async function (E0728): `map` and `sum` call it synchronously, so there is nowhere to
+suspend. Making it an async closure (`async |f| f.await`) does not help either: `map` then yields
+futures, which `sum` cannot add up. A `for` loop has no closure, so its body is part of the async
+function. It also awaits the futures one at a time, in order. Popping them with
+`while let Some(f) = futs.pop()` (after making `futs` mutable) compiles too, but awaits them in
+reverse order.
 
 **`depth`**: the future of an `async fn` is a value that stores everything alive across an
 `.await`, including the future being awaited. Here that is the future of `depth` itself, so the type

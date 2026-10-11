@@ -1,0 +1,18 @@
+id = "any-01"
+title = { en = "Component store", ja = "コンポーネント置き場" }
+difficulty = 3
+concepts = [
+    "dyn Any downcasting",
+    "trait upcasting dyn Component -> dyn Any (1.86)",
+    "&Box<dyn Trait> silently coerces the Box itself",
+    "Box<dyn Any>::downcast",
+    "Any supertrait implies 'static",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

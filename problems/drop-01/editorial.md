@@ -4,8 +4,9 @@ an array or a tuple). `drop(locks)`, or simply letting `locks` go out of scope, 
 `a`, `b`, `c` in that order, which is wrong for `release_all`. Pop the locks from the end instead.
 
 `swap_in` needs no special care. In `*slot = Lock::acquire(name, &slot.log)` the right-hand side
-is evaluated first, and then the assignment drops the old value of `*slot`. The borrow of
-`slot.log` ends when `acquire` returns, because the new lock holds its own clone of the `Rc`.
+is evaluated first, and then the assignment drops the old value of `*slot`. The shared borrow of
+`slot.log` ends when `acquire` returns, because its return type `Lock` borrows nothing (the new lock
+holds its own clone of the `Rc`), so the assignment to `*slot` is allowed.
 
 `keep_first` uses the same front-to-back rule, and this time it is the order we want.
 `into_iter()` moves the locks into an iterator and `next()` takes out the first one. The iterator

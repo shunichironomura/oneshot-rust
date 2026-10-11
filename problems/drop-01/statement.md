@@ -1,6 +1,5 @@
 A `Lock` is a named resource that writes to a shared log when it is acquired and when it is
-released. Dropping a `Lock` releases it. Implement `Lock` and three functions that work on several
-locks at once.
+released. Dropping a `Lock` releases it. Implement `Lock` and three functions that use it.
 
 ```rust
 pub type Log = Rc<RefCell<Vec<String>>>;
@@ -29,7 +28,7 @@ pub fn keep_first(locks: Vec<Lock>) -> Option<Lock>;
 - `name` returns the name of the lock. A name can be any string, even the empty string.
 - `into_name` consumes the lock and returns its name **without** releasing it: nothing is appended
   to the log, now or later.
-- `release_all` releases every lock in `locks`, the **last** one first.
+- `release_all` releases every lock in `locks`, from the **last** one to the first.
 - `swap_in` replaces the lock in `slot` with a new lock named `name` that writes to the same log.
   The new lock is acquired first, and then the old one is released.
 - `keep_first` returns the first lock of `locks` (`None` if `locks` is empty) and releases all the

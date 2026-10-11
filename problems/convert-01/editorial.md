@@ -7,10 +7,10 @@ reason `next` cannot be `(self as u8 + 1) as Weekday`. A `match` lists the seven
 the wrap from `Sun` to `Mon` explicit.
 
 Implementing the standard traits plugs `Weekday` into existing APIs. `impl TryFrom<u8> for Weekday`
-also gives `u8: TryInto<Weekday>` through a blanket impl in `std`, and `TryFrom` and `TryInto` are in
-the prelude since the 2021 edition, so `0u8.try_into()` works without a `use`. In the same way,
-`impl FromStr` is what makes `"fri".parse::<Weekday>()` work. Note that the error type is called
-`Error` in `TryFrom` but `Err` in `FromStr`.
+also gives `u8: TryInto<Weekday>` through a blanket impl in `std`, and `TryFrom` and `TryInto` have
+been in the prelude since the 2021 edition, so `0u8.try_into()` works without a `use`. In the same
+way, `impl FromStr` is what makes `"fri".parse::<Weekday>()` work. Note that the error type is
+called `Error` in `TryFrom` but `Err` in `FromStr`.
 
 In `from_str`, `s.to_ascii_lowercase()` returns a new `String`. String literal patterns match a
 `&str`, not a `String`, so match on `.as_str()`. The original `s` is untouched, so the error can keep

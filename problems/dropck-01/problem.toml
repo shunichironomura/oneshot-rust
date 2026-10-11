@@ -1,0 +1,12 @@
+id = "dropck-01"
+title = { en = "Trace log", ja = "トレースの記録" }
+difficulty = 3
+concepts = ["drop check (dropck)", "Drop impl on a type holding a reference", "declaration order and drop order", "borrowck checks unwinding paths", "explicit drop() before moving the borrowed value"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

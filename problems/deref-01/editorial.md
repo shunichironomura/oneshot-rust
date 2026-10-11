@@ -21,9 +21,10 @@ element.) `partition_point(pred)` instead returns the first index where `pred` i
   equal one, if there is one. `self.items.get(index) == Some(value)` checks that, and also handles
   `index == len`.
 
-In these closures, `x` is a `&T`, so compare it with `&value` (or write `*x <= value`: comparison
-operators take their operands by reference). `|&x| x <= value` would move a `T` out of a reference,
-which only works for `Copy` types such as `i32`, and `|x| x <= value` compares a `&T` with a `T`.
+In the closure of `insert`, `x` is a `&T` but `value` is a `T`, so compare `x` with `&value` (or
+write `*x <= value`: comparison operators take their operands by reference, so nothing is moved).
+`|x| x <= value` compares a `&T` with a `T` and does not compile, and `|&x| x <= value` would move a
+`T` out of a reference, which only works for `Copy` types such as `i32`.
 
 `sort` is stable, while `sort_unstable` may reorder equal elements (it does for longer inputs). To
 sort the vector in place, the parameter of `from` must be declared `mut items`.
@@ -57,7 +58,8 @@ pub fn remove(&mut self, value: &T) -> bool {
 
 A comparison that never answers `Equal` makes `binary_search_by` return `Err` with the boundary.
 `then(Ordering::Less)` treats equal elements as smaller, which gives the insertion point (with
-`use std::cmp::Ordering;`); `then(Ordering::Greater)` gives the leftmost equal element instead.
+`use std::cmp::Ordering;`). `then(Ordering::Greater)` treats them as greater instead, which gives the
+position of the leftmost equal element, if there is one.
 
 ```rust
 pub fn insert(&mut self, value: T) -> usize {
