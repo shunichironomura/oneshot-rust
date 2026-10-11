@@ -46,7 +46,6 @@ export function FinishedDialog({
         problemId: problem.id,
         problemTitle: localize(problem.title, locale),
         mode: run.mode,
-        par: problem.par,
         verdicts: verdictsOf(run),
         solved: run.status === "solved",
       },
@@ -69,10 +68,7 @@ export function FinishedDialog({
   const n = run.attempts.length;
   const solved = run.status === "solved";
   const verdicts = verdictsOf(run);
-  const text = shareText(
-    { problemId: problem.id, mode: run.mode, par: problem.par, verdicts, solved },
-    t,
-  );
+  const text = shareText({ problemId: problem.id, mode: run.mode, verdicts, solved }, t);
   const copy = async () => {
     await navigator.clipboard.writeText(text);
     setCopied(true);
@@ -92,14 +88,14 @@ export function FinishedDialog({
         <X size={18} aria-hidden="true" />
       </button>
       <h2 class={solved ? "solved" : "failed"}>
-        {solved ? `${titleFor(n, problem.par)}!` : t.outOfLives}
+        {solved ? `${titleFor(n) ?? t.solvedHeadline}!` : t.unsolvedHeadline}
       </h2>
       <p class="squares">{verdicts.map(verdictEmoji).join("")}</p>
       {newBest !== undefined && <p class="new-best">{t.newBest}</p>}
       {run.assisted === true && <p class="practice-note">{t.practiceRun}</p>}
       <dl>
         <dt>{t.submissions}</dt>
-        <dd>{t.submissionsValue(n, problem.par)}</dd>
+        <dd>{n}</dd>
         <dt>{t.compileErrors}</dt>
         <dd>{ceCount(run)}</dd>
         <dt>{t.mode}</dt>

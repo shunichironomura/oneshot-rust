@@ -5,7 +5,6 @@ import { recommend } from "../core/recommend.ts";
 import { routeHref } from "../core/route.ts";
 import { useApp } from "./context.ts";
 import { HeroDemo } from "./HeroDemo.tsx";
-import { ParChip } from "./ParMeter.tsx";
 
 const AUTHOR = { name: "Shunichiro Nomura", url: "https://github.com/shunichironomura" };
 
@@ -61,7 +60,7 @@ export function HomePage() {
                     ? t.playCardStart(localize(next.title, locale))
                     : t.playCardAllSolved(t.modes[settings.mode])}
               </span>
-              <ParChip par={next.par} label={t.parTooltip(next.par)} />
+              <span class="badge">{t.difficulties[next.difficulty]}</span>
             </p>
             <div class="choice-actions">
               <a

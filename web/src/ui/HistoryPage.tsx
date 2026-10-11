@@ -5,15 +5,15 @@ import { present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
 import { routeHref } from "../core/route.ts";
 import { type Run, verdictsOf } from "../core/run.ts";
-import { titleFor, verdictEmoji } from "../core/scoring.ts";
+import { verdictEmoji } from "../core/scoring.ts";
 import { useApp } from "./context.ts";
 import { DiffView } from "./DiffView.tsx";
 import { IconButton } from "./IconButton.tsx";
 
-function runStatus(run: Run, problem: Problem, t: Messages): string {
+function runStatus(run: Run, t: Messages): string {
   switch (run.status) {
     case "solved":
-      return t.runSolved(run.attempts.length, titleFor(run.attempts.length, problem.par));
+      return t.runSolved(run.attempts.length);
     case "failed":
       return t.runFailed;
     case "playing":
@@ -101,7 +101,7 @@ export function HistoryPage({ problemId }: { problemId: string }) {
             <span class="run-date">{dateFormat.format(run.startedAt)}</span>
             <span class="chip">{t.modes[run.mode]}</span>
             <span>{verdictsOf(run).map(verdictEmoji).join("")}</span>
-            <span>{runStatus(run, problem, t)}</span>
+            <span>{runStatus(run, t)}</span>
             {run.assisted === true && <span class="chip">{t.runPractice}</span>}
           </summary>
           {run.id === openRun && <RunDetail run={run} problem={problem} />}

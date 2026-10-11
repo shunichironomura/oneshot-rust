@@ -1,6 +1,6 @@
 id = "list-01"
 title = { en = "Reverse a linked list", ja = "連結リストの反転" }
-par = 3
+difficulty = 3
 concepts = ["Box", "Option", "ownership", "take"]
 kind = "implement"
 

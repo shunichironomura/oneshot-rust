@@ -25,7 +25,7 @@ import { Editor } from "./Editor.tsx";
 import { FinishedDialog } from "./FinishedDialog.tsx";
 import { IconButton } from "./IconButton.tsx";
 import { KindBadge } from "./KindBadge.tsx";
-import { ParChip } from "./ParMeter.tsx";
+import { ShotChip } from "./ShotMeter.tsx";
 import { ResultPanel } from "./ResultPanel.tsx";
 import { SolutionPanel } from "./SolutionPanel.tsx";
 import { type RunRules, usePlay } from "./usePlay.ts";
@@ -231,11 +231,7 @@ export function PlayView({
         >
           {t.modeChip(t.modes[runMode])}
         </button>
-        <ParChip
-          par={problem.par}
-          shots={run === null ? [] : verdictsOf(run)}
-          label={t.meterTooltip(problem.par, tries)}
-        />
+        <ShotChip shots={run === null ? [] : verdictsOf(run)} label={t.shotsTooltip(tries)} />
         {practice && (
           <span class="chip" title={t.practiceTooltip}>
             {t.practiceChip}

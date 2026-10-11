@@ -6,7 +6,7 @@ import type {
   VerdictKind,
 } from "./classify.ts";
 import type { Mode } from "./mode.ts";
-import type { ProblemKind } from "./problem.ts";
+import type { Difficulty, ProblemKind } from "./problem.ts";
 
 export type Locale = "en" | "ja";
 
@@ -65,8 +65,9 @@ export interface Messages {
   columnProblem: string;
   columnBest: (mode: string) => string;
   bestTooltip: (ceCount: number) => string;
-  parTooltip: (par: number) => string;
-  meterTooltip: (par: number, tries: number) => string;
+  columnDifficulty: string;
+  shotsTooltip: (tries: number) => string;
+  difficulties: Record<Difficulty, string>;
   modes: Record<Mode, string>;
   modeDescriptions: Record<Mode, string>;
   kinds: Record<ProblemKind, string>;
@@ -134,9 +135,9 @@ export interface Messages {
   internalError: (reason: InternalErrorReason) => string;
 
   // End of a run
-  outOfLives: string;
+  solvedHeadline: string;
+  unsolvedHeadline: string;
   submissions: string;
-  submissionsValue: (n: number, par: number) => string;
   compileErrors: string;
   mode: string;
   newBest: string;
@@ -155,7 +156,7 @@ export interface Messages {
   // History
   historyTitle: string;
   noSubmissions: string;
-  runSolved: (n: number, title: string) => string;
+  runSolved: (n: number) => string;
   runFailed: string;
   runPlaying: string;
   runPractice: string;
@@ -230,9 +231,10 @@ const en: Messages = {
   columnProblem: "Problem",
   columnBest: (mode) => `Best (${mode})`,
   bestTooltip: (ce) => `${ce} compile error${ce === 1 ? "" : "s"}`,
-  parTooltip: (par) => `Par ${par}: aim to solve it in ${par} submission${par === 1 ? "" : "s"}`,
-  meterTooltip: (par, tries) => `Par ${par} · ${tries} ${tries === 1 ? "try" : "tries"} so far`,
-  modes: { beginner: "Beginner", standard: "Standard", advanced: "Hard", oni: "Extreme" },
+  columnDifficulty: "Difficulty",
+  shotsTooltip: (tries) => `${tries} ${tries === 1 ? "try" : "tries"} so far · aim for one`,
+  difficulties: { 1: "Beginner", 2: "Intermediate", 3: "Advanced" },
+  modes: { beginner: "Verbose", standard: "Standard", advanced: "Terse", oni: "Silent" },
   modeDescriptions: {
     beginner:
       "Full compiler output, including help and suggestions. Errors are marked in the editor.",
@@ -336,9 +338,9 @@ const en: Messages = {
     }
   },
 
-  outOfLives: "Out of lives",
+  solvedHeadline: "Solved",
+  unsolvedHeadline: "Unsolved",
   submissions: "Submissions",
-  submissionsValue: (n, par) => `${n} (par ${par})`,
   compileErrors: "Compile errors",
   mode: "Mode",
   newBest: "New personal best!",
@@ -356,7 +358,7 @@ const en: Messages = {
 
   historyTitle: "Submission history",
   noSubmissions: "No submissions yet.",
-  runSolved: (n, title) => `Solved in ${n} (${title})`,
+  runSolved: (n) => `Solved in ${n}`,
   runFailed: "Ended unsolved",
   runPractice: "Practice",
   runPlaying: "In progress",
@@ -432,9 +434,10 @@ const ja: Messages = {
   columnProblem: "問題",
   columnBest: (mode) => `ベスト（${mode}）`,
   bestTooltip: (ce) => `うち CE ${ce} 回`,
-  parTooltip: (par) => `Par ${par}：${par} 回の提出で解くのが目標`,
-  meterTooltip: (par, tries) => `Par ${par} ・ 現在 ${tries} 回`,
-  modes: { beginner: "入門", standard: "標準", advanced: "上級", oni: "鬼" },
+  columnDifficulty: "難易度",
+  shotsTooltip: (tries) => `現在 ${tries} 回（目標は 1 回）`,
+  difficulties: { 1: "初級", 2: "中級", 3: "上級" },
+  modes: { beginner: "親切", standard: "標準", advanced: "簡潔", oni: "鬼" },
   modeDescriptions: {
     beginner: "rustc の出力をすべて表示（help・修正提案つき）。エディタにエラー行マーカーを表示",
     standard: "エラーメッセージ、コード片、note を表示。help と修正提案は非表示",
@@ -537,9 +540,9 @@ const ja: Messages = {
     }
   },
 
-  outOfLives: "残機がなくなりました",
+  solvedHeadline: "正解",
+  unsolvedHeadline: "未解決",
   submissions: "提出回数",
-  submissionsValue: (n, par) => `${n} 回（Par ${par}）`,
   compileErrors: "うち CE",
   mode: "モード",
   newBest: "自己ベスト更新！",
@@ -557,7 +560,7 @@ const ja: Messages = {
 
   historyTitle: "提出履歴",
   noSubmissions: "まだ提出がありません。",
-  runSolved: (n, title) => `${n} 回で正解（${title}）`,
+  runSolved: (n) => `${n} 回で正解`,
   runFailed: "未解決で終了",
   runPractice: "練習",
   runPlaying: "挑戦中",

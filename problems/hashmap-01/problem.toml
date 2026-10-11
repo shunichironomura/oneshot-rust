@@ -1,6 +1,6 @@
 id = "hashmap-01"
 title = { en = "Word count", ja = "単語の出現回数" }
-par = 2
+difficulty = 1
 concepts = ["HashMap", "String", "sorting"]
 kind = "implement"
 

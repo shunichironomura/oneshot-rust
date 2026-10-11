@@ -5,11 +5,11 @@ import { type ShareInput, titleFor, type VerdictTone, verdictTone } from "./scor
 export const SITE_NAME = "oneshotrust.dev";
 
 export interface ShareCard {
-  /** e.g. "Birdie!", or the out-of-lives message. */
+  /** "Hole in One!", "Solved!" or "Unsolved". */
   headline: string;
   solved: boolean;
   problemTitle: string;
-  /** e.g. "3 tries · Par 2 · Standard" */
+  /** e.g. "3 tries · Standard" */
   detail: string;
   shots: { label: string; tone: VerdictTone }[];
 }
@@ -20,10 +20,12 @@ export function shareCard(
 ): ShareCard {
   const n = input.verdicts.length;
   return {
-    headline: input.solved ? `${titleFor(n, input.par)}!` : messages.outOfLives,
+    headline: input.solved
+      ? `${titleFor(n) ?? messages.solvedHeadline}!`
+      : messages.unsolvedHeadline,
     solved: input.solved,
     problemTitle: input.problemTitle,
-    detail: [messages.shareTries(n), `Par ${input.par}`, messages.modes[input.mode]].join(" · "),
+    detail: [messages.shareTries(n), messages.modes[input.mode]].join(" · "),
     shots: input.verdicts.map((kind) => ({ label: kind, tone: verdictTone(kind) })),
   };
 }

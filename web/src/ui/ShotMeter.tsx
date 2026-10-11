@@ -9,23 +9,23 @@ function shotClass(shot: Shot): string {
 }
 
 interface Props {
-  par: number;
   /** Submissions made so far, in order. */
   shots?: readonly Shot[];
   label: string;
 }
 
 /**
- * Par as a row of slots, one per expected submission. Each submission fills a slot
- * in its verdict color; submissions beyond par add slots marked as over par.
+ * Submissions as a row of slots in their verdict colors. The goal is always one shot,
+ * so an empty slot stands for it before the first submission, and every slot after the
+ * first is marked as over.
  */
-export function ParMeter({ par, shots = [], label }: Props) {
-  const slots = Math.max(par, shots.length);
+export function ShotMeter({ shots = [], label }: Props) {
+  const slots = Math.max(1, shots.length);
   return (
-    <span class="par-meter" title={label} aria-label={label} role="img">
+    <span class="shot-meter" title={label} aria-label={label} role="img">
       {Array.from({ length: slots }, (_, i) => {
         const shot = shots[i];
-        const over = i >= par ? " over" : "";
+        const over = i >= 1 ? " over" : "";
         return (
           <span key={i} class={`slot${shot === undefined ? "" : ` ${shotClass(shot)}`}${over}`} />
         );
@@ -34,12 +34,12 @@ export function ParMeter({ par, shots = [], label }: Props) {
   );
 }
 
-/** The meter with a "Par" label, as a pill. */
-export function ParChip(props: Props) {
+/** The meter with the number of submissions, as a pill. */
+export function ShotChip(props: Props) {
   return (
-    <span class="par-chip">
-      <span class="par-label">Par</span>
-      <ParMeter {...props} />
+    <span class="shot-chip">
+      <ShotMeter {...props} />
+      <span class="shot-count">{props.shots?.length ?? 0}</span>
     </span>
   );
 }

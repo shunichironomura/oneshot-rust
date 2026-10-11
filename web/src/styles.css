@@ -628,16 +628,16 @@ main > section.home {
   color: var(--syn-meta);
 }
 
-/* Par meter: one slot per expected submission */
+/* Shot meter: one slot per submission */
 
-.par-meter {
+.shot-meter {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   vertical-align: middle;
 }
 
-.par-meter .slot {
+.shot-meter .slot {
   width: 12px;
   height: 12px;
   border: 2px solid var(--muted);
@@ -645,41 +645,41 @@ main > section.home {
   opacity: 0.55;
 }
 
-.par-meter .slot.over {
+.shot-meter .slot.over {
   border-style: dashed;
   border-color: var(--ce);
 }
 
-.par-meter .slot.ac,
-.par-meter .slot.ce,
-.par-meter .slot.miss,
-.par-meter .slot.ie,
-.par-meter .slot.done {
+.shot-meter .slot.ac,
+.shot-meter .slot.ce,
+.shot-meter .slot.miss,
+.shot-meter .slot.ie,
+.shot-meter .slot.done {
   opacity: 1;
   border-color: transparent;
 }
 
-.par-meter .slot.ac {
+.shot-meter .slot.ac {
   background: var(--ac);
 }
 
-.par-meter .slot.ce {
+.shot-meter .slot.ce {
   background: var(--ce);
 }
 
-.par-meter .slot.miss {
+.shot-meter .slot.miss {
   background: var(--wa);
 }
 
-.par-meter .slot.ie {
+.shot-meter .slot.ie {
   background: var(--ie);
 }
 
-.par-meter .slot.done {
+.shot-meter .slot.done {
   background: var(--accent);
 }
 
-.par-chip {
+.shot-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.45em;
@@ -688,7 +688,7 @@ main > section.home {
   border-radius: 999px;
 }
 
-.par-label {
+.shot-count {
   color: var(--muted);
   font-size: 0.78em;
   font-weight: 600;

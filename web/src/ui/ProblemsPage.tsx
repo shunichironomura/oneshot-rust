@@ -3,10 +3,9 @@ import { useEffect, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import { routeHref } from "../core/route.ts";
 import { type Best, bestVerdicts, type Run } from "../core/run.ts";
-import { titleFor } from "../core/scoring.ts";
 import { useApp } from "./context.ts";
 import { KindBadge } from "./KindBadge.tsx";
-import { ParMeter } from "./ParMeter.tsx";
+import { ShotMeter } from "./ShotMeter.tsx";
 
 export function ProblemsPage() {
   const { content, storage, settings, locale, t, openSettings } = useApp();
@@ -40,7 +39,7 @@ export function ProblemsPage() {
           <tr>
             <th aria-hidden="true" />
             <th>{t.columnProblem}</th>
-            <th title={t.parTooltip(2)}>Par</th>
+            <th>{t.columnDifficulty}</th>
             <th>{t.columnBest(modeName)}</th>
           </tr>
         </thead>
@@ -63,22 +62,21 @@ export function ProblemsPage() {
                   <KindBadge kind={p.kind} />
                 </td>
                 <td>
-                  <ParMeter par={p.par} label={t.parTooltip(p.par)} />
+                  <span class="badge">{t.difficulties[p.difficulty]}</span>
                 </td>
                 <td class="best">
                   {best === undefined ? (
                     <span class="dim">—</span>
                   ) : (
                     <span class="best-record" title={t.bestTooltip(best.ceCount)}>
-                      <ParMeter
-                        par={p.par}
+                      <ShotMeter
                         shots={
                           bestVerdicts(best, bestRuns.get(best.runId)) ??
                           Array.from({ length: best.submissions }, () => "done" as const)
                         }
                         label={`${best.submissions}`}
                       />
-                      {titleFor(best.submissions, p.par)}
+                      {best.submissions}
                     </span>
                   )}
                 </td>

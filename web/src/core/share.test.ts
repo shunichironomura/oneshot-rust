@@ -8,17 +8,16 @@ test("a solved run", () => {
       problemId: "lifetime-01",
       problemTitle: "Longest word",
       mode: "standard",
-      par: 2,
       verdicts: ["CE", "WA", "AC"],
       solved: true,
     },
     MESSAGES.en,
   );
   expect(card).toEqual({
-    headline: "Bogey!",
+    headline: "Solved!",
     solved: true,
     problemTitle: "Longest word",
-    detail: "3 tries · Par 2 · Standard",
+    detail: "3 tries · Standard",
     shots: [
       { label: "CE", tone: "ce" },
       { label: "WA", tone: "miss" },
@@ -27,20 +26,34 @@ test("a solved run", () => {
   });
 });
 
+test("a hole in one", () => {
+  const card = shareCard(
+    {
+      problemId: "iter-01",
+      problemTitle: "Sum of even squares",
+      mode: "standard",
+      verdicts: ["AC"],
+      solved: true,
+    },
+    MESSAGES.en,
+  );
+  expect(card.headline).toBe("Hole in One!");
+  expect(card.detail).toBe("1 try · Standard");
+});
+
 test("a failed run", () => {
   const card = shareCard(
     {
       problemId: "lifetime-01",
       problemTitle: "最長の単語",
       mode: "oni",
-      par: 2,
       verdicts: ["CE", "UB"],
       solved: false,
     },
     MESSAGES.ja,
   );
-  expect(card.headline).toBe(MESSAGES.ja.outOfLives);
-  expect(card.detail).toBe("2回 · Par 2 · 鬼");
+  expect(card.headline).toBe(MESSAGES.ja.unsolvedHeadline);
+  expect(card.detail).toBe("2回 · 鬼");
 });
 
 test("few squares keep their maximum size", () => {

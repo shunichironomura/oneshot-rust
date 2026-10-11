@@ -12,7 +12,7 @@ const files = (toml: string, tests = 'case("sample-1", || Ok(()));'): ProblemFil
 
 const MINIMAL = `id = "p-01"
 title = { en = "T" }
-par = 1
+difficulty = 1
 concepts = ["x"]
 kind = "implement"
 `;
@@ -34,7 +34,7 @@ test("parseProblem applies judge defaults and renders the statement", () => {
 
 test.each([
   [MINIMAL.replace('id = "p-01"', 'id = "other"'), /must match the directory name/],
-  [MINIMAL.replace("par = 1", "par = 0"), /`par`/],
+  [MINIMAL.replace("difficulty = 1", "difficulty = 4"), /`difficulty`/],
   [MINIMAL.replace('kind = "implement"', 'kind = "golf"'), /kind/],
   [MINIMAL.replace('kind = "implement"', 'kind = "signature"'), /harness_visible/],
   [`${MINIMAL}\n[judge]\nmiri_checks = "slow"\n`, /judge\.miri_checks/],
