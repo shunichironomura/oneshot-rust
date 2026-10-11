@@ -68,7 +68,7 @@ export function ResultPanel({ phase, last, presentation }: Props) {
       </div>
     );
   }
-  if (last === null) return <div class="result empty">{t.resultEmpty}</div>;
+  if (last === null) return <div class="result" />;
   if (last.kind === "rejected") {
     return (
       <div class="result">

@@ -973,12 +973,6 @@ main > section.round-start {
   min-height: 7em;
 }
 
-.result.empty {
-  display: flex;
-  align-items: center;
-  color: var(--muted);
-}
-
 .verdict-line {
   display: flex;
   align-items: center;
