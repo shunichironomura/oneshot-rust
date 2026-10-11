@@ -1,7 +1,7 @@
 import { expect, test } from "vite-plus/test";
 import { lineDiff } from "./diff.ts";
 import { parseRoute, routeHref } from "./route.ts";
-import { DEFAULT_SETTINGS, normalizeSettings, notepadEditor } from "./settings.ts";
+import { DEFAULT_SETTINGS, normalizeSettings } from "./settings.ts";
 
 test.each([
   ["", { page: "home" }],
@@ -30,25 +30,15 @@ test("normalizeSettings fills defaults and rejects invalid values", () => {
     normalizeSettings({
       mode: "oni",
       course: 4,
+      locale: "fr",
+      // Stored by an older version, which had editor settings.
       editor: { fontSize: 99, closeBrackets: false },
     }),
-  ).toEqual({
-    ...DEFAULT_SETTINGS,
-    mode: "oni",
-    editor: { ...DEFAULT_SETTINGS.editor, closeBrackets: false },
-  });
+  ).toEqual({ ...DEFAULT_SETTINGS, mode: "oni" });
 });
 
 test("normalizeSettings keeps a valid course", () => {
   expect(normalizeSettings({ course: 3 }).course).toBe(3);
-});
-
-test("notepadEditor turns every aid off", () => {
-  expect(notepadEditor(DEFAULT_SETTINGS.editor)).toMatchObject({
-    syntaxHighlight: false,
-    closeBrackets: false,
-    autoIndent: false,
-  });
 });
 
 test("lineDiff", () => {

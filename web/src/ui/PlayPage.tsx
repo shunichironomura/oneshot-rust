@@ -271,7 +271,6 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
               initialValue={state.code}
               onChange={setCode}
               onSubmit={requestSubmit}
-              settings={settings.editor}
               markers={presentation?.markers ?? NO_MARKERS}
               readOnly={running}
             />

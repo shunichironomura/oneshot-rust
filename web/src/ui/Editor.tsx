@@ -8,7 +8,7 @@ import {
   syntaxHighlighting,
 } from "@codemirror/language";
 import { type Diagnostic as LintDiagnostic, lintGutter, setDiagnostics } from "@codemirror/lint";
-import { Compartment, EditorState, type Extension } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
 import {
   drawSelection,
   EditorView,
@@ -19,7 +19,6 @@ import {
 } from "@codemirror/view";
 import { useEffect, useRef } from "preact/hooks";
 import type { EditorMarker } from "../core/present.ts";
-import type { EditorSettings } from "../core/settings.ts";
 import { baseTheme, highlightStyle } from "./editorTheme.ts";
 
 interface Props {
@@ -30,30 +29,8 @@ interface Props {
   initialValue: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
-  settings: EditorSettings;
   markers: EditorMarker[];
   readOnly?: boolean;
-}
-
-function aids(settings: EditorSettings): Extension {
-  return [
-    settings.syntaxHighlight ? [rust(), syntaxHighlighting(highlightStyle)] : [],
-    settings.closeBrackets ? [closeBrackets(), keymap.of(closeBracketsKeymap)] : [],
-    // Without auto-indent, Enter only inserts a newline.
-    settings.autoIndent ? indentOnInput() : keymap.of([{ key: "Enter", run: insertPlainNewline }]),
-  ];
-}
-
-function insertPlainNewline(view: EditorView): boolean {
-  view.dispatch(view.state.replaceSelection("\n"), { scrollIntoView: true, userEvent: "input" });
-  return true;
-}
-
-function fontTheme(settings: EditorSettings): Extension {
-  return EditorView.theme({
-    "&": { fontSize: `${settings.fontSize}px` },
-    ".cm-scroller": { fontFamily: settings.fontFamily, lineHeight: "1.55" },
-  });
 }
 
 function toLintDiagnostics(state: EditorState, markers: EditorMarker[]): LintDiagnostic[] {
@@ -71,18 +48,9 @@ function sameMarkers(a: EditorMarker[], b: EditorMarker[]): boolean {
   );
 }
 
-export function Editor({
-  initialValue,
-  onChange,
-  onSubmit,
-  settings,
-  markers,
-  readOnly = false,
-}: Props) {
+export function Editor({ initialValue, onChange, onSubmit, markers, readOnly = false }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
-  const aidsCompartment = useRef(new Compartment());
-  const themeCompartment = useRef(new Compartment());
   const readOnlyCompartment = useRef(new Compartment());
   // Keep the latest callbacks without recreating the editor.
   const callbacks = useRef({ onChange, onSubmit });
@@ -100,6 +68,10 @@ export function Editor({
           highlightActiveLine(),
           drawSelection(),
           bracketMatching(),
+          closeBrackets(),
+          indentOnInput(),
+          rust(),
+          syntaxHighlighting(highlightStyle),
           history(),
           lintGutter(),
           indentUnit.of("    "),
@@ -107,12 +79,11 @@ export function Editor({
           keymap.of([
             { key: "Mod-Enter", run: () => (callbacks.current.onSubmit(), true) },
             indentWithTab,
+            ...closeBracketsKeymap,
             ...defaultKeymap,
             ...historyKeymap,
           ]),
           baseTheme,
-          aidsCompartment.current.of(aids(settings)),
-          themeCompartment.current.of(fontTheme(settings)),
           readOnlyCompartment.current.of(EditorState.readOnly.of(readOnly)),
           EditorView.updateListener.of((u) => {
             if (u.docChanged) callbacks.current.onChange(u.state.doc.toString());
@@ -124,15 +95,6 @@ export function Editor({
     return () => v.destroy();
     // The editor is created once; later prop changes are applied by the effects below.
   }, []);
-
-  useEffect(() => {
-    view.current?.dispatch({
-      effects: [
-        aidsCompartment.current.reconfigure(aids(settings)),
-        themeCompartment.current.reconfigure(fontTheme(settings)),
-      ],
-    });
-  }, [settings]);
 
   useEffect(() => {
     view.current?.dispatch({

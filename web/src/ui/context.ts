@@ -13,7 +13,6 @@ export interface AppContextValue {
   updateSettings: (settings: Settings) => void;
   toolchain: Toolchain;
   locale: Locale;
-  openSettings: () => void;
   /** UI messages in the current locale. */
   t: Messages;
 }
