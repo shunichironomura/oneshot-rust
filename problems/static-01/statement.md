@@ -19,8 +19,9 @@ pub fn intern_calls() -> usize;
   including the empty string.
 - `resolve(id)` returns the string with the id `id`, or `None` if that id has not been handed out.
 - `interned_count()` returns the number of distinct strings interned so far. `intern_calls()`
-  returns the total number of calls to `intern` so far, including calls with a string that was
-  already interned. `resolve` and `interned_count` do not change either count.
+  returns the total number of calls to `intern` so far, on all threads together, including calls
+  with a string that was already interned. `resolve` and `interned_count` do not change either
+  count.
 - There is one table for the whole program, kept until the program ends. The functions may be
   called from several threads at the same time, and all threads share the table: an id returned on
   one thread resolves to the same string on every thread, a string gets exactly one id even when

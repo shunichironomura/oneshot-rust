@@ -32,7 +32,8 @@ pub fn op_for(symbol: char, scale: i32) -> impl Fn(i32, i32) -> i32
   overflows.
 
 Do not change `Keep` or the signatures of `select` and `describe`. In `op_for`, only the return type
-may change, as long as the result can still be called as `f(a, b)`.
+may change, as long as the result can still be called as `f(a, b)` through a shared reference, like
+an `Fn`.
 
 ### Examples
 

@@ -1,6 +1,6 @@
 id = "ord-01"
 title = { en = "Versions that compare correctly", ja = "正しく比べられるバージョン" }
-difficulty = 3
+difficulty = 2
 concepts = [
     "manual Ord / PartialOrd consistent with Eq",
     "derived Option ordering (None < Some) is wrong here",

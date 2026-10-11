@@ -13,8 +13,8 @@ The model solution moves the branching **inside** a single value. `select` build
 closure matches on `keep`, `describe` produces a `String` in both branches, and `op_for` returns one
 closure that matches on `symbol` each time it is called. These closures need `move`: `keep`,
 `symbol` and `scale` are parameters, and a closure that only borrowed them could not outlive the
-call (E0373, "closure may outlive the current function"). They are `Copy`, so `move` just copies
-them.
+call. Without `move`, rustc reports E0373 ("closure may outlive the current function") in `select`
+and E0597 ("does not live long enough") in `op_for`. They are `Copy`, so `move` just copies them.
 
 Two logic bugs hide behind the type errors, and fixing only the types (for example with the
 compiler's suggestion `n.to_string()` for the `else` branch) does not remove them:

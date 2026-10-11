@@ -4,8 +4,8 @@
   `Mutex::new`、`RwLock::new`、`Vec::new` は `const fn` ですが、`HashMap::new` は違います。
   `HashMap::new` は `RandomState` を作り、`RandomState` はプログラムの実行時にランダムなハッシュの鍵を
   選ぶからです（E0015）。`LazyLock` を使うと、初期化を実行時に回せます。クロージャは最初に使われたときに、
-  最初にたどり着いたスレッドで一度だけ実行されます。static は中の値に参照外しされるので、
-  `IDS.lock()` はそのまま使えます。
+  最初にたどり着いたスレッドで一度だけ実行されます。`LazyLock` は（`Deref` で）中の値として
+  使えるので、`IDS.lock()` はそのまま書けます。
 - **static は `Sync` でなければなりません**。どのスレッドからも同時に触れるからです。`Cell` は `Sync`
   ではありません（E0277）。2 つのスレッドが同時に `CALLS.set(CALLS.get() + 1)` を実行すると
   データ競合になります。`AtomicUsize::fetch_add` は、分割できない 1 回の操作で値を増やします。
@@ -26,11 +26,18 @@
 ### 別解
 
 `BTreeMap::new` は `const fn` なので、（`std::collections` の）`BTreeMap` なら `LazyLock` は要りません。
-`HashMap::with_hasher` も `const fn` です。`BuildHasherDefault::<DefaultHasher>::new()` のように、
-ランダムな鍵を選ばないハッシャーと組み合わせれば使えます。
 
 ```rust
 static IDS: Mutex<BTreeMap<String, u32>> = Mutex::new(BTreeMap::new());
+```
+
+`HashMap::with_hasher` も `const fn` です。`BuildHasherDefault<DefaultHasher>`（どちらも `std::hash`
+にあります）のように、ランダムな鍵を選ばないハッシャーと組み合わせれば使えます。ハッシュ値が
+予測できるようになるので、この問題では構いませんが、攻撃者が文字列を選べる場合には向きません。
+
+```rust
+static IDS: Mutex<HashMap<String, u32, BuildHasherDefault<DefaultHasher>>> =
+    Mutex::new(HashMap::with_hasher(BuildHasherDefault::new()));
 ```
 
 `OnceLock` は `LazyLock` を手動にしたものです。初期化の方法は、値を使う場所で渡します。

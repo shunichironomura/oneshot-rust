@@ -1,5 +1,5 @@
 id = "error-03"
-title = { en = "One From to rule them all", ja = "万能な From の落とし穴" }
+title = { en = "One From to rule them all", ja = "すべてを統べる From" }
 difficulty = 3
 concepts = ["From and ?", "blanket impls and coherence", "conflict with core's impl<T> From<T> for T (E0119)", "std::error::Error", "Box<dyn Error> downcasting", "closure parameter inference with parse().map_err (E0282)"]
 kind = "repair"

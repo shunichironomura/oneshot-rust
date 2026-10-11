@@ -4,15 +4,16 @@ entries found there. This only works if **equal keys have equal hashes**, which 
 
 The tempting `self.0.hash(state)` (exactly what `#[derive(Hash)]` would generate) hashes `Rust` and
 `RUST` differently. `contains` then usually looks in the wrong place and returns `false`, and
-`unique_tags` keeps both spellings. This is a logic error, not UB: nothing crashes, the results are
-just wrong, and a lucky collision can even make a lookup succeed now and then.
+`unique_tags` keeps both spellings. This is a logic error, not UB: the behavior is unspecified but
+memory-safe. Here nothing crashes, the results are just wrong, and a lucky collision can even make a
+lookup succeed now and then.
 
 So hash exactly what `eq` compares: the bytes with ASCII letters lowercased. `eq_ignore_ascii_case`
-and `to_ascii_lowercase` only change `A`–`Z`, as the rules ask. `to_lowercase` and `to_uppercase`
+and `to_ascii_lowercase` only touch ASCII letters, as the rules ask. `to_lowercase` and `to_uppercase`
 follow Unicode instead: comparing with them makes `É` equal to `é`, and `to_uppercase` even makes
 `Straße` equal to `STRASSE`. The final `0xff` byte copies what `str` does: it marks the end of the
-string, so that the pairs `("ab", "c")` and `("a", "bc")` hash differently (the tests do not need it).
-Unequal tags may still get the same hash: that is only a collision.
+string, so that the pairs `("ab", "c")` and `("a", "bc")` feed the hasher different bytes (the tests
+do not need it). Unequal tags may still get the same hash: that is only a collision.
 
 Keeping the first spelling needs no extra code. `HashSet::insert` returns `false` and leaves the
 stored value alone when an equal one is already there, and `HashMap::entry` (like `HashMap::insert`)

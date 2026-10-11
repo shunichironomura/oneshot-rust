@@ -30,7 +30,7 @@ pub fn latest_stable(versions: &[Version]) -> Option<&Version>
     and without `-PRE` the field `pre` is `None`.
   - `PRE`, the pre-release label, is one or more characters, each of which is an ASCII letter, an
     ASCII digit or `.`. It is stored in `pre` exactly as written.
-  - Nothing else is allowed. The string is not trimmed, and any other character or any missing part
+  - Nothing else is allowed. The string is not trimmed, and any other character or any empty part
     makes it invalid. For an invalid string, return `Err(ParseVersionError)`. For example, `""`,
     `"1..2"`, `"1.2.3.4"`, `"1.2-"` and `"v1"` are all invalid.
 - **Display** prints `MAJOR.MINOR.PATCH` as decimal numbers without leading zeros, followed by

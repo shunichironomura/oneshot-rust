@@ -1,5 +1,5 @@
 id = "impltrait-01"
-title = { en = "One concrete type", ja = "具体的な型はひとつ" }
+title = { en = "Filters, labels and operators", ja = "フィルタ、ラベル、演算子" }
 difficulty = 2
 concepts = [
     "return-position impl Trait is a single type",

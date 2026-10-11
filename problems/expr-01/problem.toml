@@ -1,0 +1,19 @@
+id = "expr-01"
+title = { en = "Simplify the expression", ja = "式を整理する" }
+difficulty = 3
+concepts = [
+    "recursive enums with Box",
+    "moving out of a Box with *",
+    "or-patterns with bindings",
+    "match guards",
+    "checked arithmetic",
+    "recursion",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

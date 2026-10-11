@@ -6,9 +6,11 @@
 それより前がすべて `Equal` のときだけです。`then_with` はクロージャを受け取るので、`match` もそのときに
 しか実行されません。
 
-`<`、`>`、`partial_cmp` が使うのは `PartialOrd`、`sort`、`max`、`min`、`BTreeSet` が使うのは `Ord` です。
-`partial_cmp` を `Some(self.cmp(other))` と書けば、2 つが食い違うことはありません。順序は、derive した
-`PartialEq`、`Eq`、`Hash` とも一致していなければなりません。つまり `cmp` が `Equal` を返すのは、
+`<`、`>`、`partial_cmp` は `PartialOrd` を呼びます。`sort`、`max`、`min`、`BTreeSet` が要求するのは
+`Ord` ですが、内部ではどちらのトレイトのメソッドを呼ぶこともあります（たとえば `sort` は `<` で
+比べます）。そのため 2 つは一致していなければなりません。`partial_cmp` を `Some(self.cmp(other))` と
+書けば、2 つが食い違うことはありません。順序は、derive した `PartialEq`、`Eq`、`Hash` とも
+一致していなければなりません。つまり `cmp` が `Equal` を返すのは、
 4 つのフィールドがすべて等しいときだけです。すべてのフィールドを見て、ラベルもそのまま比べているので、
 この解答はそうなっています。たとえば大文字と小文字を区別せずにラベルを比べると、`1.2.0-RC1` と
 `1.2.0-rc1` は `BTreeSet` にとっては「等しい」のに、`HashSet` にとっては等しくなくなります。

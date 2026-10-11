@@ -63,5 +63,5 @@ where
 }
 ```
 
-`ops_table` has no alternative: `fn(i32, i32) -> i32` is the only type that all three closures can
-become without changing the body.
+`ops_table` has no alternative: without changing the body, `fn(i32, i32) -> i32` is the only return
+type that the harness accepts.

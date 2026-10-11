@@ -10,8 +10,8 @@ pub fn make_greeter(greeting: String) -> impl Fn(&str) -> String
 - `tally` は `events` を先頭から順に処理し、各イベントをログの末尾に追加します。`ERR` で始まるイベントはエラーです。
   大文字と小文字は区別し、先頭だけを見ます。`"ERROR 7"` はエラーですが、`"err"`、`"Err"`、`" ERR"` は
   エラーではありません。
-- イベントを追加した直後に、それまでのエラーの数が `limit` と等しければ、ログに `"abort"` を追加して、
-  残りのイベントは無視します。`limit` は 1 以上です。
+- イベントを追加した直後に、その時点までのエラーの数（そのイベントも含みます）が `limit` と
+  等しければ、ログに `"abort"` を追加して、残りのイベントは無視します。`limit` は 1 以上です。
 - `tally` はエラーの数とログを返します。
 - `make_greeter(greeting)` は、`name` を `"<greeting>, <name>!"` に変える関数を返します。`<greeting>` は
   `greeting` の両端の空白を取り除いたもの（`str::trim` と同じ）です。`name` はそのまま使います。

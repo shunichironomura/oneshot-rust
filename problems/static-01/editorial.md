@@ -25,11 +25,18 @@ cannot deadlock.
 ### Alternatives
 
 `BTreeMap::new` is a `const fn`, so a `BTreeMap` (from `std::collections`) needs no `LazyLock`.
-`HashMap::with_hasher` is a `const fn` too, with a hasher that does not pick random keys, such as
-`BuildHasherDefault::<DefaultHasher>::new()`.
 
 ```rust
 static IDS: Mutex<BTreeMap<String, u32>> = Mutex::new(BTreeMap::new());
+```
+
+`HashMap::with_hasher` is a `const fn` too. It works with a hasher that does not pick random keys,
+such as `BuildHasherDefault<DefaultHasher>` (both from `std::hash`). The hashes are then
+predictable, which is fine here but not when an attacker can choose the strings.
+
+```rust
+static IDS: Mutex<HashMap<String, u32, BuildHasherDefault<DefaultHasher>>> =
+    Mutex::new(HashMap::with_hasher(BuildHasherDefault::new()));
 ```
 
 `OnceLock` is the manual form of `LazyLock`: the initializer is given where the value is used.

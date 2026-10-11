@@ -30,8 +30,8 @@ pub fn sum_pairs(text: &str) -> Result<f64, Box<dyn Error>>
 - `sum_pairs` は `text` の行（`str::lines` で分けたもの）を順に処理し、空行と空白だけの行は
   読み飛ばします。それ以外の行はすべて `parse_pair` で読み取り、`a as f64 + b` の合計を返します
   （組が 1 つもなければ `0.0`）。
-- `parse_pair` が受け付けない行があれば、`sum_pairs` は最初のその行で処理をやめ、その `AppError` を
-  ボックス化して返します。テストでは `downcast_ref::<AppError>()` で取り出します。
+- `parse_pair` が受け付けない行があれば、`sum_pairs` はそのうち最初の行で処理をやめ、その行の
+  `AppError` をボックス化して返します。テストでは `downcast_ref::<AppError>()` で取り出します。
 
 `AppError` とその `Display`・`Error` の実装、`parse_pair` と `sum_pairs` のシグネチャは
 変えないでください。それ以外は変更して構いません。

@@ -12,8 +12,9 @@
 模範解答は、分岐を 1 つの値の**中に**移しています。`select` は `keep` で `match` するクロージャを持つ
 `filter` を 1 つだけ作り、`describe` はどちらの分岐でも `String` を作り、`op_for` は呼ばれるたびに
 `symbol` で `match` するクロージャを 1 つ返します。これらのクロージャには `move` が必要です。
-`keep`、`symbol`、`scale` は引数なので、借用するだけのクロージャは関数の呼び出しより長く生きられません
-（E0373、"closure may outlive the current function"）。どれも `Copy` なので、`move` で単にコピーされます。
+`keep`、`symbol`、`scale` は引数なので、借用するだけのクロージャは関数の呼び出しより長く生きられません。
+`move` がないと、`select` では E0373（"closure may outlive the current function"）、`op_for` では
+E0597（"does not live long enough"）になります。どれも `Copy` なので、`move` で単にコピーされます。
 
 型エラーの陰に、ロジックのバグが 2 つ隠れています。型だけを直しても（たとえば `else` の分岐に
 コンパイラが提案する `n.to_string()` を使っても）、これらは残ります。
