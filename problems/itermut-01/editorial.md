@@ -18,8 +18,9 @@ after. Moving the slice out with `let rest = self.rest;` fails too, because `&mu
 The way out is to take the `&'a mut [T]` out of `self` **by value** and leave something valid in
 its place. `std::mem::take(&mut self.rest)` does exactly that: `&mut [T]` implements `Default` as an
 empty slice, which borrows nothing and so fits any lifetime. The function now owns `rest`, a
-`&'a mut [T]`; `split_at_mut` consumes it and returns two non-overlapping `&'a mut [T]`, and the
-part that is not yielded goes back into `self.rest`. `next_back` does the same from the other end.
+`&'a mut [T]`, so the reborrow for `split_at_mut` no longer goes through `self` and may last for
+all of `'a`: it returns two non-overlapping `&'a mut [T]`, and the part that is not yielded goes
+back into `self.rest`. `next_back` does the same from the other end.
 This is how the Rustonomicon writes `IterMut` for slices ("Splitting Borrows"), without `unsafe`.
 
 The length of the run is computed before the take, through a short shared borrow. Start at 1 and

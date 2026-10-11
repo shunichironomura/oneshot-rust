@@ -73,6 +73,33 @@ pub fn run() {
         check_eq(m.misses(), 4)
     });
     case("hidden-5", || {
+        // A key scheduled by f is processed before the keys that were already waiting.
+        let m = Memo::new();
+        m.schedule(3);
+        m.schedule(4);
+        let got = m.run_all(|m, k| {
+            if k == 4 {
+                m.schedule(9);
+            }
+            k + 100
+        });
+        check_eq(
+            got,
+            vec![
+                (4, 104),
+                (2, 102),
+                (1, 101),
+                (9, 109),
+                (4, 104),
+                (2, 102),
+                (1, 101),
+                (3, 103),
+                (1, 101),
+            ],
+        )?;
+        check_eq(m.misses(), 5)
+    });
+    case("hidden-6", || {
         // f uses the cache while run_all is running; the cache is shared with fib.
         let m = Memo::new();
         m.schedule(5);
@@ -81,7 +108,7 @@ pub fn run() {
         check_eq(fib(&m, 4), 3)?;
         check_eq(m.misses(), 6)
     });
-    case("hidden-6", || {
+    case("hidden-7", || {
         // Several threads use one memo at the same time; one of them runs the queue.
         let m = Memo::new();
         let (queued, a, b) = thread::scope(|s| {

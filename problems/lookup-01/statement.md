@@ -1,7 +1,7 @@
 `Registry<K, V>` wraps a `HashMap<K, V>` (it is already in the editor). The bodies of its methods are
 already written, but four of the signatures accept only a `&K` as the key, so the test harness (the
-`tests.rs` tab) does not compile: like `HashMap`, it looks up `String` keys with a `&str` and
-`Vec<u8>` keys with a `&[u8]`. Change **only the signatures** of `get`, `contains`, `remove` and
+`tests.rs` tab) does not compile: it looks up `String` keys with a `&str` and `Vec<u8>` keys with a
+`&[u8]`, as a `HashMap` allows. Change **only the signatures** of `get`, `contains`, `remove` and
 `get_or` so that the harness compiles and passes. Do not change the struct, the bodies, `new` or
 `insert`. You may add `use` declarations.
 

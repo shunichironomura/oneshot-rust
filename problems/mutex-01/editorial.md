@@ -22,9 +22,11 @@ Some fixes that look right are not:
   is alive. So does keeping a named guard (`let mut cache = self.cache.lock().unwrap();`) across the
   call to `f`.
 - In `run_all`, keeping the queue guard in a variable and pushing `key / 2` through it avoids the
-  second `lock()` and passes the examples, but `f` may call `schedule`, which still deadlocks. Taking
-  the whole queue out at the start (with `std::mem::take`) and working on a local copy loses the keys
-  that `f` schedules.
+  second `lock()` and passes the examples, but `f` may call `schedule`, which still deadlocks.
+- Taking the whole queue out at the start (with `std::mem::take`) and working on the taken `Vec`
+  loses the keys that `f` schedules. Taking the queue out again whenever that `Vec` runs empty does
+  not lose them, but processes them too late, after keys that were scheduled before them: that is
+  not last in, first out.
 
 Because the lock is released between the lookup and the insert, two threads may compute the same key
 at the same time. That is the price of never holding a lock while running someone else's code, and

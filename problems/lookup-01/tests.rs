@@ -62,6 +62,7 @@ pub fn run() {
         check_eq(n, 99)
     });
     case("hidden-3", || {
+        // Byte-string keys (including the empty one) and u32 keys.
         let mut bytes: Registry<Vec<u8>, &str> = Registry::new();
         bytes.insert(Vec::new(), "empty");
         bytes.insert(vec![1, 2, 3], "three");

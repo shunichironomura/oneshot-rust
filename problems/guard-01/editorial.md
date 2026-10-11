@@ -11,6 +11,10 @@ its message like `format!`, so `{value}` inserts the number. Keep the two messag
 than or equal to 100" goes with values that are too **large**. The Rust Book swaps exactly these two
 messages in chapter 11 to show how `#[should_panic(expected = "...")]` catches the mistake.
 
+Implementing `TryFrom` is enough. The standard library has the blanket implementation
+`impl<T, U> TryInto<U> for T where U: TryFrom<T>`, so once `Guess: TryFrom<i32>` holds,
+`value.try_into()` works too (the same way `From` gives you `Into`).
+
 `a.cmp(&b)` describes `a` relative to `b`, so `self.value.cmp(&secret)` is `Less` when the guess is
 too small. `secret.cmp(&self.value)` gives the opposite answer.
 

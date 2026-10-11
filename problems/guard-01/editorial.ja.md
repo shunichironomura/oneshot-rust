@@ -12,6 +12,11 @@
 値が**大きすぎる**ときのメッセージです。Rust Book の 11 章では、まさにこの 2 つのメッセージを
 入れ替えて、`#[should_panic(expected = "...")]` がその誤りを見つける様子を示しています。
 
+実装するのは `TryFrom` だけで十分です。標準ライブラリには
+`impl<T, U> TryInto<U> for T where U: TryFrom<T>` という包括的な実装（ブランケット実装）が
+あるので、`Guess: TryFrom<i32>` が成り立てば `value.try_into()` も使えます（`From` を実装すると
+`Into` が使えるようになるのと同じです）。
+
 `a.cmp(&b)` は `b` から見た `a` を表すので、`self.value.cmp(&secret)` は予想が小さすぎるときに
 `Less` になります。`secret.cmp(&self.value)` では逆の答えになります。
 

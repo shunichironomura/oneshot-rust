@@ -14,6 +14,9 @@ Some fixes look right but still capture only the field:
 
 - `let SendPtr(p) = base;` inside the closure: destructuring uses only `base.0`.
 - `SendPtr(base.0)` inside the closure: this builds a new wrapper from the captured field.
+- Adding `unsafe impl Sync for SendPtr {}`: the closure does not capture a `SendPtr` at all, so no
+  trait implemented for the wrapper helps.
+- Switching to `thread::scope` with the same closure: scoped threads need a `Send` closure too.
 
 Keep taking the base pointer **once**, before spawning, as the template does. Calling
 `out.as_mut_ptr()` in every iteration reborrows all of `out` mutably while the threads spawned

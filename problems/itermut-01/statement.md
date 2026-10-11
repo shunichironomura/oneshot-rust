@@ -24,8 +24,8 @@ impl<'a, T: PartialEq> DoubleEndedIterator for RunsMut<'a, T> {
 - `v` is split into runs, each as long as possible: a new run starts at every element that is not
   equal to the element just before it. Every run has at least one element, and an empty `v` has
   no runs. Equal values that are not next to each other belong to different runs.
-- Elements are compared with `==` only, and a value need not be equal to itself:
-  `f64::NAN == f64::NAN` is `false`, so every NaN is a run of its own.
+- Elements are compared with `==`. `T` is only required to be `PartialEq`, so a value need not be
+  equal to itself: `f64::NAN == f64::NAN` is `false`, and every NaN is a run of its own.
 - `next` yields the runs from the front (left to right), and `next_back` from the back (right to
   left). Calls to both can be mixed: every run is yielded exactly once, whichever end it comes
   from. Once all runs have been yielded, both return `None`, and keep doing so.

@@ -7,8 +7,8 @@ time with `let closed = self.closed;`.
 
 The compiler's suggestions lead nowhere here. `ref queue` or `&self.closed` only borrow, but the
 next state has to **own** the queue (it becomes `sent` or `unsent`), and the list of closed sessions
-has to own the `Session`. `Session` is not `Clone`, so copying is not an option either; a session is
-meant to be moved, not duplicated.
+has to own the `Session`. The note "consider implementing `Clone`" does not help either: the rules
+forbid adding traits to the types, and a session is meant to be moved, not duplicated.
 
 `std::mem::take(&mut self.state)` puts the default value in place and hands out the old state by
 value, in a single step. `Conn` derives `Default` with `#[default]` on `Offline`, so the placeholder

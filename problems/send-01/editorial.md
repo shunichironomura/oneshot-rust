@@ -20,9 +20,10 @@ Extra bounds "just to be safe" break the harness. `F: Send + Sync` in `par_map` 
 that owns a `MutexGuard`: a lock must be released on the thread that took it, so a guard is `Sync`
 but not `Send`. That closure never leaves the calling thread, which drops it at the end of
 `par_map`. The other way around, a `Receiver` and a `Cell` are `Send` but not `Sync`, so `F: Sync`
-in `spawn_job` rejects the closure that owns a receiver, `T: Sync` rejects the `Receiver` items and
-inputs, and `U: Sync` rejects the closure that returns a `Cell` and the job that gives its receiver
-back. `'static` in `par_map` rejects the closures and items that borrow local variables.
+in `spawn_job` rejects the closure that owns a receiver. In the same way, `T: Sync` rejects the
+`Receiver` items and inputs, and `U: Sync` rejects the closure that returns a `Cell` and the job
+that gives its receiver back. `'static` in `par_map` rejects the closures and items that borrow
+local variables.
 
 ### Alternatives
 

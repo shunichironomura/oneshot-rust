@@ -15,7 +15,8 @@ pub fn respond(req: &Request) -> Vec<u8>;
 ```
 
 `parse_request` reads an HTTP request. Its lines end with `\r\n`, which is not part of the line.
-The last line may also end at the end of `raw` without `\r\n`.
+The last line may also end at the end of `raw` without `\r\n`. You may assume that before the body,
+every `\n` in `raw` is part of a `\r\n`.
 
 - The first line is the request line `METHOD PATH VERSION`: exactly three non-empty parts separated
   by single spaces (`' '`). `VERSION` must be exactly `HTTP/1.1`. `METHOD` and `PATH` are not

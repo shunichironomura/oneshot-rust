@@ -1,7 +1,7 @@
 This code compiles, but it never finishes: Miri stops it with the error "the evaluated program
 deadlocked".
 
-`Memo` caches computed values (it is a memo) for recursive and concurrent computations, and keeps a
+`Memo` caches computed values (memoization) for recursive and concurrent computations, and keeps a
 queue of keys waiting to be processed. The whole implementation is already in the editor.
 
 ```rust

@@ -26,7 +26,9 @@ pub fn run() {
         let no_bytes: Vec<Vec<u8>> = Vec::new();
         check_eq(par_map(no_bytes, |bytes| bytes.len()), Vec::<usize>::new())?;
         let no_channels: Vec<mpsc::Receiver<i32>> = Vec::new();
-        check_eq(par_map(no_channels, |rx| rx.recv().unwrap()), Vec::<i32>::new())
+        check_eq(par_map(no_channels, |rx| rx.recv().unwrap()), Vec::<i32>::new())?;
+        let no_numbers: Vec<i32> = Vec::new();
+        check_eq(par_map(no_numbers, |n| Cell::new(n * 2)), Vec::<Cell<i32>>::new())
     });
     case("hidden-2", || {
         // The item and the result borrow `text`.
@@ -42,10 +44,6 @@ pub fn run() {
         check_eq(table.lock().unwrap().len(), 4)
     });
     case("hidden-4", || {
-        // Each result is a `Cell`.
-        check_eq(par_map(vec![7], |n| Cell::new(n * 10)), [Cell::new(70)])
-    });
-    case("hidden-5", || {
         // The job is already running while this thread sends the numbers.
         let (tx, rx) = mpsc::channel();
         let job = spawn_job(rx, |rx: mpsc::Receiver<i32>| rx.iter().sum::<i32>());
@@ -55,7 +53,7 @@ pub fn run() {
         drop(tx);
         check_eq(job.join().unwrap(), 6)
     });
-    case("hidden-6", || {
+    case("hidden-5", || {
         // The closure takes the receiver with it and gives it back.
         let (tx, rx) = mpsc::channel();
         let job = spawn_job(10, move |k: i32| (rx.recv().unwrap() * k, rx));

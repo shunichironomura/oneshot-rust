@@ -19,8 +19,9 @@ with lifetime `'1`」と報告します。この規則が `&mut` の唯一性を
 解決策は、`&'a mut [T]` を**値として** `self` から取り出し、代わりに有効な値を置いておくことです。
 `std::mem::take(&mut self.rest)` がまさにそれをします。`&mut [T]` は `Default` を実装していて、
 既定値は空のスライスです。空のスライスは何も借用しないので、どんなライフタイムにもなれます。
-これで関数は `&'a mut [T]` である `rest` を所有します。`split_at_mut` はそれを消費して、重ならない
-2 つの `&'a mut [T]` を返し、返さない側を `self.rest` に戻します。`next_back` は反対の端から同じことを
+これで関数は `&'a mut [T]` である `rest` を所有します。`split_at_mut` のための再借用はもう
+`self` を経由しないので、`'a` の間ずっと続けられます。`split_at_mut` は重ならない 2 つの
+`&'a mut [T]` を返し、返さない側を `self.rest` に戻します。`next_back` は反対の端から同じことを
 します。Rustonomicon の「Splitting Borrows」で、スライスの `IterMut` を `unsafe` なしで書いている
 方法と同じです。
 
@@ -65,7 +66,7 @@ fn next_back(&mut self) -> Option<&'a mut [T]> {
 そのまま分けて上書きできます。ほかからは触れられず、`rest = tail` と代入しても要素には影響しない
 からです。そこで、コンストラクタで最初にすべて分けてしまい、イテレータは `VecDeque` から取り出す
 だけにすることもできます。その代わり、メモリの確保が必要で、最初の連なりを返す前にスライス全体を
-なめることになります。
+1 回走査することになります。
 
 ```rust
 use std::collections::VecDeque;
