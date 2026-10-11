@@ -64,6 +64,7 @@ export interface Messages {
   recordsHeading: string;
   problemsHeading: string;
   practiceHint: string;
+  noProblemsSeen: string;
   columnProblem: string;
   columnBest: string;
   roundsHeading: string;
@@ -233,6 +234,7 @@ const en: Messages = {
   problemsHeading: "Problems",
   practiceHint:
     "Pick a problem to practice it on its own. Practice counts toward your best, not toward a round.",
+  noProblemsSeen: "Problems you meet in rounds will be listed here.",
   columnProblem: "Problem",
   columnBest: "Best",
   roundsHeading: "Rounds",
@@ -439,6 +441,7 @@ const ja: Messages = {
   problemsHeading: "問題",
   practiceHint:
     "問題を選ぶと、その問題だけを練習できます。練習の結果はベストに残りますが、ラウンドにはなりません。",
+  noProblemsSeen: "ラウンドで出会った問題がここに並びます。",
   columnProblem: "問題",
   columnBest: "ベスト",
   roundsHeading: "ラウンド",

@@ -12,6 +12,7 @@ import { routeHref } from "../core/route.ts";
 import { verdictEmoji } from "../core/scoring.ts";
 import { roundShareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
+import { ModeBadge } from "./LevelBadges.tsx";
 import { startRound } from "./RoundLauncher.tsx";
 import { ShareButtons } from "./ShareButtons.tsx";
 
@@ -34,7 +35,7 @@ function Scorecard({ round }: { round: Round }) {
       <h1>{t.scorecardTitle}</h1>
       <p class="scorecard-meta">
         {t.courseTitle(courseName(round.course, t))}
-        <span class="badge">{t.modes[round.mode]}</span>
+        <ModeBadge mode={round.mode} />
         <span class="run-date">{dateFormat.format(round.startedAt)}</span>
       </p>
       <p class="scorecard-total">

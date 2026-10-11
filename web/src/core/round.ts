@@ -175,3 +175,16 @@ export function roundShareText(round: Round, messages: Messages): string {
     roundSummary(round, messages),
   ].join("\n");
 }
+
+/**
+ * The problems the player has been shown in rounds: every one with an entry, and the
+ * current problem of a round in progress. Problems a round never reached are not included.
+ */
+export function seenProblemIds(rounds: readonly Round[]): Set<string> {
+  return new Set(
+    rounds.flatMap((r) => [
+      ...r.entries.map((e) => e.problemId),
+      ...(r.finishedAt === undefined ? [currentProblemId(r)].filter((id) => id !== undefined) : []),
+    ]),
+  );
+}
