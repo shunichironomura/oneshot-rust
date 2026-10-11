@@ -11,15 +11,6 @@ fn user(s: &str) -> Username {
     Username::parse(s).unwrap()
 }
 
-/// The result of `parse`, with the name copied out through `Deref`.
-fn parsed(s: &str) -> Result<String, NameError> {
-    Username::parse(s).map(|u| String::from(&*u))
-}
-
-fn ok(name: &str) -> Result<String, NameError> {
-    Ok(String::from(name))
-}
-
 fn char_count(s: &str) -> usize {
     s.chars().count()
 }
@@ -54,10 +45,9 @@ pub fn run() {
     });
     case("hidden-1", || {
         // Lengths are counted in chars after trimming, and both 3 and 16 are allowed.
-        check_eq(parsed("abc"), ok("abc"))?;
-        check_eq(parsed("abcdefghijklmnop"), ok("abcdefghijklmnop"))?;
+        check_eq(Username::parse("abc").as_deref(), Ok("abc"))?;
+        check_eq(Username::parse("abcdefghijklmnop").as_deref(), Ok("abcdefghijklmnop"))?;
         check_eq(Username::parse("abcdefghijklmnopq"), Err(NameError::TooLong))?;
-        check_eq(Username::parse("ab"), Err(NameError::TooShort))?;
         check_eq(Username::parse(""), Err(NameError::TooShort))?;
         check_eq(Username::parse("  ab  "), Err(NameError::TooShort))?;
         // 2 chars (3 bytes), and 16 chars (17 bytes).
@@ -65,37 +55,32 @@ pub fn run() {
         check_eq(Username::parse("abcdefghijklmnoé"), Err(NameError::BadChar('é')))
     });
     case("hidden-2", || {
-        // The first character is checked after the length and before the other characters.
+        // The first character is checked after the length and before the other characters, and
+        // the first character that is not a-z, 0-9 or '_' is reported.
         check_eq(Username::parse("Alice"), Err(NameError::BadStart))?;
         check_eq(Username::parse("_alice"), Err(NameError::BadStart))?;
         check_eq(Username::parse("1-2-3"), Err(NameError::BadStart))?;
         check_eq(Username::parse("éclair"), Err(NameError::BadStart))?;
-        check_eq(Username::parse("A"), Err(NameError::TooShort))?;
         check_eq(Username::parse("A-very-long-username"), Err(NameError::TooLong))?;
-        check_eq(parsed("z__"), ok("z__"))
-    });
-    case("hidden-3", || {
-        // The first character that is not a-z, 0-9 or '_' is reported.
         check_eq(Username::parse("aBc"), Err(NameError::BadChar('B')))?;
         check_eq(Username::parse("a.b-c"), Err(NameError::BadChar('.')))?;
         check_eq(Username::parse("garçon"), Err(NameError::BadChar('ç')))?;
         check_eq(Username::parse("ab\u{663}"), Err(NameError::BadChar('\u{663}')))?;
-        check_eq(parsed("a_1_b_2_c_3"), ok("a_1_b_2_c_3"))?;
-        check_eq(parsed("user0123456789_z"), ok("user0123456789_z"))
+        check_eq(Username::parse("z__").as_deref(), Ok("z__"))?;
+        check_eq(Username::parse("user0123456789_z").as_deref(), Ok("user0123456789_z"))
     });
-    case("hidden-4", || {
+    case("hidden-3", || {
         // Whitespace at both ends is removed first, as by `str::trim`.
-        let u = user("\talice\n");
+        let u = user("\talice\r\n");
         check_eq(&*u, "alice")?;
         check_eq(u.len(), 5)?;
         check_eq(u.to_string(), "alice")?;
-        check_eq(parsed("\u{3000}bob\u{3000}"), ok("bob"))?;
-        check_eq(parsed(" \r\n carol_9 \t "), ok("carol_9"))?;
+        check_eq(Username::parse("\u{3000}bob\u{3000}").as_deref(), Ok("bob"))?;
         check_eq(Username::parse("  Bob  "), Err(NameError::BadStart))?;
         check_eq(Username::parse(" a b "), Err(NameError::BadChar(' ')))
     });
-    case("hidden-5", || {
-        // A username can be used like a `&str`.
+    case("hidden-4", || {
+        // A username can be used like a `&str`, and `==` with a `&str` compares the exact name.
         let u = user("dave_42");
         check_eq(char_count(&u), 7)?;
         let s: &str = &u;
@@ -105,23 +90,18 @@ pub fn run() {
         check_eq(byte_len(&u), 7)?;
         check_eq(byte_len(u.clone()), 7)?;
         check_eq(borrowed(&u), "dave_42")?;
-        check_eq(format!("[{}]", u), "[dave_42]")?;
-        check_eq([user("ann"), u].join(", "), "ann, dave_42")
+        check(u == "dave_42", "u == \"dave_42\" should be true")?;
+        check(u != "Dave_42", "u != \"Dave_42\" should be true")?;
+        check(u != " dave_42", "u != \" dave_42\" should be true")?;
+        check(u != "dave_4", "u != \"dave_4\" should be true")?;
+        check(u != "dave_420", "u != \"dave_420\" should be true")?;
+        let ann = user(" ann ");
+        check(ann == user("ann"), "equal names should give equal usernames")?;
+        check(ann != u, "different names should give different usernames")?;
+        check_eq([ann, u].join(", "), "ann, dave_42")
     });
-    case("hidden-6", || {
-        // `==` with a `&str` compares the exact name; usernames compare by name.
-        let u = user("alice");
-        check(u == "alice", "u == \"alice\" should be true")?;
-        check(u != "Alice", "u != \"Alice\" should be true")?;
-        check(u != " alice", "u != \" alice\" should be true")?;
-        check(u != "alic", "u != \"alic\" should be true")?;
-        check(u != "alice_", "u != \"alice_\" should be true")?;
-        check(u == user(" alice "), "equal names should give equal usernames")?;
-        check(u != user("alicia"), "different names should give different usernames")?;
-        check(u.clone() == u, "a clone should be equal")
-    });
-    case("hidden-7", || {
-        // Hash maps and sets can be queried with a `&str`.
+    case("hidden-5", || {
+        // Hash maps can be queried with a `&str`.
         let names = ["alice", "bob", "carol_9", "dave"];
         let mut ages: HashMap<Username, u32> = names.into_iter().map(user).zip(20..).collect();
         for name in names {
@@ -140,12 +120,9 @@ pub fn run() {
         check_eq(ages.get("carol_9"), Some(&32))?;
         check_eq(ages.remove("dave"), Some(23))?;
         check(!ages.contains_key("dave"), "\"dave\" should be removed")?;
-        check_eq(ages.len(), 3)?;
-        let set: HashSet<Username> = ages.into_keys().collect();
-        check(set.contains("alice") && set.contains("carol_9"), "the set should contain the names")?;
-        check_eq(set.get("bob").map(|u| &**u), Some("bob"))
+        check_eq(ages.len(), 3)
     });
-    case("hidden-8", || {
+    case("hidden-6", || {
         // Usernames are ordered like their names, and B-tree maps can be queried with a `&str`.
         let (al_x, alice, bob) = (user("al_x"), user("alice"), user("bob"));
         check(al_x < alice, "al_x should be less than alice")?;

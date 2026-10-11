@@ -61,7 +61,8 @@ pub fn run() {
         check_eq(parse_request(b"GET /\r\n"), None)?;
         check_eq(parse_request(b"GET / HTTP/1.1 x\r\n"), None)?;
         check_eq(parse_request(b"GET  / HTTP/1.1\r\n"), None)?;
-        check_eq(parse_request(b" / HTTP/1.1\r\n"), None)
+        check_eq(parse_request(b" / HTTP/1.1\r\n"), None)?;
+        check_eq(parse_request(b"GET  HTTP/1.1\r\n"), None)
     });
     case("hidden-2", || {
         // Without an empty line, the headers run to the end of the input. The method and the path

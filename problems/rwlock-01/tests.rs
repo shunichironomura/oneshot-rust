@@ -132,7 +132,7 @@ pub fn run() {
         let store = Store::new(settings("dark", 12));
         let work = || -> Result<Vec<u64>, String> {
             let mut versions = Vec::new();
-            for _ in 0..4 {
+            for _ in 0..8 {
                 {
                     let view = store.read();
                     let size = view.font_size;
@@ -163,8 +163,25 @@ pub fn run() {
             all.extend(versions);
         }
         all.sort();
-        check_eq(all, (2..=13).collect::<Vec<u64>>())?;
-        check_eq(store.version(), 13)?;
-        check_eq(store.snapshot(), settings("dark", 24))
+        check_eq(all, (2..=25).collect::<Vec<u64>>())?;
+        check_eq(store.version(), 25)?;
+        check_eq(store.snapshot(), settings("dark", 36))
+    });
+    case("hidden-6", || {
+        // Only updates, on three threads at the same time: each version is returned exactly once.
+        let store = Store::new(settings("dark", 0));
+        let work = || (0..10).map(|_| store.update(|s| s.font_size += 1)).collect::<Vec<u64>>();
+        let mut all = thread::scope(|scope| {
+            let others = [scope.spawn(work), scope.spawn(work)];
+            let mut all = work();
+            for other in others {
+                all.extend(other.join().unwrap());
+            }
+            all
+        });
+        all.sort();
+        check_eq(all, (2..=31).collect::<Vec<u64>>())?;
+        check_eq(store.version(), 31)?;
+        check_eq(store.snapshot(), settings("dark", 30))
     });
 }
