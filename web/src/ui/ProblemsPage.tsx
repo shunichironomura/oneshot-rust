@@ -102,7 +102,7 @@ export function ProblemsPage() {
                       {localize(p.title, locale)}
                     </a>
                   </td>
-                  <td>
+                  <td class="difficulty">
                     <DifficultyBadge difficulty={p.difficulty} />
                   </td>
                   <td class="best">

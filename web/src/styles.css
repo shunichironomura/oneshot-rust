@@ -332,15 +332,17 @@ button.chip:hover:not(:disabled) {
 .toolchain-status {
   display: flex;
   align-items: center;
-  gap: 1em;
+  flex-wrap: wrap;
+  gap: 0.2em 1em;
   padding: 0.3em 1.2em;
   background: var(--accent-soft);
   border-bottom: 1px solid var(--border);
   font-size: 0.85em;
 }
 
+/* Below the text when both do not fit, rather than squeezed beside it. */
 .toolchain-status progress {
-  flex: 1;
+  flex: 1 1 8em;
   max-width: 20em;
   accent-color: var(--accent);
 }
@@ -839,8 +841,12 @@ main > section.round-start {
   margin-left: 0;
 }
 
-.play-header .spacer {
-  flex: 1;
+/* The actions keep together at the far end, on a line of their own when the header wraps. */
+.play-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-left: auto;
 }
 
 .play-body {
@@ -1015,8 +1021,10 @@ main > section.round-start {
   color: var(--muted);
 }
 
+/* Kept whole: a long message wraps instead. */
 .case-id {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 0.3em;
   font-family: var(--mono);
@@ -1028,6 +1036,7 @@ main > section.round-start {
 
 .case-message {
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .output summary {
@@ -1385,26 +1394,60 @@ dialog .actions {
     padding-top: 1em;
   }
 
+  /* From the top rather than centered: the demo changes height as it plays, which would
+     keep moving the Play button. */
+  .home .hero {
+    align-content: start;
+  }
+
   .hero h1 {
     font-size: 2.2em;
   }
 
-  .play-body {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(8em, 35%) 1fr;
-  }
-
-  .statement {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .play > .result {
-    flex-basis: 25%;
+  /* The demo's code wraps rather than running off the edge. */
+  .demo .code-view {
+    white-space: pre-wrap;
   }
 
   .play-header kbd {
     display: none;
+  }
+
+  /* Two lines per problem: the difficulty goes under the title, leaving the title room. */
+  .problem-table,
+  .problem-table tbody {
+    display: block;
+  }
+
+  .problem-table tr {
+    display: grid;
+    /* The title, the cell without a class, takes the area left free. */
+    grid-template: "status title best" "status difficulty best" / 2.6em 1fr auto;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .problem-table tr:last-child {
+    border-bottom: none;
+  }
+
+  .problem-table td {
+    border-bottom: none;
+  }
+
+  .problem-table .status {
+    grid-area: status;
+    width: auto;
+    padding-right: 0;
+  }
+
+  .problem-table .difficulty {
+    grid-area: difficulty;
+    padding-top: 0;
+  }
+
+  .problem-table .best {
+    grid-area: best;
   }
 
   .run-detail {
@@ -1413,6 +1456,66 @@ dialog .actions {
 
   .section-head h1 {
     font-size: 1.5em;
+  }
+}
+
+/* Small screens, phones held sideways included: the play screen scrolls as one page, so
+   that the statement, the editor and the result each get the room they need. */
+
+@media (max-width: 760px), (max-height: 500px) {
+  .play {
+    height: auto;
+    min-height: 100%;
+  }
+
+  /* Submitting stays at hand. */
+  .play-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .play-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .statement {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .editor {
+    height: auto;
+  }
+
+  /* Room to write below short code. */
+  .editor-pane .cm-content,
+  .editor-pane .cm-gutter {
+    min-height: 14em;
+  }
+
+  .play > .result {
+    flex: none;
+    min-height: 0;
+  }
+
+  .play > .result:empty {
+    display: none;
+  }
+}
+
+/* Touch screens */
+
+@media (pointer: coarse) {
+  /* There are no keys to hint at. */
+  kbd {
+    display: none;
+  }
+
+  /* iOS Safari zooms in on a focused text field set in less than 16px. */
+  .editor {
+    font-size: 16px;
   }
 }
 

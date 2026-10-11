@@ -1,6 +1,6 @@
 import { ArrowLeft, Flag, Play, RotateCcw, SkipForward } from "lucide-preact";
 import type { ComponentChildren } from "preact";
-import { useMemo, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import { type EditorMarker, present } from "../core/present.ts";
 import type { Problem } from "../core/problem.ts";
@@ -123,6 +123,16 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
     setConfirming("submit");
   };
 
+  // On small screens the view scrolls as one page (see styles.css): a problem starts at the
+  // top, and a submission brings the result, at the end, into view. On larger screens the
+  // view fits the screen, so these scroll nothing.
+  const view = useRef<HTMLDivElement>(null);
+  const scrollToTop = () => view.current?.scrollIntoView({ block: "start" });
+  useLayoutEffect(() => scrollToTop(), []);
+  useEffect(() => {
+    if (running) view.current?.scrollIntoView({ block: "end" });
+  }, [running]);
+
   const presentation = useMemo(
     () =>
       state.last?.kind === "judged"
@@ -142,12 +152,13 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
     label: t.tryAgain,
     action: () => {
       setTab("statement");
+      scrollToTop();
       void restart();
     },
   };
 
   return (
-    <div class="play">
+    <div class="play" ref={view}>
       <div class="play-header">
         {round === undefined ? (
           <>
@@ -174,36 +185,37 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
             {t.assistedChip}
           </span>
         )}
-        <span class="spacer" />
-        {ended ? (
-          <IconButton
-            icon={round === undefined ? RotateCcw : SkipForward}
-            label={next.label}
-            onClick={next.action}
-            class="primary"
-          >
-            {next.label}
-          </IconButton>
-        ) : (
-          <>
+        <div class="play-actions">
+          {ended ? (
             <IconButton
-              icon={Flag}
-              label={t.giveUp}
-              onClick={() => setConfirming("give-up")}
-              disabled={running || !state.loaded}
-            />
-            <IconButton
-              icon={Play}
-              label={`${t.submit} (${SUBMIT_SHORTCUT})`}
-              onClick={requestSubmit}
-              disabled={!canSubmit}
+              icon={round === undefined ? RotateCcw : SkipForward}
+              label={next.label}
+              onClick={next.action}
               class="primary"
             >
-              {running ? t.judging : t.submit}
-              <kbd>{SUBMIT_SHORTCUT}</kbd>
+              {next.label}
             </IconButton>
-          </>
-        )}
+          ) : (
+            <>
+              <IconButton
+                icon={Flag}
+                label={t.giveUp}
+                onClick={() => setConfirming("give-up")}
+                disabled={running || !state.loaded}
+              />
+              <IconButton
+                icon={Play}
+                label={`${t.submit} (${SUBMIT_SHORTCUT})`}
+                onClick={requestSubmit}
+                disabled={!canSubmit}
+                class="primary"
+              >
+                {running ? t.judging : t.submit}
+                <kbd>{SUBMIT_SHORTCUT}</kbd>
+              </IconButton>
+            </>
+          )}
+        </div>
       </div>
       <div class="play-body">
         <Statement
@@ -253,6 +265,7 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
         onShowSolution={() => {
           dismissFinished();
           openTab("solution");
+          scrollToTop();
         }}
         next={{
           label: next.label,
