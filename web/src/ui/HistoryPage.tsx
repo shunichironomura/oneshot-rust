@@ -10,6 +10,7 @@ import { shareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
 import { DiffView } from "./DiffView.tsx";
 import { IconButton } from "./IconButton.tsx";
+import { ModeBadge } from "./LevelBadges.tsx";
 import { ShareButtons } from "./ShareButtons.tsx";
 
 function runStatus(run: Run, t: Messages): string {
@@ -130,7 +131,7 @@ export function HistoryPage({ problemId }: { problemId: string }) {
           <summary>
             <span>{verdictsOf(run).map(verdictEmoji).join("")}</span>
             <span>{runStatus(run, t)}</span>
-            <span class="badge">{t.modes[run.mode]}</span>
+            <ModeBadge mode={run.mode} />
             {run.assisted === true && <span class="badge">{t.assistedChip}</span>}
             <span class="run-date">{dateFormat.format(run.startedAt)}</span>
           </summary>

@@ -12,6 +12,7 @@ import {
   type Round,
   roundShareText,
   roundSummary,
+  seenProblemIds,
   skipCurrent,
   totalSubmissions,
 } from "./round.ts";
@@ -154,4 +155,26 @@ test("roundShareText", () => {
   expect(roundShareText(r, MESSAGES.en)).toBe(
     "OneShot Rust 🦀 Beginner [Standard]\n🟥🟩\n— ✗\nTotal 2 · 1/2 solved",
   );
+});
+
+describe("seenProblemIds", () => {
+  test("is empty without rounds", () => {
+    expect(seenProblemIds([])).toEqual(new Set());
+  });
+
+  test("includes played problems and the current one, but not those not reached", () => {
+    const inProgress = recordRun(start(["a", "b", "c"]), run("1", "a", "solved", ["AC"]));
+    expect(seenProblemIds([inProgress])).toEqual(new Set(["a", "b"]));
+  });
+
+  test("leaves out the problems an abandoned round did not reach", () => {
+    const abandoned = abandonRound(start(["a", "b", "c"]), run("1", "a", "failed", ["WA"]), 9);
+    expect(seenProblemIds([abandoned])).toEqual(new Set(["a"]));
+  });
+
+  test("merges the problems of several rounds", () => {
+    const first = skipCurrent(skipCurrent(start(["a", "b"]), 1), 2);
+    const second = start(["c", "a"]);
+    expect(seenProblemIds([first, second])).toEqual(new Set(["a", "b", "c"]));
+  });
 });

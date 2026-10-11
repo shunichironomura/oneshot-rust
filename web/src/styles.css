@@ -17,6 +17,15 @@
   --removed: #ffebe9;
   --focus: #0969da;
 
+  /* Difficulties (green → red) and modes (cyan → magenta). */
+  --difficulty-1: #1a7f37;
+  --difficulty-2: #9a6700;
+  --difficulty-3: #cf222e;
+  --mode-beginner: #0e7490;
+  --mode-standard: #0969da;
+  --mode-advanced: #8250df;
+  --mode-oni: #bf3989;
+
   --editor-bg: #ffffff;
   --editor-active-line: #f6f8fa;
   --editor-selection: #cfe4ff;
@@ -56,6 +65,14 @@
     --added: #12361f;
     --removed: #42181a;
     --focus: #58a6ff;
+
+    --difficulty-1: #3fb950;
+    --difficulty-2: #d29922;
+    --difficulty-3: #f85149;
+    --mode-beginner: #39c5cf;
+    --mode-standard: #58a6ff;
+    --mode-advanced: #bc8cff;
+    --mode-oni: #f778ba;
 
     --editor-bg: #15181d;
     --editor-active-line: #1c2128;
@@ -254,6 +271,44 @@ button.chip:hover:not(:disabled) {
   color: var(--muted);
   vertical-align: middle;
   white-space: nowrap;
+}
+
+.badge.level {
+  color: var(--level);
+  background: color-mix(in srgb, var(--level) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--level) 40%, transparent);
+  font-weight: 600;
+}
+
+.difficulty-1 {
+  --level: var(--difficulty-1);
+}
+
+.difficulty-2 {
+  --level: var(--difficulty-2);
+}
+
+.difficulty-3 {
+  --level: var(--difficulty-3);
+}
+
+.mode-beginner {
+  --level: var(--mode-beginner);
+}
+
+.mode-standard {
+  --level: var(--mode-standard);
+}
+
+.mode-advanced {
+  --level: var(--mode-advanced);
+}
+
+/* The harshest mode stands out as a filled badge. */
+.badge.level.mode-oni {
+  --level: var(--mode-oni);
+  color: var(--bg);
+  background: var(--level);
 }
 
 .dim {
