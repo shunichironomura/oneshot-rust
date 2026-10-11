@@ -38,7 +38,9 @@ function toLintDiagnostics(state: EditorState, markers: EditorMarker[]): LintDia
     .filter((m) => m.line >= 1 && m.line <= state.doc.lines)
     .map((m) => {
       const line = state.doc.line(m.line);
-      return { from: line.from, to: line.to, severity: "error", message: m.message };
+      // Underline the code, not the indentation before it.
+      const indent = line.text.length - line.text.trimStart().length;
+      return { from: line.from + indent, to: line.to, severity: "error", message: m.message };
     });
 }
 

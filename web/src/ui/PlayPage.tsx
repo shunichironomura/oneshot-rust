@@ -9,16 +9,15 @@ import { type Run, verdictsOf } from "../core/run.ts";
 import { type SolutionAccess, solutionAccess } from "../core/solution.ts";
 import { CodeView } from "./CodeView.tsx";
 import { useApp } from "./context.ts";
-import { Confirm, Dialog } from "./Dialog.tsx";
+import { Confirm } from "./Dialog.tsx";
 import { Editor } from "./Editor.tsx";
 import { FinishedDialog } from "./FinishedDialog.tsx";
 import { IconButton } from "./IconButton.tsx";
 import { KindBadge } from "./KindBadge.tsx";
-import { ModeOptions } from "./ModeOptions.tsx";
 import { ShotChip } from "./ShotMeter.tsx";
 import { ResultPanel } from "./ResultPanel.tsx";
 import { SolutionPanel } from "./SolutionPanel.tsx";
-import { type RunRules, usePlay } from "./usePlay.ts";
+import { usePlay } from "./usePlay.ts";
 
 const NO_MARKERS: EditorMarker[] = [];
 
@@ -87,7 +86,6 @@ export type Session =
   | {
       kind: "round";
       roundId: string;
-      rules: RunRules;
       /** e.g. "2 / 5" */
       position: string;
       onRunFinished: (run: Run) => void;
@@ -99,19 +97,16 @@ export type Session =
   | { kind: "practice" };
 
 export function PlayView({ problem, session }: { problem: Problem; session: Session }) {
-  const { content, storage, settings, toolchain, locale, t } = useApp();
+  const { content, storage, toolchain, locale, t } = useApp();
   const round = session.kind === "round" ? session : undefined;
   // A submission made while the compiler is still loading waits for it; the time
   // limit only starts once a Worker has picked the submission up.
   const toolchainFailed =
     toolchain.state.status === "missing" || toolchain.state.status === "error";
-  const practiceRules = useMemo(() => ({ mode: settings.mode }), [settings.mode]);
-  const rules = round?.rules ?? practiceRules;
   const { state, setCode, submit, restart, giveUp, dismissFinished, revealSolution } = usePlay({
     problem,
     judgeSources: content.judge,
     storage,
-    rules,
     pool: toolchain.pool,
     roundId: round?.roundId,
     onRunFinished: round?.onRunFinished,
@@ -119,7 +114,6 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
   const [confirming, setConfirming] = useState<
     "submit" | "restart" | "give-up" | "reveal" | "abandon" | null
   >(null);
-  const [choosingMode, setChoosingMode] = useState(false);
   const [tab, setTab] = useState<StatementTab>("statement");
   const solution = solutionAccess({ revealed: state.revealed, finished: state.hasFinished });
 
@@ -134,7 +128,6 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
     () =>
       state.last?.kind === "judged"
         ? present(state.last.judgement, {
-            mode: state.last.mode,
             harnessVisible: problem.judge.harnessVisible,
             messages: t,
           })
@@ -144,7 +137,6 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
 
   const run = state.run;
   const playing = run?.status === "playing";
-  const runMode = playing ? run.mode : rules.mode;
   // A finished run keeps showing its count; in practice, the next submission starts a new run.
   const tries = run?.attempts.length ?? 0;
   const finishedInRound = round !== undefined && run !== null && !playing;
@@ -182,15 +174,6 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
         )}
         <h1>{localize(problem.title, locale)}</h1>
         <KindBadge kind={problem.kind} />
-        <button
-          type="button"
-          class="chip"
-          title={t.modeHeading}
-          onClick={round === undefined ? () => setChoosingMode(true) : undefined}
-          disabled={round !== undefined}
-        >
-          {t.modeChip(t.modes[runMode])}
-        </button>
         <ShotChip shots={run === null ? [] : verdictsOf(run)} label={t.shotsTooltip(tries)} />
         {assisted && (
           <span class="chip" title={t.assistedTooltip}>
@@ -244,9 +227,6 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
           </>
         )}
       </div>
-      {round === undefined && playing && run.mode !== settings.mode && (
-        <p class="notice">{t.runModeNotice(t.modes[run.mode])}</p>
-      )}
       <div class="play-body">
         <Statement
           problem={problem}
@@ -279,15 +259,6 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
       </div>
       <ResultPanel phase={state.phase} last={state.last} presentation={presentation} />
 
-      <Dialog open={choosingMode} onClose={() => setChoosingMode(false)} class="confirm">
-        <h2>{t.modeHeading}</h2>
-        <ModeOptions />
-        <div class="actions">
-          <button type="button" class="primary" onClick={() => setChoosingMode(false)}>
-            {t.close}
-          </button>
-        </div>
-      </Dialog>
       <Confirm
         open={confirming === "submit"}
         message={t.confirmSubmit(playing ? tries + 1 : 1)}

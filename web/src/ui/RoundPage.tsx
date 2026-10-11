@@ -54,7 +54,6 @@ export function RoundPage() {
     return {
       kind: "round",
       roundId: round.id,
-      rules: { mode: round.mode },
       position: roundPosition(round, shownIndex),
       onRunFinished,
       abandon: () => void abandonActiveRound(storage, round).then(() => showScorecard(round)),

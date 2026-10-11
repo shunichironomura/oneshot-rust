@@ -102,7 +102,7 @@ pnpm のバージョンは `package.json` の `packageManager` で固定して�
 | `vp check` | フォーマット、lint、型検査 |
 | `vp test` | ユニットテスト（判定ロジックなどの純粋関数） |
 | `node scripts/verify-problems.ts [id...]` | 全問題の検証（模範解答が AC になるかなど） |
-| `node scripts/judge.ts <id> <file.rs> [--mode <mode>]` | 任意のコードを判定し、プレイヤーに見える内容を表示 |
+| `node scripts/judge.ts <id> <file.rs>` | 任意のコードを判定し、プレイヤーに見える内容を表示 |
 | `node scripts/record-fixtures.ts` | `classify` のテスト用に、Miri の実際の出力を記録し直す |
 
 問題の書き方は [problems/README.md](problems/README.md) を参照してください。

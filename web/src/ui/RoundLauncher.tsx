@@ -18,11 +18,10 @@ import type { Settings } from "../core/settings.ts";
 import type { Storage } from "../storage/db.ts";
 import { useApp } from "./context.ts";
 import { Confirm } from "./Dialog.tsx";
-import { ModeOptions } from "./ModeOptions.tsx";
 
 /**
- * Starts a round with the course and rules of the settings, unless one is already in
- * progress: then that one is returned.
+ * Starts a round with the course of the settings, unless one is already in progress: then
+ * that one is returned.
  */
 export async function startRound(
   storage: Storage,
@@ -36,7 +35,6 @@ export async function startRound(
   const round = newRound({
     id: crypto.randomUUID(),
     course: settings.course,
-    mode: settings.mode,
     problemIds: pickProblems(
       courseProblemIds(problems, settings.course),
       solved,
@@ -63,7 +61,7 @@ export async function abandonActiveRound(storage: Storage, round: Round): Promis
 
 /**
  * The way into the game: "Continue" (or abandoning) when a round is in progress, and
- * otherwise the course (with the feedback mode under a disclosure) and "Start round".
+ * otherwise the course and "Start round".
  */
 export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void }) {
   const { content, storage, settings, updateSettings, t } = useApp();
@@ -141,12 +139,6 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
           </button>
         ))}
       </div>
-      <details class="more-options">
-        <summary>
-          {t.modeHeading}: {t.modes[settings.mode]}
-        </summary>
-        <ModeOptions />
-      </details>
       <button
         type="button"
         class="primary large"

@@ -1,7 +1,7 @@
 // A round: a few problems from one course in a row, scored by the total number of submissions.
 import type { VerdictKind } from "./classify.ts";
 import type { Messages } from "./i18n.ts";
-import type { Mode } from "./mode.ts";
+import { type Mode, PLAY_MODE } from "./mode.ts";
 import type { Difficulty, Problem } from "./problem.ts";
 import { type Run, verdictsOf } from "./run.ts";
 import { verdictEmoji } from "./scoring.ts";
@@ -19,6 +19,7 @@ export interface Round {
   id: string;
   /** The course the problems were drawn from. Missing for rounds from before courses existed. */
   course?: Difficulty;
+  /** Always `PLAY_MODE` now; rounds of older versions may have another mode. */
   mode: Mode;
   problemIds: string[];
   startedAt: number;
@@ -70,12 +71,11 @@ export function pickProblems(
 export function newRound(params: {
   id: string;
   course: Difficulty;
-  mode: Mode;
   problemIds: string[];
   now: number;
 }): Round {
   const { now, ...rest } = params;
-  return { ...rest, startedAt: now, entries: [] };
+  return { ...rest, mode: PLAY_MODE, startedAt: now, entries: [] };
 }
 
 /** The round in progress, if any (rounds are given newest first). */
@@ -170,7 +170,7 @@ export function roundShareText(round: Round, messages: Messages): string {
     (e) => `${e.verdicts.map(verdictEmoji).join("") || "—"}${e.solved ? "" : " ✗"}`,
   );
   return [
-    messages.roundShareHeader(courseName(round.course, messages), messages.modes[round.mode]),
+    messages.roundShareHeader(courseName(round.course, messages)),
     ...rows,
     roundSummary(round, messages),
   ].join("\n");

@@ -1,6 +1,5 @@
 import type { VerdictKind } from "./classify.ts";
 import type { Messages } from "./i18n.ts";
-import type { Mode } from "./mode.ts";
 
 /** The one title left from golf: solving a problem with the first submission. */
 export const HOLE_IN_ONE = "Hole in One";
@@ -46,7 +45,6 @@ export function verdictTone(kind: VerdictKind): VerdictTone {
 
 export interface ShareInput {
   problemId: string;
-  mode: Mode;
   verdicts: VerdictKind[];
   solved: boolean;
 }
@@ -56,5 +54,5 @@ export function shareText(input: ShareInput, messages: Messages): string {
   const squares = input.verdicts.map(verdictEmoji).join("");
   const tries = messages.shareTries(input.verdicts.length);
   const result = input.solved ? tries : `${tries} (${messages.unsolved})`;
-  return `OneShot Rust 🦀 ${input.problemId} [${messages.modes[input.mode]}]\n${squares}  ${result}`;
+  return `OneShot Rust 🦀 ${input.problemId}\n${squares}  ${result}`;
 }

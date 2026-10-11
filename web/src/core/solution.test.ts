@@ -3,7 +3,7 @@ import { newRun, type Run, type RunStatus } from "./run.ts";
 import { hasFinishedRun, solutionAccess } from "./solution.ts";
 
 const run = (status: RunStatus): Run => ({
-  ...newRun({ id: status, problemId: "p", mode: "standard", now: 0 }),
+  ...newRun({ id: status, problemId: "p", now: 0 }),
   status,
 });
 

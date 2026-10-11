@@ -17,7 +17,7 @@ export interface ShareCard {
   solved: boolean;
   /** The problem title, or the course of a round. */
   title: string;
-  /** e.g. "3 tries · Standard" */
+  /** e.g. "3 tries" or "+2 over perfect" */
   detail: string;
   /** One row of squares per problem. */
   rows: ShareShot[][];
@@ -39,7 +39,7 @@ export function shareCard(
       : messages.unsolvedHeadline,
     solved: input.solved,
     title: input.problemTitle,
-    detail: [messages.shareTries(n), messages.modes[input.mode]].join(" · "),
+    detail: messages.shareTries(n),
     rows: [shots(input.verdicts)],
   };
 }
@@ -50,7 +50,7 @@ export function roundShareCard(round: Round, messages: Messages): ShareCard {
     headline: messages.roundTotal(totalSubmissions(round)),
     solved: solvedCount(round) === round.problemIds.length,
     title: messages.courseTitle(courseName(round.course, messages)),
-    detail: [roundResult(round, messages), messages.modes[round.mode]].join(" · "),
+    detail: roundResult(round, messages),
     rows: round.entries.map((e) => shots(e.verdicts)),
   };
 }

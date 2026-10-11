@@ -6,7 +6,7 @@ import { routeHref } from "../core/route.ts";
 import { type Best, bestsByProblem, bestVerdicts, type Run } from "../core/run.ts";
 import { useApp } from "./context.ts";
 import { KindBadge } from "./KindBadge.tsx";
-import { DifficultyBadge, ModeBadge } from "./LevelBadges.tsx";
+import { DifficultyBadge } from "./DifficultyBadge.tsx";
 import { ShotMeter } from "./ShotMeter.tsx";
 
 function BestRecord({ best, run }: { best: Best; run: Run | undefined }) {
@@ -20,7 +20,6 @@ function BestRecord({ best, run }: { best: Best; run: Run | undefined }) {
         label={`${best.submissions}`}
       />
       {best.submissions}
-      <ModeBadge mode={best.mode} />
     </span>
   );
 }
@@ -131,7 +130,6 @@ export function ProblemsPage() {
               ) : (
                 <DifficultyBadge difficulty={r.course} />
               )}
-              <ModeBadge mode={r.mode} />
               <span>{roundSummary(r, t)}</span>
             </li>
           ))}

@@ -28,13 +28,13 @@ test("normalizeSettings fills defaults and rejects invalid values", () => {
   expect(normalizeSettings(undefined)).toEqual(DEFAULT_SETTINGS);
   expect(
     normalizeSettings({
-      mode: "oni",
       course: 4,
       locale: "fr",
-      // Stored by an older version, which had editor settings.
+      // Stored by older versions, which had editor settings and a feedback mode.
       editor: { fontSize: 99, closeBrackets: false },
+      mode: "oni",
     }),
-  ).toEqual({ ...DEFAULT_SETTINGS, mode: "oni" });
+  ).toEqual(DEFAULT_SETTINGS);
 });
 
 test("normalizeSettings keeps a valid course", () => {

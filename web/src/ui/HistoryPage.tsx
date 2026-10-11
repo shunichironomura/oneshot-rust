@@ -10,7 +10,6 @@ import { shareCard } from "../core/share.ts";
 import { useApp } from "./context.ts";
 import { DiffView } from "./DiffView.tsx";
 import { IconButton } from "./IconButton.tsx";
-import { ModeBadge } from "./LevelBadges.tsx";
 import { ShareButtons } from "./ShareButtons.tsx";
 
 function runStatus(run: Run, t: Messages): string {
@@ -30,7 +29,6 @@ function RunShare({ run, problem }: { run: Run; problem: Problem }) {
   const input = useMemo(
     () => ({
       problemId: problem.id,
-      mode: run.mode,
       verdicts: verdictsOf(run),
       solved: run.status === "solved",
     }),
@@ -58,7 +56,6 @@ function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
   if (attempt === undefined) return <p>{t.noSubmissions}</p>;
   const before = selected === 0 ? problem.template : run.attempts[selected - 1].code;
   const view = present(attempt.judgement, {
-    mode: run.mode,
     harnessVisible: problem.judge.harnessVisible,
     messages: t,
   });
@@ -131,7 +128,6 @@ export function HistoryPage({ problemId }: { problemId: string }) {
           <summary>
             <span>{verdictsOf(run).map(verdictEmoji).join("")}</span>
             <span>{runStatus(run, t)}</span>
-            <ModeBadge mode={run.mode} />
             {run.assisted === true && <span class="badge">{t.assistedChip}</span>}
             <span class="run-date">{dateFormat.format(run.startedAt)}</span>
           </summary>

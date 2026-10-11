@@ -1,9 +1,10 @@
-// Turns a judgement into what the player gets to see, depending on the mode.
+// Turns a judgement into what the player gets to see. Everyone sees the same: the
+// compiler's errors with their code and notes, but not rustc's help and suggested fixes
+// (they would work like an IDE's quick fixes), and failure messages of public cases only.
 import type { CaseResult, CaseStatus, Judgement, VerdictKind } from "./classify.ts";
 import { type Diagnostic, type DiagnosticSpan, primarySpan } from "./diagnostics.ts";
 import { SRC_DIR } from "./harness.ts";
 import type { Messages } from "./i18n.ts";
-import type { Mode } from "./mode.ts";
 
 export interface CaseView {
   id: string;
@@ -23,15 +24,15 @@ export interface Presentation {
   summary?: string;
   /** Pre-formatted diagnostic blocks. */
   diagnostics: string[];
-  /** `null` when case results are hidden in this mode. */
+  /** `null` for verdicts without test results (compile and internal errors). */
   cases: CaseView[] | null;
+  /** Lines of the player's code that the diagnostics point at. */
   markers: EditorMarker[];
-  /** The player's own output. Judge-generated panic reports are hidden in strict modes. */
+  /** The player's own output. */
   output: { stdout: string; stderr: string };
 }
 
 export interface PresentContext {
-  mode: Mode;
   harnessVisible: boolean;
   messages: Messages;
 }
@@ -121,63 +122,15 @@ export function renderDiagnostic(d: Diagnostic, ctx: PresentContext): string {
   return lines.join("\n");
 }
 
-function involvesHiddenCode(d: Diagnostic, ctx: PresentContext): boolean {
-  return [d, ...d.children].some((x) => x.spans.some((s) => isSnippetHidden(s, ctx)));
+/** Failure messages of hidden cases would give the hidden tests away. */
+function presentCases(cases: CaseResult[]): CaseView[] {
+  return cases.map((c) => ({
+    ...c,
+    message: c.visible && c.message ? cleanPaths(c.message) : undefined,
+  }));
 }
 
-function renderFull(d: Diagnostic, ctx: PresentContext): string {
-  // rustc's own rendering includes help and suggestions; it is only used when it
-  // does not reveal hidden harness code.
-  if (d.rendered !== null && !involvesHiddenCode(d, ctx)) {
-    return cleanPaths(d.rendered).replace(/\n+$/, "");
-  }
-  const helps = d.children
-    .filter((c) => c.level === "help")
-    .map((c) => `= help: ${cleanPaths(c.message)}`);
-  return [renderDiagnostic(d, ctx), ...helps].join("\n");
-}
-
-function lineSummary(diagnostics: Diagnostic[], ctx: PresentContext): string {
-  const locations = diagnostics.map((d) => {
-    const span = primarySpan(d);
-    if (span === undefined) return ctx.messages.unknownLocation;
-    if (isSnippetHidden(span, ctx))
-      return `${displayPath(span.file_name)}${ctx.messages.inHarness}`;
-    return `${displayPath(span.file_name)}:${span.line_start}`;
-  });
-  return [...new Set(locations)].join(", ");
-}
-
-function renderDiagnostics(diagnostics: Diagnostic[], ctx: PresentContext): string[] {
-  switch (ctx.mode) {
-    case "beginner":
-      return diagnostics.map((d) => renderFull(d, ctx));
-    case "standard":
-      return diagnostics.map((d) => renderDiagnostic(d, ctx));
-    case "advanced":
-    case "oni":
-      return [];
-  }
-}
-
-function presentCases(cases: CaseResult[], mode: Mode): CaseView[] | null {
-  switch (mode) {
-    case "beginner":
-      return cases.map((c) => ({ ...c, message: c.message && cleanPaths(c.message) }));
-    case "standard":
-      return cases.map((c) => ({
-        ...c,
-        message: c.visible && c.message ? cleanPaths(c.message) : undefined,
-      }));
-    case "advanced":
-      return cases.map(({ id, visible, status }) => ({ id, visible, status }));
-    case "oni":
-      return null;
-  }
-}
-
-function markers(diagnostics: Diagnostic[], mode: Mode): EditorMarker[] {
-  if (mode !== "beginner") return [];
+function markers(diagnostics: Diagnostic[]): EditorMarker[] {
   return diagnostics.flatMap((d) => {
     const span = primarySpan(d);
     return span !== undefined && fileRole(span.file_name) === "user"
@@ -186,62 +139,43 @@ function markers(diagnostics: Diagnostic[], mode: Mode): EditorMarker[] {
   });
 }
 
-/** Panics outside of test cases are reported on stderr by the judge as `panicked: ...`. */
-function visibleStderr(stderr: string, mode: Mode): string {
-  const strict = mode === "advanced" || mode === "oni";
-  const lines = stderr.split("\n").filter((l) => !(strict && l.startsWith("panicked: ")));
-  return cleanPaths(lines.join("\n")).trim();
-}
-
 export function present(judgement: Judgement, ctx: PresentContext): Presentation {
   const v = judgement.verdict;
-  const { mode, messages } = ctx;
-  const detailed = mode === "beginner" || mode === "standard";
+  const { messages } = ctx;
   const base = {
     kind: v.kind,
     diagnostics: [] as string[],
     cases: null,
     markers: [] as EditorMarker[],
-    output: { stdout: judgement.output, stderr: visibleStderr(judgement.stderr, mode) },
+    output: { stdout: judgement.output, stderr: cleanPaths(judgement.stderr).trim() },
   };
+  const rendered = (diagnostics: Diagnostic[]) => diagnostics.map((d) => renderDiagnostic(d, ctx));
 
   switch (v.kind) {
     case "CE":
-      return {
-        ...base,
-        summary:
-          mode === "oni"
-            ? undefined
-            : messages.ceSummary(v.diagnostics.length, lineSummary(v.diagnostics, ctx)),
-        diagnostics: renderDiagnostics(v.diagnostics, ctx),
-        markers: markers(v.diagnostics, mode),
-      };
+      return { ...base, diagnostics: rendered(v.diagnostics), markers: markers(v.diagnostics) };
     case "AC":
     case "WA":
-      return { ...base, cases: presentCases(v.cases, mode) };
+      return { ...base, cases: presentCases(v.cases) };
     case "UB":
       return {
         ...base,
-        summary: mode === "oni" ? undefined : lineSummary(v.diagnostics, ctx),
-        diagnostics: renderDiagnostics(v.diagnostics, ctx),
-        cases: presentCases(v.cases, mode),
-        markers: markers(v.diagnostics, mode),
+        diagnostics: rendered(v.diagnostics),
+        cases: presentCases(v.cases),
+        markers: markers(v.diagnostics),
       };
     case "RE":
       return {
         ...base,
-        summary: detailed ? cleanPaths(messages.runtimeError(v.reason)) : undefined,
-        diagnostics: renderDiagnostics(v.diagnostics, ctx),
-        cases: presentCases(v.cases, mode),
+        summary: cleanPaths(messages.runtimeError(v.reason)),
+        diagnostics: rendered(v.diagnostics),
+        cases: presentCases(v.cases),
       };
     case "TLE":
       return {
         ...base,
-        summary:
-          mode !== "oni" && v.runningCase !== undefined
-            ? messages.tleSummary(v.runningCase)
-            : undefined,
-        cases: presentCases(v.cases, mode),
+        summary: v.runningCase === undefined ? undefined : messages.tleSummary(v.runningCase),
+        cases: presentCases(v.cases),
       };
     case "IE":
       return { ...base, summary: messages.internalError(v.reason) };

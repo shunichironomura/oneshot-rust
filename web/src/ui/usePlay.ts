@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { classify, type Judgement } from "../core/classify.ts";
 import { buildSubmission, precheck } from "../core/harness.ts";
-import type { Mode } from "../core/mode.ts";
 import type { JudgeSources, Problem } from "../core/problem.ts";
 import { parseStdout, type RunProgress, runProgress } from "../core/protocol.ts";
 import { type Best, improvedBest, newRun, recordAttempt, type Run } from "../core/run.ts";
@@ -18,7 +17,7 @@ export type SubmitPhase =
 
 /** What the result panel shows: the latest judgement, or a rejected pre-check. */
 export type LastResult =
-  | { kind: "judged"; judgement: Judgement; mode: Mode }
+  | { kind: "judged"; judgement: Judgement }
   | { kind: "rejected"; forbiddenMacro: string }
   | { kind: "error"; message: string };
 
@@ -38,16 +37,10 @@ export interface PlayState {
   revealed: boolean;
 }
 
-/** Rules fixed when a run starts. */
-export interface RunRules {
-  mode: Mode;
-}
-
 interface Params {
   problem: Problem;
   judgeSources: JudgeSources;
   storage: Storage;
-  rules: RunRules;
   pool: Promise<RunnerPool>;
   /** The round being played; runs and drafts of a round are kept apart from practice. */
   roundId?: string;
@@ -65,15 +58,7 @@ function errorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
-export function usePlay({
-  problem,
-  judgeSources,
-  storage,
-  rules,
-  pool,
-  roundId,
-  onRunFinished,
-}: Params) {
+export function usePlay({ problem, judgeSources, storage, pool, roundId, onRunFinished }: Params) {
   const draft = draftKey(problem.id, roundId);
   const [state, setState] = useState<PlayState>({
     loaded: false,
@@ -107,7 +92,7 @@ export function usePlay({
         phase: { kind: "idle" },
         last:
           playing !== null && lastAttempt !== undefined
-            ? { kind: "judged", judgement: lastAttempt.judgement, mode: playing.mode }
+            ? { kind: "judged", judgement: lastAttempt.judgement }
             : null,
         finished: null,
         hasFinished: hasFinishedRun(runs),
@@ -147,7 +132,6 @@ export function usePlay({
         : newRun({
             id: crypto.randomUUID(),
             problemId: problem.id,
-            mode: rules.mode,
             now: Date.now(),
             roundId,
             assisted: state.revealed,
@@ -196,7 +180,7 @@ export function usePlay({
         // An uncounted first submission does not start a run.
         run: next.attempts.length > 0 ? next : previousRun,
         phase: { kind: "idle" },
-        last: { kind: "judged", judgement, mode: run.mode },
+        last: { kind: "judged", judgement },
         finished: next.status !== "playing" ? { run: next, newBest } : null,
         hasFinished: s.hasFinished || next.status !== "playing",
       }));
@@ -208,7 +192,7 @@ export function usePlay({
         last: { kind: "error", message: errorMessage(e) },
       }));
     }
-  }, [pool, state, problem, judgeSources, rules, storage, roundId, onRunFinished]);
+  }, [pool, state, problem, judgeSources, storage, roundId, onRunFinished]);
 
   /** Practice: abandons the current run (if any) and starts over with the template. */
   const restart = useCallback(async () => {
@@ -240,7 +224,6 @@ export function usePlay({
         : newRun({
             id: crypto.randomUUID(),
             problemId: problem.id,
-            ...rules,
             now,
             roundId,
             assisted: state.revealed,
@@ -254,7 +237,7 @@ export function usePlay({
       hasFinished: true,
     }));
     onRunFinished?.(abandoned);
-  }, [state.run, state.revealed, storage, problem, rules, roundId, onRunFinished]);
+  }, [state.run, state.revealed, storage, problem, roundId, onRunFinished]);
 
   /** Marks the model solution as seen. A run in progress goes on as an assisted run. */
   const revealSolution = useCallback(async () => {

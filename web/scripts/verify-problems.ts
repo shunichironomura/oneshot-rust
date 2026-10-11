@@ -8,18 +8,23 @@ import { parseArgs } from "node:util";
 import { loadJudgeSources, loadProblems } from "../content/load.ts";
 import type { Judgement } from "../src/core/classify.ts";
 import { MESSAGES } from "../src/core/i18n.ts";
-import { present } from "../src/core/present.ts";
+import { cleanPaths, present } from "../src/core/present.ts";
 import type { Problem } from "../src/core/problem.ts";
 import { judge, loadToolchain } from "./node-runner.ts";
 
 function describe(judgement: Judgement, problem: Problem): string {
-  const p = present(judgement, { mode: "beginner", harnessVisible: true, messages: MESSAGES.en });
-  const cases = (p.cases ?? [])
+  const p = present(judgement, { harnessVisible: true, messages: MESSAGES.en });
+  const v = judgement.verdict;
+  // rustc's own rendering, help included: authors get more than players do.
+  const diagnostics =
+    "diagnostics" in v ? v.diagnostics.map((d) => cleanPaths(d.rendered ?? d.message)) : [];
+  // Messages of hidden cases too, which players do not get.
+  const cases = ("cases" in v ? v.cases : [])
     .filter((c) => c.status !== "pass")
-    .map((c) => `    ${c.id}: ${c.status}${c.message ? ` (${c.message})` : ""}`);
+    .map((c) => `    ${c.id}: ${c.status}${c.message ? ` (${cleanPaths(c.message)})` : ""}`);
   return [
     `  verdict: ${p.kind}${p.summary ? ` — ${p.summary}` : ""}`,
-    ...p.diagnostics.map((d) => d.replace(/^/gm, "    ")),
+    ...diagnostics.map((d) => d.trimEnd().replace(/^/gm, "    ")),
     ...cases,
     judgement.stderr ? `  stderr: ${judgement.stderr}` : "",
     `  (problem ${problem.id})`,

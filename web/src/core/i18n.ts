@@ -5,7 +5,6 @@ import type {
   RuntimeErrorReason,
   VerdictKind,
 } from "./classify.ts";
-import type { Mode } from "./mode.ts";
 import type { Difficulty, ProblemKind } from "./problem.ts";
 
 export type Locale = "en" | "ja";
@@ -71,12 +70,9 @@ export interface Messages {
   columnDifficulty: string;
   shotsTooltip: (tries: number) => string;
   difficulties: Record<Difficulty, string>;
-  modes: Record<Mode, string>;
-  modeDescriptions: Record<Mode, string>;
   kinds: Record<ProblemKind, string>;
 
   // Play screen
-  modeChip: (mode: string) => string;
   submit: string;
   judging: string;
   history: string;
@@ -93,7 +89,6 @@ export interface Messages {
   roundChip: (position: string) => string;
   toScorecard: string;
   backToRecords: string;
-  runModeNotice: (mode: string) => string;
   confirmSubmit: (n: number) => string;
   confirmSubmitYes: string;
   cancel: string;
@@ -128,9 +123,6 @@ export interface Messages {
   hiddenCase: string;
   caseStatus: Record<CaseStatus, string>;
   verdicts: Record<VerdictKind, string>;
-  ceSummary: (count: number, locations: string) => string;
-  inHarness: string;
-  unknownLocation: string;
   hiddenHarnessNote: string;
   harnessInternalsNote: string;
   tleSummary: (caseId: string) => string;
@@ -140,9 +132,6 @@ export interface Messages {
   // End of a run
   solvedHeadline: string;
   unsolvedHeadline: string;
-  submissions: string;
-  compileErrors: string;
-  mode: string;
   newBest: string;
   copyResult: string;
   copied: string;
@@ -165,9 +154,6 @@ export interface Messages {
   changesFromTemplate: string;
   changesFrom: (i: number) => string;
 
-  // Mode
-  modeHeading: string;
-
   // Rounds
   scorecardTitle: string;
   roundTotal: (total: number) => string;
@@ -183,7 +169,7 @@ export interface Messages {
   roundUnfinished: string;
   roundNotFound: string;
   roundSkipDeleted: (id: string) => string;
-  roundShareHeader: (course: string, mode: string) => string;
+  roundShareHeader: (course: string) => string;
 }
 
 const en: Messages = {
@@ -229,17 +215,8 @@ const en: Messages = {
   columnDifficulty: "Difficulty",
   shotsTooltip: (tries) => `${tries} ${tries === 1 ? "try" : "tries"} so far · aim for one`,
   difficulties: { 1: "Beginner", 2: "Intermediate", 3: "Advanced" },
-  modes: { beginner: "Verbose", standard: "Standard", advanced: "Terse", oni: "Silent" },
-  modeDescriptions: {
-    beginner:
-      "Full compiler output, including help and suggestions. Errors are marked in the editor.",
-    standard: "Error messages, code snippets and notes. No help or suggested fixes.",
-    advanced: "Only the number of errors and their line numbers.",
-    oni: "Only the two-letter verdict.",
-  },
   kinds: { implement: "Implement", repair: "Repair", signature: "Signature" },
 
-  modeChip: (mode) => mode,
   submit: "Submit",
   judging: "Judging…",
   history: "Submission history",
@@ -256,8 +233,6 @@ const en: Messages = {
   roundChip: (p) => `Round ${p}`,
   toScorecard: "See the scorecard",
   backToRecords: "Back to records",
-  runModeNotice: (mode) =>
-    `This run started in ${mode} mode. A new mode applies from the next run.`,
   confirmSubmit: (n) => `Submit this code? This will be submission #${n}.`,
   confirmSubmitYes: "Submit",
   cancel: "Cancel",
@@ -301,9 +276,6 @@ const en: Messages = {
     TLE: "Time limit exceeded",
     IE: "Internal error (not counted)",
   },
-  ceSummary: (n, locs) => `${n} error${n === 1 ? "" : "s"} (${locs})`,
-  inHarness: " (test harness)",
-  unknownLocation: "unknown location",
   hiddenHarnessNote: "(in the test harness; code hidden)",
   harnessInternalsNote: "(harness internals)",
   tleSummary: (id) => `Time limit exceeded while running ${id}`,
@@ -335,9 +307,6 @@ const en: Messages = {
 
   solvedHeadline: "Solved",
   unsolvedHeadline: "Unsolved",
-  submissions: "Submissions",
-  compileErrors: "Compile errors",
-  mode: "Mode",
   newBest: "New personal best!",
   copyResult: "Copy result",
   copied: "Copied!",
@@ -359,8 +328,6 @@ const en: Messages = {
   changesFromTemplate: "Changes from the template",
   changesFrom: (i) => `Changes from submission #${i}`,
 
-  modeHeading: "Feedback mode",
-
   scorecardTitle: "Scorecard",
   roundTotal: (t) => `Total ${t}`,
   roundOverPerfect: (n) => (n === 0 ? "Perfect!" : `+${n} over perfect`),
@@ -376,7 +343,7 @@ const en: Messages = {
   roundUnfinished: "This round is not finished yet.",
   roundNotFound: "This round was not found.",
   roundSkipDeleted: (id) => `Problem “${id}” no longer exists and is skipped.`,
-  roundShareHeader: (course, mode) => `OneShot Rust 🦀 ${course} [${mode}]`,
+  roundShareHeader: (course) => `OneShot Rust 🦀 ${course}`,
 };
 
 const ja: Messages = {
@@ -424,16 +391,8 @@ const ja: Messages = {
   columnDifficulty: "難易度",
   shotsTooltip: (tries) => `現在 ${tries} 回（目標は 1 回）`,
   difficulties: { 1: "初級", 2: "中級", 3: "上級" },
-  modes: { beginner: "親切", standard: "標準", advanced: "簡潔", oni: "鬼" },
-  modeDescriptions: {
-    beginner: "rustc の出力をすべて表示（help・修正提案つき）。エディタにエラー行マーカーを表示",
-    standard: "エラーメッセージ、コード片、note を表示。help と修正提案は非表示",
-    advanced: "エラーの件数と行番号のみ",
-    oni: "判定の 2 文字のみ",
-  },
   kinds: { implement: "実装", repair: "修理", signature: "シグネチャ" },
 
-  modeChip: (mode) => `${mode}モード`,
   submit: "提出",
   judging: "判定中…",
   history: "提出履歴",
@@ -450,8 +409,6 @@ const ja: Messages = {
   roundChip: (p) => `ラウンド ${p}`,
   toScorecard: "スコアカードへ",
   backToRecords: "記録へ戻る",
-  runModeNotice: (mode) =>
-    `このランは「${mode}」モードで開始されています。モードの変更は次のランから反映されます。`,
   confirmSubmit: (n) => `この内容で提出しますか？（${n} 回目の提出）`,
   confirmSubmitYes: "提出する",
   cancel: "やめる",
@@ -496,9 +453,6 @@ const ja: Messages = {
     TLE: "時間切れ",
     IE: "内部エラー（カウントされません）",
   },
-  ceSummary: (n, locs) => `エラー ${n} 件（${locs}）`,
-  inHarness: "（ハーネス側）",
-  unknownLocation: "位置不明",
   hiddenHarnessNote: "（ハーネス側でエラー。コードは非公開）",
   harnessInternalsNote: "（ハーネス内部）",
   tleSummary: (id) => `ケース ${id} の実行中に制限時間を超えました`,
@@ -530,9 +484,6 @@ const ja: Messages = {
 
   solvedHeadline: "正解",
   unsolvedHeadline: "未解決",
-  submissions: "提出回数",
-  compileErrors: "うち CE",
-  mode: "モード",
   newBest: "自己ベスト更新！",
   copyResult: "結果をコピー",
   copied: "コピーしました",
@@ -554,8 +505,6 @@ const ja: Messages = {
   changesFromTemplate: "テンプレートからの変更",
   changesFrom: (i) => `${i} 回目からの変更`,
 
-  modeHeading: "診断表示モード",
-
   scorecardTitle: "スコアカード",
   roundTotal: (t) => `合計 ${t}`,
   roundOverPerfect: (n) => (n === 0 ? "完璧！" : `完璧まで +${n}`),
@@ -571,7 +520,7 @@ const ja: Messages = {
   roundUnfinished: "このラウンドはまだ終わっていません。",
   roundNotFound: "ラウンドが見つかりませんでした。",
   roundSkipDeleted: (id) => `問題「${id}」は削除されたため、スキップします。`,
-  roundShareHeader: (course, mode) => `OneShot Rust 🦀 ${course} [${mode}]`,
+  roundShareHeader: (course) => `OneShot Rust 🦀 ${course}`,
 };
 
 export const MESSAGES: Record<Locale, Messages> = { en, ja };

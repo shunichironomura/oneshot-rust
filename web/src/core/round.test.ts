@@ -35,8 +35,7 @@ function run(id: string, problemId: string, status: RunStatus, kinds: Verdict["k
   };
 }
 
-const start = (problemIds = ["a", "b"]) =>
-  newRound({ id: "r", course: 1, mode: "standard", problemIds, now: 0 });
+const start = (problemIds = ["a", "b"]) => newRound({ id: "r", course: 1, problemIds, now: 0 });
 
 let seed = 1;
 const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
@@ -150,10 +149,10 @@ test("roundShareText", () => {
   r = recordRun(r, run("r1", "a", "solved", ["CE", "AC"]));
   r = recordRun(r, run("r2", "b", "failed", []));
   expect(roundShareText(r, MESSAGES.ja)).toBe(
-    "OneShot Rust 🦀 初級 [標準]\n🟥🟩\n— ✗\n合計 2 · 1/2 問正解",
+    "OneShot Rust 🦀 初級\n🟥🟩\n— ✗\n合計 2 · 1/2 問正解",
   );
   expect(roundShareText(r, MESSAGES.en)).toBe(
-    "OneShot Rust 🦀 Beginner [Standard]\n🟥🟩\n— ✗\nTotal 2 · 1/2 solved",
+    "OneShot Rust 🦀 Beginner\n🟥🟩\n— ✗\nTotal 2 · 1/2 solved",
   );
 });
 
