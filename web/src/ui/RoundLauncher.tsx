@@ -138,7 +138,6 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
             onClick={() => updateSettings({ ...settings, course })}
           >
             <strong>{t.difficulties[course]}</strong>
-            <span>{t.courseSize(courseSize(course))}</span>
           </button>
         ))}
       </div>

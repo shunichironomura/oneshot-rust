@@ -46,7 +46,6 @@ export interface Messages {
   roundHeading: string;
   roundIntro: (n: number) => string;
   courseHeading: string;
-  courseSize: (n: number) => string;
   /** e.g. "Beginner course" */
   courseTitle: (name: string) => string;
   /** The course of rounds from before courses existed. */
@@ -207,7 +206,6 @@ const en: Messages = {
   roundIntro: (n) =>
     `${n} problems from one course, back to back. Your score is the total number of submissions: ${n} is perfect.`,
   courseHeading: "Course",
-  courseSize: (n) => `${n} problem${n === 1 ? "" : "s"}`,
   courseTitle: (name) => `${name} course`,
   courseUnknown: "Random",
   startRound: "Start round",
@@ -403,7 +401,6 @@ const ja: Messages = {
   roundIntro: (n) =>
     `コースから ${n} 問を続けて解きます。スコアは合計の提出回数で、${n} 回なら完璧です。`,
   courseHeading: "コース",
-  courseSize: (n) => `${n} 問`,
   courseTitle: (name) => `${name}コース`,
   courseUnknown: "ランダム",
   startRound: "ラウンドを始める",
