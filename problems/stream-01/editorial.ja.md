@@ -7,13 +7,13 @@
   `Self: Unpin` のときに限ります。`next` がこれを要求しているのはそのためです。
 - `Pin::new(self)` と書くと、`self`（`Copy` でない `&mut Self`）が最初の呼び出しにムーブされ、
   クロージャは 1 回しか呼べなくなります。`poll_fn` が求めるのは `FnMut` なのでエラーになります（E0507）。
-  `Pin::new(&mut *self)` なら、呼び出しのたびに再借用するだけで済みます。Future はストリームを借用し続けますが、
-  返り値の型の `+ '_` がそれを許しています。
+  `Pin::new(&mut *self)` なら、呼び出しのたびに再借用するだけで済みます。Future はストリームを借用し続けます。
+  返り値の型の `+ '_` はそのことを表しています。
 
 `collect` は `mut s` にして、`while let Some(item) = s.next().await` で回します。`next` がすぐに完了したときは、
 同じ poll の中で次の要素に進むので、`collect` の Future が `Pending` を返すのは `s` が `Pending` を返したときだけです。
 
-**`Iter` と `Zip` の `Unpin`。** `self: Pin<&mut Self>` のフィールドを使うには `get_mut`
+**`Iter` と `Zip` の `Unpin`。** `self: Pin<&mut Self>` のフィールドを変更するには `get_mut`
 （または `mut self` にして `DerefMut`）が必要で、どちらも `Self: Unpin` を要求します。`Unpin` は自動トレイトです。
 `Iter<I>` が `Unpin` になるのは `I` が `Unpin` のときだけで、`Zip<A, B>` は `a` の要素を保持するので、
 `A`、`B` に加えて `A::Item` も `Unpin` のときだけです。impl ブロックは `I` や `A::Item` について何も約束していないので、

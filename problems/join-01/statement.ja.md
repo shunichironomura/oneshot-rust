@@ -1,5 +1,5 @@
 複数の Future を 1 つの Future にまとめる `join` と `join_all` を書いてください。まとめた Future は、
-現在のスレッドの上でそれらを順番に poll して、並行に実行します。非同期ランタイムはありません
+現在のスレッドでそれらを順番に poll して、並行に実行します。非同期ランタイムはありません
 （使えるのは `std` だけです）。
 
 ```rust
@@ -13,8 +13,8 @@ pub fn join_all<F: Future>(futs: Vec<F>) -> impl Future<Output = Vec<F::Output>>
 - `join` や `join_all` を呼んだ時点では何も poll しません。入力が poll されるのは、結合した Future が
   poll されたときだけです。
 - 結合した Future は、poll されるたびに、まだ完了していない入力をそれぞれ 1 回ずつ順に poll します。
-  順序は `a`、`b` の順、`futs` は添字の順です。ある入力が `Poll::Pending` を返しても、その後の入力は
-  poll します。
+  順序は、`join` では `a`、`b` の順、`join_all` では `futs` の添字の順です。ある入力が
+  `Poll::Pending` を返しても、その後の入力は poll します。
 - `Poll::Ready` を返した入力は完了しています。完了した入力は二度と poll しません。
 - 結合した Future は、最後の入力が完了したのと同じ poll で `Poll::Ready` を返し、それより前の poll
   ではすべて `Poll::Pending` を返します。出力は入力の順に並べます。`join` なら `(a の出力, b の出力)`、
@@ -34,9 +34,9 @@ pub fn join_all<F: Future>(futs: Vec<F>) -> impl Future<Output = Vec<F::Output>>
 ### 例
 
 例の中の `steps(["a0", "a1"])` はハーネスのタスクを表します。渡されたステップを 1 つずつログに記録する
-`async` ブロックで、ステップとステップの間で 1 回譲ります（waker を起こしてから `Poll::Pending` を
-返します）。つまり、最後のステップを記録した poll で完了し（ステップがなければ最初の poll で完了し）、
-ステップの数を出力します。
+`async` ブロックで、ステップとステップの間では 1 回だけ実行を譲ります（waker を起こしてから
+`Poll::Pending` を返します）。つまり、最後のステップを記録した poll で完了し（ステップが
+なければ最初の poll で完了し）、ステップの数を出力します。
 
 - `join(steps(["a0", "a1"]), steps(["b0", "b1", "b2"]))` は `a0`、`b0`、`a1`、`b1`、`b2` の順に
   ログを記録し、3 回目の poll で `(2, 3)` を返して完了します。1 つ目の入力は 2 回目の poll で完了する

@@ -21,8 +21,8 @@ impl Subject {
   subscribed until that `Subscription` is dropped, however that happens: with `drop`, at the end of
   a scope, right away with `let _ = ...`, or because the value that owns it (another listener, for
   example) is dropped.
-- `notify(msg)` calls the listeners that are subscribed when it starts with `msg`, one at a time, in
-  the order in which they were subscribed, and returns how many listeners it called. A listener
+- `notify(msg)` calls each listener that is subscribed when it starts, passing `msg`, one at a time
+  in the order in which they were subscribed, and returns how many listeners it called. A listener
   that is unsubscribed before its turn comes is not called.
 - `listener_count` returns the number of subscribed listeners.
 - Unsubscribing takes effect at once, even for a listener that is running at that moment (for

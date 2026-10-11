@@ -19,7 +19,7 @@ impl Drop for ThreadPool { /* ... */ }
 
 - `new(size)` starts `size` worker threads and returns the pool. It panics if `size` is `0`.
 - `execute(f)` adds the job `f` to the pool's queue and returns at once, without waiting for the
-  job to start.
+  job to start, even while every worker is busy.
 - Every job runs exactly once, on one of the pool's worker threads: never on the thread that
   called `execute`, and never on a thread started just for that job.
 - A worker runs one job at a time. When it is free, it takes the job that has been waiting the
@@ -33,9 +33,9 @@ impl Drop for ThreadPool { /* ... */ }
   the number of jobs the pool has run. Every job runs, so this is the number of `execute` calls.
 - Dropping the pool without calling `shutdown` does the same, except that there is no count to
   return: when the drop is over, every job has finished and every worker thread has ended.
-- Jobs never panic. A job may wait for another job of the same pool (for example at a `Barrier`),
-  but the harness never makes a thread wait for something that cannot happen. (When every thread
-  waits forever, Miri reports a deadlock.)
+- Jobs never panic. A job may wait for another thread, even for another job of the same pool (for
+  example at a `Barrier`), but the harness never makes a thread wait for something that cannot
+  happen. (When every thread waits forever, Miri reports a deadlock.)
 
 Do not change the signatures.
 

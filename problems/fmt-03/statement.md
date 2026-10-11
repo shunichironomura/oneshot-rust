@@ -99,7 +99,8 @@ Inventory {
 }
 ```
 
-With `red = Color { r: 255, g: 0, b: 16, a: 255 }` and `glass = Color { r: 255, g: 0, b: 16, a: 128 }`:
+With `red = Color { r: 255, g: 0, b: 16, a: 255 }` and
+`glass = Color { r: 255, g: 0, b: 16, a: 128 }`:
 
 | Code | Result |
 | --- | --- |

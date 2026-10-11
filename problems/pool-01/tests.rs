@@ -26,7 +26,11 @@ fn log_later<T: Send + 'static>(log: &Log<T>, x: T) -> impl FnOnce() + Send + 's
 }
 
 /// A job that waits at `barrier`, then appends `x` and its thread to `log`.
-fn meet<T: Send + 'static>(barrier: &Arc<Barrier>, log: &Log<T>, x: T) -> impl FnOnce() + Send + 'static {
+fn meet<T: Send + 'static>(
+    barrier: &Arc<Barrier>,
+    log: &Log<T>,
+    x: T,
+) -> impl FnOnce() + Send + 'static {
     let barrier = Arc::clone(barrier);
     let log = Arc::clone(log);
     move || {
@@ -100,7 +104,8 @@ pub fn run() {
         let log = log.lock().unwrap().clone();
         check_eq(log.len(), 3)?;
         check_eq(log[0].0, "short")?;
-        check(log.iter().all(|&(_, id)| id != thread::current().id()), "a job ran on the main thread")?;
+        let main = thread::current().id();
+        check(log.iter().all(|&(_, id)| id != main), "a job ran on the main thread")?;
         check(log[1].1 != log[2].1, "two jobs that met at a barrier ran on the same thread")
     });
 }

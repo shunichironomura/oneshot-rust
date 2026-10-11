@@ -1,4 +1,5 @@
-Look at characters, not bytes, and check every one of them before computing anything.
+Check that every character after the `#` is a hex digit before you compute anything or slice the
+string.
 
 `strip_prefix('#')` returns the rest of `s` after a leading `#`, or `None` if there is none, and `?`
 passes that `None` on. `char::to_digit(16)` gives the value of a hex digit and `None` for every
@@ -16,7 +17,9 @@ The traps on the way:
 - `s.len()` is the length in **bytes**. `#1é234` is 7 bytes long, like a 6-digit code, and
   `&s[1..3]` panics because byte 3 is in the middle of `é`. `#€` is 4 bytes long, like a 3-digit
   code, and `&s[1..2]` panics too. Slicing at byte offsets is only safe once you know that the
-  string is ASCII, and `s.get(1..3)` returns `None` instead of panicking.
+  string is ASCII, and `s.get(1..3)` returns `None` instead of panicking. Do not turn a `char`
+  into a byte with `c as u8` either: it keeps only the low byte, so `'٣'` (U+0663) becomes `b'c'`
+  and `#٣٣٣` reads as `#ccc`.
 - `{:x}` writes no leading zero, so `[255, 8, 0]` would become `#ff80`. `{:02x}` pads every channel
   to two digits with zeros. For the short form, `c % 17 == 0` tells whether both digits of `c` are
   equal, and `c / 17` is that digit.

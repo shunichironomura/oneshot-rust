@@ -7,7 +7,8 @@
 `Listener { callback: Rc::new(f) }` では、フィールドの型が `Rc<dyn Fn(&str)>` なので、コンパイラが
 `Rc<F>` を `Rc<dyn Fn(&str)>` に変換します（サイズ不定型への型強制）。`callback(msg)` で、`Rc` 越しに
 クロージャを呼び出せます。`Rc<dyn Fn(&str)>` は `Rc<dyn Fn(&str) + 'static>` の略記です。
-`subscribe` が `'static` を要求するのはこのためで、呼び出し側から借用したものをリストに入れることはできません。
+`subscribe` が `'static` を要求するのはこのためで、呼び出し側から借用したものはリストに
+入れられません。
 
 **リストを借用したままリスナーを呼ばないでください。** メソッドは `&self` を受け取るので、リストは
 `RefCell` に入れます。次のようなループはコンパイルできます。
@@ -44,23 +45,25 @@ for weak in self.listeners.borrow().iter() {
 模範解答は「購読中」と「生きている」を分けています。`Subscription` は唯一の `Rc<Listener>` を持ち、
 `Listener` は `Rc<dyn Fn(&str)>` を持ちます。`notify` は `Weak<Listener>` をアップグレードして
 コールバックを複製し、呼び出す前に `Rc<Listener>` をドロップします。リスナーの実行中に生かしておくのは
-コールバックだけなので、`Subscription` がドロップされた瞬間から `Weak<Listener>` はアップグレードできなくなります。
+コールバックだけなので、`Subscription` がドロップされた瞬間から、`Weak<Listener>` は
+アップグレードできなくなります。
 
 `subscribe` は `retain` で解除済みの `Weak` を取り除くので、リストが増え続けることはありません。
 `listener_count` は、まだアップグレードできるものを数えます。`Subscription` に付けた `#[must_use]` に
-より、`subject.subscribe(f);` のような呼び出しに警告が出ます。これでは購読がその場で解除されてしまうからです。
+より、`subject.subscribe(f);` のような呼び出しには警告が出ます。これでは購読がその場で
+解除されてしまうからです。
 
 ### 別解
 
 サブジェクトがリスナーを所有し、各 `Subscription` が `drop` で自分の要素を取り除く方法もあります。
 このとき `Subscription` にはリストへ戻る手段が必要です。ここではサブジェクトの中の
-`Rc<RefCell<...>>` への `Weak` を持たせています。サブジェクトがなくなるとアップグレードできなくなります。
-注意点は 2 つです。
+`Rc<RefCell<...>>` への `Weak` を持たせています。この `Weak` は、サブジェクトがなくなると
+アップグレードできなくなります。注意点は 2 つです。
 
 - `drop` では、リストを借用したまま、取り除いたリスナーをドロップしてはいけません。リスナーは別の
   `Subscription` を持っていることがあり、その `drop` がもう一度リストを借用するからです。単純な
-  `listeners.borrow_mut().retain(...)` はその場でリスナーをドロップするので、"already borrowed" で
-  パニックします。この別解では、要素を取り除いて借用を終えてから、それをドロップしています。
+  `listeners.borrow_mut().retain(...)` はその場でリスナーをドロップするので、
+  "RefCell already borrowed" でパニックします。この別解では、要素を取り除いて借用を終えてから、それをドロップしています。
 - `notify` は ID だけをコピーし、各リスナーの番が来る直前に、改めてリストから探します。
 
 ```rust

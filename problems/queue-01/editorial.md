@@ -20,12 +20,13 @@ Raw pointers own nothing as far as the compiler knows, which has two consequence
   freed memory. `peek_back` uses `as_ref`, which returns `None` for a null pointer.
 
 Half fixes that keep the `Box` links fail as well. Taking the pointer only after the move
-(`self.tail = &mut **slot`) works until that `Box` is moved again: `pop` moves the `Box` of the
-second node into `head` (`self.head = head.next`), which revokes `tail` when that node is the last
-one. Even moving a queue with a single element (returning it from a function, pushing it into
-another queue) moves the `head` field, the `Box` that owns the last node. Taking the pointer first
-and then calling `Box::into_raw(boxed)` or `mem::forget(boxed)` fails for the same reason: passing
-the `Box` to a function moves it. Use the pointer that `Box::into_raw` returns.
+(`self.tail = &mut **slot`) works until that `Box` is moved again: when `pop` moves the first node
+out of its `Box` (`let head = *head;`), the `Box` of the second node (its `next` field) moves along
+with it, which revokes `tail` when that node is the last one. Even moving a queue with a single
+element (returning it from a function, pushing it into another queue) moves the `head` field, the
+`Box` that owns the last node. Taking the pointer first and then calling `Box::into_raw(boxed)` or
+`mem::forget(boxed)` fails for the same reason: passing the `Box` to a function moves it. Use the
+pointer that `Box::into_raw` returns.
 
 ### Alternatives
 

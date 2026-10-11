@@ -7,11 +7,11 @@ code that formats the fields **with `f`** sees them.
 That is what the debug builders do, and what `#[derive(Debug)]` expands to. Start with
 `f.debug_struct(name)` (or `f.debug_tuple(name)` for the tuple-like form), add each field with
 `.field(...)` and end with `.finish()`: the builder writes the punctuation itself, on one line or in
-the pretty form depending on `f.alternate()`. It calls the `Debug` of each field with the same
-formatter, so the field sees the same flags: `u8` and `u32` print in hex under `{:x?}`, with `0x`
-when `#` is set too. In the pretty form the builder also indents every line the field writes, which
-is why nested lists and maps come out right, and why the whole value is indented correctly inside a
-`Vec`.
+the pretty form depending on `f.alternate()`. It calls the `Debug` of each field with a formatter
+that has the same settings as `f`, so the field sees the same flags: `u8` and `u32` print in hex
+under `{:x?}`, with `0x` when `#` is set too. In the pretty form the builder also indents every
+line the field writes, which is why nested lists and maps come out right, and why the whole value is
+indented correctly inside a `Vec`.
 
 Three details:
 

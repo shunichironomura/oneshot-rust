@@ -1,0 +1,12 @@
+id = "pin-02"
+title = { en = "Poll budget", ja = "poll の回数制限" }
+difficulty = 3
+concepts = ["future combinators", "Pin<&mut Self> with !Unpin inner futures", "Unpin is an auto trait: Option<Pin<Box<F>>> makes the combinator Unpin", "pin projection needs unsafe (map_unchecked_mut)", "cancellation = drop", "drop the inner future early (Option = None, Pin::set(None))", "Option::as_pin_mut", "give up in the same poll when the budget runs out", "pass the Context through, no self-wake", "async blocks drop their captures on completion"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

@@ -40,7 +40,7 @@ pub async fn collect<S: Stream + Unpin>(s: S) -> Vec<S::Item>;
   `Pending` を返します。`next` は `Unpin` なストリームならどれにでも呼べます。
   `dyn Stream<Item = u32> + Unpin` のようなトレイトオブジェクトにも呼べます。
 - `iter(items)` は `items` の要素を順に返すストリームを返します。`Pending` になることはありません。
-  poll するたびに次の要素を返し、要素がなくなったら `Ready(None)` を返します。
+  poll されるたびに次の要素を返し、要素がなくなったら `Ready(None)` を返します。
 - `zip(a, b)` は組のストリームを返します。`a` の 1 番目の要素と `b` の 1 番目の要素、
   次に 2 番目どうし、という順に組にします。poll されるたびに、次のように動きます。
   1. `a` の要素を持っていなければ、`a` を 1 回 poll します。`a` が `Pending` を返したら、`b` を poll せずに

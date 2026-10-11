@@ -10,7 +10,7 @@ struct Job(u32);
 
 /// Gives the other threads many turns, so that the ones that are going to wait are waiting.
 fn let_others_run() {
-    for _ in 0..10 {
+    for _ in 0..30 {
         thread::yield_now();
     }
 }
@@ -120,7 +120,7 @@ pub fn run() {
     });
     case("hidden-3", || {
         // Two threads pop until `None`, then wait in push on a full queue. The first queue has room
-        // for 1 item, and the main thread pushes 1 to 10 in a row, so a push often waits for room
+        // for 1 item, and the main thread pushes 1 to 6 in a row, so a push often waits for room
         // while one thread still waits for an item. A pop must then wake the waiting push (waking
         // only the other waiting pop loses the wakeup). Closing a queue wakes both threads.
         let q = &BoundedQueue::new(1);
@@ -136,19 +136,23 @@ pub fn run() {
                     (got, full.push(job))
                 })
             });
-            let_others_run();
-            let pushed: Vec<_> = (1..=10).map(|x| q.push(x)).collect();
+            let pushed: Vec<_> = (1..=3)
+                .map(|i| {
+                    let_others_run();
+                    [q.push(2 * i - 1), q.push(2 * i)]
+                })
+                .collect();
             let_others_run();
             q.close();
             let_others_run();
             full.close();
             (pushed, threads.map(|t| t.join().unwrap()))
         });
-        check(pushed.iter().all(|r| r.is_ok()), "a push before close returned Err")?;
+        check(pushed.iter().flatten().all(|r| r.is_ok()), "a push before close returned Err")?;
         check(a.is_sorted() && b.is_sorted(), "a thread got items out of order")?;
         let mut all = [a, b].concat();
         all.sort();
-        check_eq(all, (1..=10).collect::<Vec<_>>())?;
+        check_eq(all, vec![1, 2, 3, 4, 5, 6])?;
         check_eq([a_pushed, b_pushed], [Err(Job(1)), Err(Job(2))])?;
         check_eq(full.len(), 1)?;
         check_eq(full.pop(), Some(Job(0)))?;

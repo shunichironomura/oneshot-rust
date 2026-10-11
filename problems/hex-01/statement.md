@@ -18,8 +18,8 @@ from 0 to 15 (`a` and `A` are 10, `f` and `F` are 15). Upper and lower case may 
 - `s` must be exactly one of these two forms, with nothing else before, inside or after it.
   Everything else gives `None`, for example: no `#` at the start, a second `#`, any other number of
   digits (CSS also has 4- and 8-digit forms with transparency, but they are not accepted here),
-  whitespace anywhere (`s` is not trimmed), a `+` or `-` sign, or any other character that is not a
-  hex digit, ASCII or not.
+  whitespace anywhere (`s` is not trimmed), or any other character that is not a hex digit,
+  ASCII or not.
 - `parse_hex_color` must not panic, whatever `s` is.
 - `to_hex` returns the shortest code that `parse_hex_color` reads back as `rgb`, written with
   lowercase digits:

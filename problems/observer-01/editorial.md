@@ -59,8 +59,8 @@ subject, which no longer upgrades once the subject is gone. Two details matter:
 
 - `drop` must not drop the removed listener while the list is still borrowed. A listener may own
   other `Subscription`s, and their `drop` borrows the list again. A plain
-  `listeners.borrow_mut().retain(...)` drops the listener in place and panics with "already
-  borrowed". The solution removes the entry, ends the borrow, and only then drops it.
+  `listeners.borrow_mut().retain(...)` drops the listener in place and panics with "RefCell already
+  borrowed". The code below removes the entry, ends the borrow, and only then drops it.
 - `notify` copies only the ids and looks each listener up again right before its turn.
 
 ```rust

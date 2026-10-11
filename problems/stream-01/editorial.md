@@ -7,17 +7,17 @@ it compile:
   is why `next` requires it.
 - `Pin::new(self)` moves `self` (a `&mut Self`, which is not `Copy`) into the first call, so the
   closure could run only once, while `poll_fn` needs an `FnMut` (E0507). `Pin::new(&mut *self)`
-  reborrows it for one call instead. The future keeps borrowing the stream, which the `+ '_` of the
-  return type allows.
+  reborrows it for one call instead. The future keeps borrowing the stream, as the `+ '_` of the
+  return type says.
 
 `collect` then needs `mut s` and loops with `while let Some(item) = s.next().await`. When `next`
 is ready at once, the loop moves on to the next item within the same poll, so the future of
 `collect` returns `Pending` only when `s` does.
 
-**`Unpin` of `Iter` and `Zip`.** To use the fields of `self: Pin<&mut Self>`, you need `get_mut`
-(or `DerefMut`, with `mut self`), and both require `Self: Unpin`. `Unpin` is an auto trait:
-`Iter<I>` is `Unpin` only if `I` is, and `Zip<A, B>` only if `A`, `B` *and* `A::Item` are, since
-`Zip` stores an item of `a`. The impl blocks promise nothing about `I` or `A::Item`, so
+**`Unpin` of `Iter` and `Zip`.** To modify the fields of `self: Pin<&mut Self>`, you need
+`get_mut` (or `DerefMut`, with `mut self`), and both require `Self: Unpin`. `Unpin` is an auto
+trait: `Iter<I>` is `Unpin` only if `I` is, and `Zip<A, B>` only if `A`, `B` *and* `A::Item` are,
+since `Zip` stores an item of `a`. The impl blocks promise nothing about `I` or `A::Item`, so
 `self.get_mut()` fails with "`I` cannot be unpinned" and "`<A as Stream>::Item` cannot be
 unpinned". The compiler suggests adding `I: Unpin` and `<A as Stream>::Item: Unpin`, but that
 changes the given bounds, and the harness uses an iterator that is not `Unpin`, as well as items

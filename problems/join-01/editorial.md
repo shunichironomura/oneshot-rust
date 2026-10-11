@@ -11,11 +11,12 @@ Compiling this on the first try takes care in four places:
   `A: Unpin` ("`A` cannot be unpinned", E0277), and the inputs are generic; in the tests they are
   `async` blocks, which are not `Unpin`. Adding `A: Unpin` to the signature only moves the error
   into the harness. `Box::pin(a)` moves the input to the heap, where it never moves again, and
-  `a.as_mut()` reborrows the `Pin<Box<A>>` as the `Pin<&mut A>` that `poll` takes. The
-  `Pin<Box<A>>` itself is `Unpin`, so the closure can own it.
+  `a.as_mut()` reborrows the `Pin<Box<A>>` as the `Pin<&mut A>` that `poll` takes. Moving the
+  `Pin<Box<A>>` (into the closure, and later together with the joined future) moves only the
+  pointer, never the input: `Pin<Box<A>>` is `Unpin`.
 - **`move`.** Without it, the closure borrows the local variables of `join`, which are dropped when
-  `join` returns. The compiler then reports that `a` does not live long enough, and also that "the
-  parameter type `A` may not live long enough", suggesting `A: 'static`. Do not follow that
+  `join` returns. The compiler then reports that "the parameter type `A` may not live long enough",
+  suggesting `A: 'static`, and also that `a` does not live long enough. Do not follow that
   suggestion: the inputs of the harness borrow local variables.
 - **Taking the outputs.** `poll_fn` calls the closure once per poll, so the closure is `FnMut` and
   cannot move its captured variables out: `a_out.unwrap()` is rejected with "cannot move out of
@@ -28,16 +29,17 @@ The behavior has traps of its own:
 
 - **Poll every input that is still running.** `&&` is fine for the final check on the outputs, but
   `poll_a() && poll_b()` and `iter_mut().all(...)` short-circuit: they stop at the first input that
-  returns `Pending`, and so does an early `return Poll::Pending`. `async move { (a.await, b.await) }`
-  compiles, but it runs the inputs one after the other. In the first example, all of these log `a0`,
-  `a1`, `b0`, `b1`, `b2` and take four polls.
-- **Poll first, then decide.** A closure that first checks whether all the outputs are there and only
-  then polls returns `Pending` from the poll in which the last input completes. Nothing woke the
-  waker during that poll, so a real executor would never poll the joined future again.
+  returns `Pending`, and so does an early `return Poll::Pending`.
+  `async move { (a.await, b.await) }` compiles, but it runs the inputs one after the other. In the
+  first example, such a `join` logs `a0`, `a1`, `b0`, `b1`, `b2` and takes four polls.
+- **Poll first, then decide.** A closure that first checks whether all the outputs are there and
+  only then polls returns `Pending` from the poll in which the last input completes. Nothing woke
+  the waker during that poll, so a real executor would never poll the joined future again.
 - **Pass `cx` on.** The inputs wake the waker of the `Context` they are polled with; that is how the
   executor learns that the joined future can make progress. Polling them with a waker of your own,
   such as `Waker::noop()`, loses those wake-ups. Waking `cx.waker()` in the joined future itself is
-  not needed, and it makes the executor poll the joined future again for nothing.
+  not needed, and the statement rules it out: it makes the executor poll the joined future again
+  for nothing.
 - **Keep the order.** The outputs go in input order, not in the order the inputs complete. Removing
   completed inputs with `swap_remove` also goes wrong: it moves the last input into the gap, so the
   remaining inputs are no longer polled in index order.
@@ -139,8 +141,9 @@ pub fn join_all<F: Future>(futs: Vec<F>) -> impl Future<Output = Vec<F::Output>>
 ```
 
 `join` can also pin its inputs without a heap allocation. An `async` block is pinned while it runs,
-so `pin!` can pin values stored in the block itself. The closure then only borrows the outputs, and
-after the `.await`, when the closure is gone, they can be moved out with `unwrap`. This replaces
+so `pin!` can pin values stored in the block itself. The closure (without `move`) then only borrows
+the inputs and the outputs, and after the `.await`, when the closure is gone, the outputs can be
+moved out with `unwrap`. This replaces
 `join` of the model solution (add `use std::pin::pin;`). It does not work for `join_all`: `pin!`
 pins one value, and the elements of a `Vec` cannot be pinned in place without `unsafe`.
 
