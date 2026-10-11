@@ -135,13 +135,13 @@ export function ProblemsPage() {
                     {best !== undefined ? (
                       <CircleCheck
                         size={18}
-                        class="solved"
+                        class="status-icon solved"
                         aria-label={t.solvedHeadline}
                       />
                     ) : inProgress.has(p.id) ? (
                       <CircleDot
                         size={18}
-                        class="in-progress"
+                        class="status-icon in-progress"
                         aria-label={t.runPlaying}
                       />
                     ) : null}

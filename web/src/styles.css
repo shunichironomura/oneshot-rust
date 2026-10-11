@@ -250,7 +250,6 @@ button.chip:hover:not(:disabled) {
   display: inline-flex;
   align-items: center;
   gap: 0.25em;
-  margin-left: 0.6em;
   padding: 0 0.5em;
   border-radius: 4px;
   font-size: 0.75em;
@@ -382,10 +381,6 @@ main > section {
 
 .section-head .chip {
   margin-left: auto;
-}
-
-.section-head .badge {
-  margin-left: 0;
 }
 
 /* The page's action goes to the far end. */
@@ -560,10 +555,6 @@ main > section.home {
   margin: 0;
   color: var(--muted);
   font-size: 0.9em;
-}
-
-.round-ladder .badge {
-  margin-left: 0;
 }
 
 .link-button.abandon-round {
@@ -832,14 +823,20 @@ main > section.round-start {
   text-decoration: underline;
 }
 
-.solved {
-  color: var(--ac);
+.status-icon {
   vertical-align: middle;
 }
 
-.in-progress {
+.status-icon.solved {
+  color: var(--ac);
+}
+
+.status-icon.failed {
+  color: var(--ce);
+}
+
+.status-icon.in-progress {
   color: var(--wa);
-  vertical-align: middle;
 }
 
 .best {
@@ -868,10 +865,6 @@ main > section.round-start {
 .play-header h1 {
   margin: 0 0.2em;
   font-size: 1.1em;
-}
-
-.play-header .badge {
-  margin-left: 0;
 }
 
 /* The actions keep together at the far end, on a line of their own when the header wraps. */
@@ -956,6 +949,27 @@ main > section.round-start {
 
 .editor {
   height: 100%;
+}
+
+/* Model solution tab */
+.statement .tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.solution {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  padding-top: 0.8em;
+}
+
+.solution-note,
+.practice-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9em;
 }
 
 /* Result panel */
@@ -1240,10 +1254,6 @@ dialog .actions {
   margin-left: auto;
 }
 
-.history .failed {
-  color: var(--ce);
-}
-
 .run-date {
   color: var(--muted);
   font-size: 0.9em;
@@ -1359,10 +1369,6 @@ dialog .actions {
   border-bottom: 1px solid var(--border);
 }
 
-.scorecard-rows .badge {
-  margin-left: 0;
-}
-
 .row-number {
   min-width: 1em;
   color: var(--muted);
@@ -1440,9 +1446,6 @@ dialog .actions {
 
   .hero {
     grid-template-columns: 1fr;
-  }
-
-  .hero {
     gap: 1.5em;
     padding-top: 1em;
   }
@@ -1583,25 +1586,4 @@ dialog .actions {
   .editor {
     font-size: 16px;
   }
-}
-
-/* Model solution tab */
-.statement .tabs button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-}
-
-.solution {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8em;
-  padding-top: 0.8em;
-}
-
-.solution-note,
-.practice-note {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.9em;
 }
