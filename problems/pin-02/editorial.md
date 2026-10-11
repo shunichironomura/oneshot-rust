@@ -36,8 +36,9 @@ future with a waker of your own, such as `Waker::noop()`, loses those wake-ups. 
 
 Pin a box that holds an `Option<F>` instead. `Option::as_pin_mut` turns a `Pin<&mut Option<F>>` into
 an `Option<Pin<&mut F>>`, and `Pin::set` replaces the pinned value in place, dropping the old one:
-`set(None)` drops the inner future without ever moving it. Pin projection of an inline `Option<F>`
-would use the same two calls; the box makes them safe.
+`set(None)` drops the inner future without ever moving it. With an inline `Option<F>`, the same two
+calls would come after an `unsafe` pin projection to `Pin<&mut Option<F>>`; the box hands out that
+`Pin` safely, through `as_mut`.
 
 ```rust
 use std::pin::Pin;

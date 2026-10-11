@@ -1,5 +1,6 @@
 use std::cell::RefCell;
-use std::mem;
+use std::mem::ManuallyDrop;
+use std::ptr;
 use std::rc::Rc;
 
 pub type Log = Rc<RefCell<Vec<String>>>;
@@ -8,14 +9,12 @@ pub struct TempFile {
     name: String,
     data: Vec<u8>,
     log: Log,
-    /// Set by `persist`, so that `drop` does not delete the file.
-    persisted: bool,
 }
 
 impl TempFile {
     pub fn create(name: &str, log: &Log) -> TempFile {
         log.borrow_mut().push(format!("create {name}"));
-        TempFile { name: name.to_string(), data: Vec::new(), log: Rc::clone(log), persisted: false }
+        TempFile { name: name.to_string(), data: Vec::new(), log: Rc::clone(log) }
     }
 
     pub fn write(&mut self, bytes: &[u8]) {
@@ -29,19 +28,24 @@ impl TempFile {
         self
     }
 
-    pub fn persist(mut self) -> (String, Vec<u8>) {
-        // `self` is still dropped at the end of this method, which also releases `log`.
-        // `drop` only has to know that there is nothing to delete.
-        self.persisted = true;
-        (mem::take(&mut self.name), mem::take(&mut self.data))
+    pub fn persist(self) -> (String, Vec<u8>) {
+        // A persisted file must not be deleted, so `drop` must not run. `ManuallyDrop` runs
+        // neither `TempFile::drop` nor the destructors of the fields, so every field, the log
+        // included, has to be moved out of it.
+        let file = ManuallyDrop::new(self);
+        // SAFETY: each field is read exactly once and `file` is never used again, so each value
+        // ends up with exactly one owner: nothing is dropped twice, and nothing leaks.
+        let (name, data, log) =
+            unsafe { (ptr::read(&file.name), ptr::read(&file.data), ptr::read(&file.log)) };
+        // This file's handle to the log is released here.
+        drop(log);
+        (name, data)
     }
 }
 
 impl Drop for TempFile {
     fn drop(&mut self) {
-        if !self.persisted {
-            let line = format!("delete {} ({} bytes)", self.name, self.data.len());
-            self.log.borrow_mut().push(line);
-        }
+        let line = format!("delete {} ({} bytes)", self.name, self.data.len());
+        self.log.borrow_mut().push(line);
     }
 }

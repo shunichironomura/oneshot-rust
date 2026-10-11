@@ -36,8 +36,9 @@ Future を poll すると、その通知が失われます。`Budget` が `Pendi
 
 `Option<F>` を入れた box を固定する方法もあります。`Option::as_pin_mut` は `Pin<&mut Option<F>>` を
 `Option<Pin<&mut F>>` に変え、`Pin::set` は固定された値をその場で置き換えて、古い値を破棄します。
-`set(None)` は、内側の Future を一度も動かさずに破棄します。直接持った `Option<F>` をピンの射影で扱う
-場合も同じ 2 つの呼び出しを使いますが、box のおかげで安全に書けます。
+`set(None)` は、内側の Future を一度も動かさずに破棄します。`Option<F>` を直接持つ場合は、`unsafe` な
+ピンの射影で `Pin<&mut Option<F>>` を得てから同じ 2 つの呼び出しを使うことになります。box なら、その
+`Pin` が `as_mut` で安全に得られます。
 
 ```rust
 use std::pin::Pin;

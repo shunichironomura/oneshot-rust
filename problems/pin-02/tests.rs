@@ -79,6 +79,21 @@ fn ticket(n: usize) -> Ticket {
     Ticket(n, PhantomPinned)
 }
 
+/// A future that is never ready and does not wake anything when it is polled. Like a future that
+/// waits for an event, it keeps a clone of the waker of its last poll in `slot`, to be woken later.
+struct Parked<'a> {
+    slot: &'a Cell<Option<Waker>>,
+}
+
+impl Future for Parked<'_> {
+    type Output = ();
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
+        self.slot.set(Some(cx.waker().clone()));
+        Poll::Pending
+    }
+}
+
 /// A waker that counts how many times it was woken.
 #[derive(Default)]
 struct WakeCount(AtomicUsize);
@@ -222,7 +237,19 @@ pub fn run() {
         check_eq((a.get(), b.get()), (2, 3))?;
         check_eq(poll_budget(fut.as_mut(), &waker_a), Poll::Ready(Some(8)))?;
         check_eq((a.get(), b.get()), (2, 3))?;
-        check_eq(stats.get(), (6, 2))
+        check_eq(stats.get(), (6, 2))?;
+        // An inner future that keeps the waker to wake it later: the Budget wakes nothing itself,
+        // and the waker that the inner future got is the one the Budget was polled with.
+        let slot = Cell::new(None);
+        let mut fut = pin!(with_budget(Parked { slot: &slot }, 2));
+        check(poll_budget(fut.as_mut(), &waker_a).is_pending(), "expected Pending")?;
+        check_eq((a.get(), b.get()), (2, 3))?;
+        slot.take().expect("the inner future was not polled").wake();
+        check_eq((a.get(), b.get()), (3, 3))?;
+        check_eq(poll_budget(fut.as_mut(), &waker_b), Poll::Ready(None))?;
+        check_eq((a.get(), b.get()), (3, 3))?;
+        slot.take().expect("the inner future was not polled").wake();
+        check_eq((a.get(), b.get()), (3, 4))
     });
     case("hidden-5", || {
         // Async blocks that borrow locals and output a value that is not Unpin.

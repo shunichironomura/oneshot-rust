@@ -16,16 +16,16 @@ impl Lock {
     pub fn name(&self) -> &str {
         todo!()
     }
-
-    pub fn into_name(self) -> String {
-        todo!()
-    }
 }
 
 impl Drop for Lock {
     fn drop(&mut self) {
         // Log the release here.
     }
+}
+
+pub fn with_lock<R>(name: &str, log: &Log, f: impl FnOnce() -> R) -> R {
+    todo!()
 }
 
 pub fn release_all(locks: Vec<Lock>) {

@@ -33,21 +33,25 @@ impl Client {
     }
 
     pub fn step(&mut self, ok: bool) {
-        self.state = match self.state {
-            Conn::Offline => Conn::Connecting { attempts: 1, queue: Vec::new() },
-            Conn::Connecting { attempts, queue } if ok => {
-                Conn::Online(Session { attempts, sent: queue })
+        match self.state {
+            Conn::Offline => {
+                self.state = Conn::Connecting { attempts: 1, queue: Vec::new() };
             }
-            Conn::Connecting { attempts, queue } if attempts < MAX_ATTEMPTS => {
-                Conn::Connecting { attempts: attempts + 1, queue }
+            Conn::Connecting { attempts, queue } => {
+                self.state = if ok {
+                    Conn::Online(Session { attempts, sent: queue })
+                } else if attempts < MAX_ATTEMPTS {
+                    Conn::Connecting { attempts: attempts + 1, queue }
+                } else {
+                    Conn::Failed { unsent: queue }
+                };
             }
-            Conn::Connecting { queue, .. } => Conn::Failed { unsent: queue },
             Conn::Online(session) if !ok => {
                 self.closed.push(session);
-                Conn::Offline
+                self.state = Conn::Offline;
             }
-            other => other,
-        };
+            _ => {}
+        }
     }
 
     pub fn send(&mut self, msg: &str) -> bool {

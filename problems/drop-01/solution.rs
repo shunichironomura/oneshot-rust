@@ -4,34 +4,32 @@ use std::rc::Rc;
 pub type Log = Rc<RefCell<Vec<String>>>;
 
 pub struct Lock {
-    /// `None` once `into_name` has taken the name out: there is nothing left to release.
-    name: Option<String>,
+    name: String,
     log: Log,
 }
 
 impl Lock {
     pub fn acquire(name: &str, log: &Log) -> Lock {
         log.borrow_mut().push(format!("acquire {name}"));
-        Lock { name: Some(name.to_string()), log: Rc::clone(log) }
+        Lock { name: name.to_string(), log: Rc::clone(log) }
     }
 
     pub fn name(&self) -> &str {
-        self.name.as_deref().unwrap_or_default()
-    }
-
-    pub fn into_name(mut self) -> String {
-        // `self.name` cannot be moved out of a type that implements `Drop` (E0509).
-        // Take it and leave `None` behind, so that `drop` logs nothing.
-        self.name.take().unwrap_or_default()
+        &self.name
     }
 }
 
 impl Drop for Lock {
     fn drop(&mut self) {
-        if let Some(name) = &self.name {
-            self.log.borrow_mut().push(format!("release {name}"));
-        }
+        self.log.borrow_mut().push(format!("release {}", self.name));
     }
+}
+
+pub fn with_lock<R>(name: &str, log: &Log, f: impl FnOnce() -> R) -> R {
+    // A named variable holds the lock until the end of the function, after `f()` has run.
+    // `let _ = ...` would release it at once: `_` binds nothing.
+    let _lock = Lock::acquire(name, log);
+    f()
 }
 
 pub fn release_all(mut locks: Vec<Lock>) {

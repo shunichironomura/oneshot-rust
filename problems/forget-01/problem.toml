@@ -5,11 +5,10 @@ concepts = [
     "cannot move out of a type that implements Drop (E0509)",
     "functional record update `..self` moves fields too (E0509)",
     "mem::forget skips the destructors of the remaining fields (leak)",
-    "ManuallyDrop + ptr::read of every field",
-    "a flag that Drop honors",
+    "taking apart a Drop type without running drop: ManuallyDrop + ptr::read of every field",
+    "ManuallyDrop::into_inner runs drop again",
     "mem::take on Rc<T: Default> allocates a new Rc",
     "Rc strong_count and Miri leak check",
-    "drop flags",
 ]
 kind = "repair"
 

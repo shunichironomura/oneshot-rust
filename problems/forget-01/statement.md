@@ -32,8 +32,8 @@ impl Drop for TempFile { /* ... */ }
   to `log` is left, `Rc::strong_count(&log)` is `1` again. Memory leaks are detected by Miri and
   fail the submission.
 
-Do not change `Log` or the public signatures. You may change the private fields of `TempFile`, and
-`unsafe` code is allowed.
+Do not change `Log`, the public signatures, the fields of `TempFile` or its `Drop` impl. `unsafe`
+code is allowed.
 
 ### Examples
 

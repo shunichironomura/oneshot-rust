@@ -1,80 +1,85 @@
-`Option::unwrap` は `Option` を**値で**受け取ります。`self.state` は `&mut self`（`content` では `&self`）の
-先にあり、借用している構造体からフィールドだけをムーブすることはできません。`*self` に穴が開いてしまうからです。
-そのため `self.state.unwrap()` はどれもエラー E0507 になります。箱を `s` にムーブする
-`if let Some(s) = self.state` も同じです。
+`Post` 自体は正しく書かれています。`take()` は `Option` から箱をムーブして取り出し、次の状態を
+格納するまで `None` を残します。`add_text` と `content` は状態を借用するだけです。エラーになるのは、
+`Box<dyn State>` 型の `s` に対する `s.request_review()`、`s.approve()`、`s.reject()` の 3 か所です。
 
-どう直すかは、それぞれの呼び出しが何を必要とするかで決まります。
+これらのメソッドは `self` を**値で**受け取ります。メソッドの探索は箱を通って中の `dyn State` に届くので、
+呼び出すには箱から状態をムーブして取り出し、引数として渡さなければなりません。しかし `dyn State` の
+サイズは実行時にしかわかりません（`Draft` かもしれず、`PendingReview` かもしれません）。サイズが
+静的にわからない値はムーブできないので、これは E0161（"cannot move a value of type `dyn State`"）に
+なります。トレイトの定義自体は受け入れられ、`Draft` に対してならこれらのメソッドを呼べます。
+呼べないのは、トレイトオブジェクトを通したときだけです。
 
-- 状態を変えるメソッド（`request_review`、`approve`、`reject`）は `self: Box<Self>` を受け取るメソッドを呼びます。
-  これらは古い状態を**消費して**新しい状態を返すので、参照ではなく箱そのものが必要です。`Option::take` は
-  値をムーブして取り出し、代わりに `None` を残します。フィールドが `Option` になっているのはまさにこのためです。
-  取り出した後で新しい状態を格納します。
-- `content` と `add_text` は状態を見るだけです。`Option::as_ref` は `&Option<Box<dyn State>>` を
-  `Option<&Box<dyn State>>` に変え、メソッド呼び出しは箱を通して状態に届きます。`add_text` で
-  `self.state` を読みながら `self.content` に追加できるのは、別々のフィールドだからです。また、`text_to_add` が
-  返す `&'a str` は状態ではなく `text` を借用しています。
+レシーバを `self: Box<Self>` にすると、メソッドはサイズのわかっている箱そのものを受け取ります。
+これなら `Box<dyn State>` に対して呼べて、しかも古い状態を消費できます。状態の遷移に必要なのは
+まさにこれです。各実装は `Box<Draft>` のような具体的な型の箱を受け取ります。ここで `Box::new(self)` と
+書くと箱をさらに箱に入れることになり、`Box<Draft>` は `State` を実装していないのでエラーになります
+（E0277）。`self` をそのまま返してください。`Box<Draft>` は `Box<dyn State>` に型強制され（unsizing
+coercion）、元のメモリ領域がそのまま使われます。`PendingReview::approve` は `mut self: Box<Self>` を
+受け取り、箱を通して `approvals` を増やします。
 
-状態を変えるメソッドでは、コンパイラの提案に従うだけではうまくいきません。`as_ref()` や `as_mut()` で
-得られるのは参照だけです。そこから `self: Box<Self>` のメソッドを呼ぶと、参照の先から箱をムーブすることになり、
-また E0507 になります。提案される `if let Some(ref s)` も同じ理由で失敗します。
-`Box<dyn State>` は `Clone` を実装していないので、`clone()` も使えません。
+うまくいきそうで、うまくいかない修正が 2 つあります。
 
-`add_text` で `take()` を使ってもコンパイルは通りますが、状態を戻し忘れると記事には `None` が残り、
-それ以降は何も動かなくなります。
+- 遷移のメソッドに `where Self: Sized` を付ける。これは、トレイトを `dyn Trait` として使えなくする
+  メソッド（`Self` を返すメソッドや、ジェネリックなメソッド）に対するいつもの対処法ですが、
+  このトレイトはもともと `dyn State` として使えます。メソッドが `dyn State` から外れるだけで、
+  呼び出しは "the `approve` method cannot be invoked on a trait object" というエラーになります。
+- `(*s).approve()` と書く。箱からのムーブを明示しただけなので、同じ理由で失敗します。
 
 ### 別解
 
-状態を変える 3 つのメソッドは同じ形をしているので、`take` をヘルパーにまとめられます。`Option::map` は
-状態があるときだけ遷移を適用し、`as_deref` は `Option<&dyn State>` を返します。
+遷移のメソッドを `&self` で受け取り、次の状態を作って返すこともできます。これでも動きますが、
+状態が変わらないときも含めて遷移のたびに新しい箱を確保することになり、`PendingReview` は承認の回数を
+新しい値にコピーしなければなりません。`Post` はテンプレートのままです。
 
 ```rust
-pub fn add_text(&mut self, text: &str) {
-    if let Some(state) = &self.state {
-        self.content.push_str(state.text_to_add(text));
+trait State {
+    fn request_review(&self) -> Box<dyn State>;
+    fn approve(&self) -> Box<dyn State>;
+    fn reject(&self) -> Box<dyn State>;
+
+    // `text_to_add` と `content` は元のまま
+}
+
+impl State for PendingReview {
+    fn request_review(&self) -> Box<dyn State> {
+        Box::new(PendingReview { approvals: self.approvals })
+    }
+
+    fn approve(&self) -> Box<dyn State> {
+        if self.approvals + 1 >= 2 {
+            Box::new(Published)
+        } else {
+            Box::new(PendingReview { approvals: self.approvals + 1 })
+        }
+    }
+
+    fn reject(&self) -> Box<dyn State> {
+        Box::new(Draft)
     }
 }
 
-pub fn content(&self) -> &str {
-    self.state.as_deref().map_or("", |s| s.content(self))
-}
-
-pub fn request_review(&mut self) {
-    self.transition(|s| s.request_review());
-}
-
-pub fn approve(&mut self) {
-    self.transition(|s| s.approve());
-}
-
-pub fn reject(&mut self) {
-    self.transition(|s| s.reject());
-}
-
-fn transition(&mut self, f: impl FnOnce(Box<dyn State>) -> Box<dyn State>) {
-    self.state = self.state.take().map(f);
-}
+// `Draft` と `Published` は、状態が変わらないところで `Box::new(Draft)` や
+// `Box::new(Published)` を返す
 ```
 
-トレイトのメソッドそのものを関数として渡すこともできます。ここでの `State::approve` は
-`<dyn State as State>::approve` のことで、`Box<dyn State>` から `Box<dyn State>` への関数です。
-`request_review` と `reject` も同じように書けます。
+`self: Box<Self>` を使う場合、`Post` の 3 つの遷移は同じ形をしているので、`take` を 1 つのヘルパーに
+まとめられます。ここでの `State::approve` は `<dyn State as State>::approve` のことで、
+`Box<dyn State>` から `Box<dyn State>` への関数です。`Option::map` は、状態があるときだけそれを適用します。
 
 ```rust
+pub fn request_review(&mut self) {
+    self.transition(State::request_review);
+}
+
 pub fn approve(&mut self) {
     self.transition(State::approve);
 }
 
-fn transition(&mut self, f: fn(Box<dyn State>) -> Box<dyn State>) {
-    if let Some(s) = self.state.take() {
-        self.state = Some(f(s));
-    }
+pub fn reject(&mut self) {
+    self.transition(State::reject);
 }
-```
 
-元の 1 行の形を残したいなら、`take().unwrap()` でも動きます。状態は必ず戻されるからです。
-
-```rust
-pub fn approve(&mut self) {
-    self.state = Some(self.state.take().unwrap().approve());
+fn transition(&mut self, f: fn(Box<dyn State>) -> Box<dyn State>) {
+    self.state = self.state.take().map(f);
 }
 ```

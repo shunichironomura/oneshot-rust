@@ -35,21 +35,24 @@ impl Client {
     }
 
     pub fn step(&mut self, ok: bool) {
-        // Take the old state out (leaving the default `Offline` behind for a moment),
-        // then put the new state back. Every arm produces the next state.
+        // Take the old state out, leaving the default `Offline` behind for a moment. The whole
+        // `match` is the new state, so every arm has to put a state back, even an unchanged one.
         self.state = match mem::take(&mut self.state) {
             Conn::Offline => Conn::Connecting { attempts: 1, queue: Vec::new() },
-            Conn::Connecting { attempts, queue } if ok => {
-                Conn::Online(Session { attempts, sent: queue })
+            Conn::Connecting { attempts, queue } => {
+                if ok {
+                    Conn::Online(Session { attempts, sent: queue })
+                } else if attempts < MAX_ATTEMPTS {
+                    Conn::Connecting { attempts: attempts + 1, queue }
+                } else {
+                    Conn::Failed { unsent: queue }
+                }
             }
-            Conn::Connecting { attempts, queue } if attempts < MAX_ATTEMPTS => {
-                Conn::Connecting { attempts: attempts + 1, queue }
-            }
-            Conn::Connecting { queue, .. } => Conn::Failed { unsent: queue },
             Conn::Online(session) if !ok => {
                 self.closed.push(session);
                 Conn::Offline
             }
+            // Online with `ok`, and Failed: put the state back unchanged.
             other => other,
         };
     }
