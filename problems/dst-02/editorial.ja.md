@@ -44,10 +44,11 @@ pub fn describe(ps: &[Box<Packet<dyn Display + '_>>]) -> Vec<String>
 
 `describe` と `longest` はジェネリックにもできます。ハーネスは `T = dyn Display` として `describe` を
 呼ぶので、`T: ?Sized` が必要です。`P: Deref` を使った `longest` は、ボックスのスライスのほか、
-参照や `Rc` のスライスも受け取れます（`use std::ops::Deref;` を追加します）。
+参照や `Rc` のスライスも受け取れます。`fn` の行だけを変えれば済むように、`std::ops::Deref` は
+パスを省略せずに書いています。
 
 ```rust
 pub fn describe<T: Display + ?Sized>(ps: &[Box<Packet<T>>]) -> Vec<String>
 
-pub fn longest<P: Deref<Target = Packet<[u8]>>>(ps: &[P]) -> Option<u32>
+pub fn longest<P: std::ops::Deref<Target = Packet<[u8]>>>(ps: &[P]) -> Option<u32>
 ```

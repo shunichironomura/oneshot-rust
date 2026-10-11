@@ -6,34 +6,33 @@ use std::thread::{self, ThreadId};
 use crate::judge::{case, check, check_eq};
 use crate::user::ThreadPool;
 
+/// What the jobs did: a label and the thread each job ran on.
+type Log<T> = Arc<Mutex<Vec<(T, ThreadId)>>>;
+
 /// Gives the other threads some turns.
 fn let_others_run() {
-    for _ in 0..10 {
+    for _ in 0..3 {
         thread::yield_now();
     }
 }
 
-/// A job that appends `x` to `log`, after a while.
-fn log_later<T: Send + 'static>(log: &Arc<Mutex<Vec<T>>>, x: T) -> impl FnOnce() + Send + 'static {
+/// A job that appends `x` and its thread to `log`, after a while.
+fn log_later<T: Send + 'static>(log: &Log<T>, x: T) -> impl FnOnce() + Send + 'static {
     let log = Arc::clone(log);
     move || {
         let_others_run();
-        log.lock().unwrap().push(x);
+        log.lock().unwrap().push((x, thread::current().id()));
     }
 }
 
-/// A job that waits at `barrier`, then appends the id of its thread to `ids`.
-fn meet(barrier: &Arc<Barrier>, ids: &Arc<Mutex<Vec<ThreadId>>>) -> impl FnOnce() + Send + 'static {
+/// A job that waits at `barrier`, then appends `x` and its thread to `log`.
+fn meet<T: Send + 'static>(barrier: &Arc<Barrier>, log: &Log<T>, x: T) -> impl FnOnce() + Send + 'static {
     let barrier = Arc::clone(barrier);
-    let ids = Arc::clone(ids);
+    let log = Arc::clone(log);
     move || {
         barrier.wait();
-        ids.lock().unwrap().push(thread::current().id());
+        log.lock().unwrap().push((x, thread::current().id()));
     }
-}
-
-fn take<T: Clone>(log: &Arc<Mutex<Vec<T>>>) -> Vec<T> {
-    log.lock().unwrap().clone()
 }
 
 pub fn run() {
@@ -57,7 +56,7 @@ pub fn run() {
             pool.execute(move || log.lock().unwrap().push(word));
         }
         drop(pool);
-        check_eq(take(&log), vec!["a", "b", "c"])
+        check_eq(log.lock().unwrap().clone(), vec!["a", "b", "c"])
     });
     case("hidden-1", || {
         // new(0) panics, and a pool without jobs has run 0 jobs.
@@ -65,30 +64,25 @@ pub fn run() {
         check_eq(ThreadPool::new(1).shutdown(), 0)
     });
     case("hidden-2", || {
-        // Dropping a pool waits for the jobs that are still in its queue. Each pool counts its
-        // own jobs. execute returns before the job runs: the first job of `a` waits until the
-        // main thread meets it at the barrier. A pool of size 1 runs every job on the same worker
-        // thread, which stays alive between jobs.
-        let a = ThreadPool::new(1);
-        let b = ThreadPool::new(1);
-        let log = Arc::new(Mutex::new(Vec::new()));
-        for i in 0..3 {
-            b.execute(log_later(&log, i));
-        }
-        drop(b);
-        check_eq(take(&log), vec![0, 1, 2])?;
+        // execute returns before the job runs, even while the only worker is busy: the first job
+        // waits until the main thread meets it at the barrier, and three more jobs are added
+        // meanwhile. Dropping the pool waits for the jobs still in its queue. A pool of size 1
+        // runs its jobs in order, all on the same worker thread.
+        let pool = ThreadPool::new(1);
         let barrier = Arc::new(Barrier::new(2));
-        let ids = Arc::new(Mutex::new(Vec::new()));
-        a.execute(meet(&barrier, &ids));
+        let log = Log::default();
+        pool.execute(meet(&barrier, &log, 0));
+        for i in 1..=3 {
+            pool.execute(log_later(&log, i));
+        }
         barrier.wait();
-        let_others_run();
-        let worker_ids = Arc::clone(&ids);
-        a.execute(move || worker_ids.lock().unwrap().push(thread::current().id()));
-        check_eq(a.shutdown(), 2)?;
-        let ids = take(&ids);
-        check_eq(ids.len(), 2)?;
-        check(ids[0] != thread::current().id(), "a job ran on the thread that called execute")?;
-        check(ids[0] == ids[1], "a pool of size 1 ran jobs on two threads")
+        drop(pool);
+        let log = log.lock().unwrap().clone();
+        let order: Vec<i32> = log.iter().map(|&(i, _)| i).collect();
+        check_eq(order, vec![0, 1, 2, 3])?;
+        let worker = log[0].1;
+        check(worker != thread::current().id(), "a job ran on the thread that called execute")?;
+        check(log.iter().all(|&(_, id)| id == worker), "a pool of size 1 ran jobs on two threads")
     });
     case("hidden-3", || {
         // Two jobs wait at a barrier until both have arrived, so a pool of 2 must run them at the
@@ -96,22 +90,17 @@ pub fn run() {
         // waiting job, while the other worker is busy. The last job is added by another thread.
         let pool = ThreadPool::new(2);
         let barrier = Arc::new(Barrier::new(2));
-        let ids = Arc::new(Mutex::new(Vec::new()));
-        let log = Arc::new(Mutex::new(Vec::new()));
-        let first = meet(&barrier, &ids);
-        let after_meeting = log_later(&log, "first");
-        pool.execute(move || {
-            first();
-            after_meeting();
-        });
+        let log = Log::default();
+        pool.execute(meet(&barrier, &log, "first"));
         pool.execute(log_later(&log, "short"));
         thread::scope(|s| {
-            s.spawn(|| pool.execute(meet(&barrier, &ids)));
+            s.spawn(|| pool.execute(meet(&barrier, &log, "last")));
         });
         check_eq(pool.shutdown(), 3)?;
-        check_eq(take(&log), vec!["short", "first"])?;
-        let ids = take(&ids);
-        check(!ids.contains(&thread::current().id()), "a job ran on the main thread")?;
-        check(ids[0] != ids[1], "two jobs that met at a barrier ran on the same thread")
+        let log = log.lock().unwrap().clone();
+        check_eq(log.len(), 3)?;
+        check_eq(log[0].0, "short")?;
+        check(log.iter().all(|&(_, id)| id != thread::current().id()), "a job ran on the main thread")?;
+        check(log[1].1 != log[2].1, "two jobs that met at a barrier ran on the same thread")
     });
 }

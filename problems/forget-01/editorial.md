@@ -5,9 +5,10 @@ record update `TempFile { name: ..., ..self }` are rejected (E0509): `..self` mo
 off. Inside the method, `self` is an ordinary local variable that is dropped at the end unless it
 is moved somewhere as a whole.
 
-The compiler suggests cloning, which compiles but is wrong. Cloning the fields in `rename` builds a second
-file, and the old one is dropped at the end of `rename`, which logs `"delete draft (3 bytes)"`.
-Cloning in `persist` keeps the originals inside the forgotten value, and they leak.
+The compiler suggests cloning, which compiles but is wrong. Cloning the fields in `rename` builds a
+second file, and the old one is dropped at the end of `rename`, which logs
+`"delete draft (3 bytes)"`. Cloning in `persist` keeps the originals inside the forgotten value,
+and they leak.
 
 The real trap is `mem::forget(self)`. It skips `drop`, but it also skips the destructors of **all
 the fields**. Taking `name` and `data` out with `std::mem::take` (which needs `mut self`) and then
@@ -51,9 +52,10 @@ pub fn persist(self) -> (String, Vec<u8>) {
 ```
 
 `drop` always runs unless you skip it, so another way is to make sure it cannot do any harm. With
-the original three fields (and `rename` from the solution), `persist` can replace the log with a new, empty one: the real log is
-released right away, and `drop` writes its `delete` line into the throwaway log, which is freed
-together with `self`. It passes, but it hides the intent and allocates a log only to discard it.
+the original three fields (and `rename` from the solution), `persist` can replace the log with a
+new, empty one: the real log is released right away, and `drop` writes its `delete` line into the
+throwaway log, which is freed together with `self`. It passes, but it hides the intent and
+allocates a log only to discard it.
 
 ```rust
 pub fn persist(mut self) -> (String, Vec<u8>) {

@@ -1,8 +1,8 @@
 `Borrow<str>` is what lets `set.contains("alice")` and `map.get("bob")` take a `&str`, but it comes
 with a contract: `Eq`, `Ord` and `Hash` must give the same answers for a `Username` and for its
 `borrow()`. A hash set looks up `"alice"` by hashing the `&str` with the `Hash` of `str`, while each
-username in it was placed by the `Hash` of `Username`. If the two hashes differ, `contains` simply
-looks in the wrong place and answers `false`: no compile error, no panic, not even UB, just wrong
+username in it was placed by the `Hash` of `Username`. If the two hashes differ, `contains` looks in
+the wrong place and usually answers `false`: no compile error, no panic, not even UB, just wrong
 results. A `BTreeMap` has the same problem with order: `get("bob")` compares `"bob"` with the keys
 using the `Ord` of `str`, in a tree that was arranged with the `Ord` of `Username`.
 
@@ -14,21 +14,26 @@ delegates to `self.0` (see the alternatives). Code that looks just as reasonable
 the bytes, `self.0.as_bytes().hash(state)` hashes the length of the slice first, and ordering by
 length first disagrees with the order of `str`.
 
-`Deref<Target = str>` gives the rest of the "acts like a `&str`" behavior. In `deref`, `&self.0` is a
-`&String`, which deref coercion turns into the `&str` of the signature. A method call such as
-`u.len()` finds no `len` on `Username`, so it auto-derefs to `str`, and `&u` coerces to `&str` where
-a `&str` is expected, as in `char_count(&u)` or `let s: &str = &u;`. Coercion does not happen for a
-generic parameter such as `S: AsRef<str>`, which is why `AsRef<str>` is implemented as well. There is
-no `DerefMut`, so nobody can change the name of a `Username` and break its validity.
+`Deref<Target = str>` gives the rest of the "works like a `&str`" behavior. In `deref`, `&self.0`
+is a `&String`, which deref coercion turns into the `&str` of the signature. A method call such as
+`u.len()` finds no `len` on `Username`, so it auto-derefs to `str`. And `&u` coerces to `&str`
+wherever a `&str` is expected, such as an argument of a function that takes a `&str`, or
+`let s: &str = &u;`. Coercion does not happen for a generic parameter such as `S: AsRef<str>`,
+which is why `AsRef<str>` is implemented as well. There is no `DerefMut`, so nobody can change the
+name of a `Username` and make it invalid.
 
 In `PartialEq<&str>`, the right-hand side is a `&str`, so `other` is a `&&str`. `self.0 == other`
 does not compile, since there is no `String: PartialEq<&&str>`. Dereference once:
 `self.0 == *other` compares a `String` with a `&str`.
 
 In `parse`, count characters with `chars().count()`: `len()` counts bytes, so `"aé"` (2 characters,
-3 bytes) would not be `TooShort`. `fmt::Display::fmt(&self.0, f)` forwards to the `Display` of
-`str`, which also honors width and alignment such as `{:>10}`; `f.write_str(&self.0)` prints the
-same name but ignores them (the tests do not use them).
+3 bytes) would not be `TooShort`. Test characters with the ASCII-only range patterns `'a'..='z'` and
+`'0'..='9'` (or `is_ascii_lowercase` and `is_ascii_digit`): `is_lowercase` and `is_alphanumeric`
+also accept letters such as `é` and digits such as `٣`.
+
+`fmt::Display::fmt(&self.0, f)` forwards to the `Display` of `str`, which also honors width and
+alignment such as `{:>10}`. `f.write_str(&self.0)` prints the same name but ignores them (the tests
+do not use them).
 
 ### Alternatives
 

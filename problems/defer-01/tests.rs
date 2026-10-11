@@ -61,7 +61,13 @@ pub fn run() {
         let all = defer_all(vec![push(&log, "1"), push(&log, "2"), push(&log, "3")]);
         check(entries(&log).is_empty(), "defer_all must not run the actions yet")?;
         drop(all);
-        check_eq(entries(&log), vec!["3", "2", "1"])
+        check_eq(entries(&log), vec!["3", "2", "1"])?;
+        let log = new_log();
+        let payload = panic_payload(|| {
+            let _all = defer_all(vec![push(&log, "1"), Box::new(|| panic!("2")), push(&log, "3")]);
+        });
+        check_eq(entries(&log), vec!["3", "1"])?;
+        check_eq(payload, Some("2"))
     });
     case("hidden-1", || {
         // The action runs once, when the last owner of the guard drops it.

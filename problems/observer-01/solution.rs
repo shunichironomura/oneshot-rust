@@ -1,8 +1,8 @@
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
-/// What a `Subscription` owns. Only the `Subscription` holds an `Rc` to it for longer than a
-/// moment, so the subject's `Weak` upgrades exactly as long as the `Subscription` is alive.
+/// What a `Subscription` owns. Only the `Subscription` keeps an `Rc` to it, so the subject's
+/// `Weak` can be upgraded exactly as long as the `Subscription` is alive.
 struct Listener {
     callback: Rc<dyn Fn(&str)>,
 }
@@ -12,6 +12,7 @@ pub struct Subject {
 }
 
 /// Dropping it unsubscribes the listener.
+#[must_use = "dropping a Subscription unsubscribes the listener"]
 pub struct Subscription {
     _listener: Rc<Listener>,
 }
@@ -32,12 +33,12 @@ impl Subject {
 
     pub fn notify(&self, msg: &str) -> usize {
         // Copy the list and release the borrow before calling anyone: a listener may subscribe,
-        // and listeners subscribed from now on are not part of this copy.
+        // and the listeners it subscribes are not in this copy.
         let snapshot = self.listeners.borrow().clone();
         let mut called = 0;
         for weak in snapshot {
-            // Keep the callback alive for the call, but not the `Listener`: if the callback drops
-            // its own subscription, it must stop counting as subscribed at once.
+            // Keep the callback alive during the call, but not the `Listener`: if the callback
+            // drops its own subscription, it must stop counting as subscribed at once.
             let callback = match weak.upgrade() {
                 Some(listener) => Rc::clone(&listener.callback),
                 None => continue, // unsubscribed before its turn

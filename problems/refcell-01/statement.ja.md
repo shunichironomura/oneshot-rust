@@ -2,7 +2,7 @@
 警告を送ります。本物のメッセージを送らずにこれをテストするため、受け取ったメッセージをすべて覚えておくだけの
 モックのメッセンジャー `Recorder` も書いてください。
 
-トレイト `Messenger` と `LimitTracker` のフィールドはエディタに入っています。
+`Messenger` トレイトと `LimitTracker` のフィールドは、すでにエディタに入っています。
 `Recorder` のフィールドは自由に決めてください。
 
 ```rust
@@ -31,7 +31,7 @@ impl Recorder {
 impl Messenger for Recorder { /* send */ }
 ```
 
-- `LimitTracker::new` は、`messenger` に報告し、割り当て量が `max` のトラッカーを作ります。何も送りません。
+- `LimitTracker::new` は、報告先が `messenger`、割り当て量が `max` のトラッカーを作ります。何も送りません。
 - `set_value` は、これまでの使用量として `value` を保存します。そして次の表で最初に当てはまる行の
   メッセージを送ります。つまり、1 回の呼び出しで送るメッセージは**多くても 1 つ**です。
 

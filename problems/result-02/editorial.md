@@ -1,10 +1,13 @@
-Each function is a short chain of standard library methods, and each has one detail that is easy to
-get wrong when you write it without a compiler at hand.
+Each function takes only a few lines of standard library code, and each has one detail that is easy
+to get wrong when you write it without a compiler at hand.
 
 - `parse_all`: `Result` implements `FromIterator`. Collecting an iterator of `Result<i32, E>` into
   `Result<Vec<i32>, E>` gives `Ok` with all the values, or the first `Err`; it stops there and does
   not look at the remaining items. The return type tells `collect` what to build. `parse` does not
-  skip whitespace, which is exactly what the rules ask for.
+  skip whitespace, which is exactly what the rules ask for. Passing `str::parse::<i32>` to `map`
+  directly does not compile (E0277): the iterator yields `&&str`, but that function takes a `&str`.
+  The closure works because a method call dereferences its receiver automatically (adding
+  `.copied()` before `map` works too).
 - `split_parsed`: iterating over `items`, a `&[&'a str]`, yields `&&'a str`. With `for item in items`
   and `let mut invalid = Vec::new();`, `invalid.push(item)` makes `invalid` a `Vec<&&str>`, which does
   not match the return type (E0308). The pattern in `for &item in items` copies the `&'a str` out of

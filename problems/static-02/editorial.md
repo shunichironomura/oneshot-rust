@@ -36,8 +36,9 @@ Two other shortcuts fail the hidden cases:
 
 ### Alternatives
 
-`HashMap` works too, but because `HashMap::new` is not `const`, the map has to be created at run
-time, on first use, with `LazyLock`. The four functions stay the same as in the model solution.
+`HashMap` works too. `HashMap::new` is not `const` (its `RandomState` picks random keys at run
+time), so here the map is created on first use with `LazyLock`. The four functions stay the same as
+in the model solution.
 
 ```rust
 use std::any::TypeId;
@@ -46,6 +47,20 @@ use std::sync::{LazyLock, Mutex};
 
 static COUNTS: LazyLock<Mutex<HashMap<TypeId, usize>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
+```
+
+`HashMap::with_hasher` is `const`, though, so a hasher that needs no random keys avoids the lazy
+initialization as well (the four functions again stay the same):
+
+```rust
+use std::any::TypeId;
+use std::collections::HashMap;
+use std::hash::{BuildHasherDefault, DefaultHasher};
+use std::sync::Mutex;
+
+type Counts = HashMap<TypeId, usize, BuildHasherDefault<DefaultHasher>>;
+
+static COUNTS: Mutex<Counts> = Mutex::new(HashMap::with_hasher(BuildHasherDefault::new()));
 ```
 
 A static can hold a struct, and a struct expression is fine in a `const` initializer. Here the total

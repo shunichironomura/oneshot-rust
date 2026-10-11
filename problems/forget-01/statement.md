@@ -20,9 +20,10 @@ impl Drop for TempFile { /* ... */ }
 - `create` creates an empty file named `name` that writes to `log`, and appends `"create <name>"` to
   the log. A name can be any string, even the empty string.
 - `write` appends `bytes` to the contents of the file. It logs nothing.
-- `rename` appends `"rename <old> -> <new>"` to the log and returns the file with the name
-  `new_name` and the same contents. Renaming deletes nothing: only the `rename` line is logged, and
-  when the renamed file is dropped later, it is deleted under its new name.
+- `rename` appends `"rename <old> -> <new>"` to the log, where `<old>` is the current name and
+  `<new>` is `new_name`, and returns the file with the name `new_name` and the same contents.
+  Renaming deletes nothing: only the `rename` line is logged, and when the renamed file is dropped
+  later, it is deleted under its new name.
 - `persist` consumes the file and returns its name and contents. A persisted file is never deleted:
   nothing is appended to the log, now or later.
 - Dropping a file that has not been persisted deletes it: it appends `"delete <name> (<n> bytes)"`

@@ -10,16 +10,17 @@ The fix is to write the method in its desugared form and add the bound:
 `fn get(&self, key: &str) -> impl Future<Output = Option<u32>> + Send;`. `Send` is now part of the
 trait's contract: generic code may rely on it, and every implementation is checked against it. An
 implementation may still be an `async fn`, as long as its future is `Send`, so `MemStore`,
-`Fallback` and the harness's store stay as they are. (`Future` is in the prelude since the 2024
-edition.)
+`Fallback` and the harness's store stay as they are. (In the 2024 edition, `Future` is in the
+prelude.)
 
 That is not enough on its own. A future is `Send` only if everything it holds across an `.await` is,
-and the future of `total` holds `s: &S`. A shared reference `&S` is `Send` only when `S: Sync`: this
-is actually the first error the compiler reports for the template. `Fallback` has the same problem:
-its `get` holds `&self`, a `&Fallback<A, B>`, while it awaits `first`, so once the trait requires
-`Send`, its implementation needs `A: Sync` and `B: Sync`. Neither the harness nor the
-implementations may change, so the trait must provide it. `pub trait Store: Sync` makes `Sync` a
-supertrait: every type that implements `Store` must be `Sync`, and generic code may assume it.
+and the future of `total` holds `s: &S`. A shared reference `&S` is `Send` only when `S: Sync`. In
+fact, this is the only error the compiler reports for the template: the one about the future of
+`S::get` appears only once it is fixed. `Fallback` has the same problem: its `get` holds `&self`, a
+`&Fallback<A, B>`, while it awaits `first`, so once the trait requires `Send`, its implementation
+needs `A: Sync` and `B: Sync`. Neither the harness nor the implementations may change, so the trait
+must provide it. `pub trait Store: Sync` makes `Sync` a supertrait: every type that implements
+`Store` must be `Sync`, and generic code may assume it.
 
 These attempts fail:
 

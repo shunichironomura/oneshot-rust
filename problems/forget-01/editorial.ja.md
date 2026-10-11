@@ -11,10 +11,11 @@
 本当の罠は `mem::forget(self)` です。`forget` は `drop` を飛ばしますが、**すべてのフィールド**のデストラクタも
 飛ばします。`std::mem::take` で `name` と `data` を取り出してから（`mut self` が必要です）`self` を `forget` すると、
 きれいに見えますが、中にはまだ `log` が残っています。その `Rc` は解放されないので、`Rc::strong_count(&log)` は
-1 に戻らず、Miri がリークを報告します。その場しのぎの修正もうまくいきません。`forget` の前に `let log = self.log.clone()` と
-すると、カウントを 1 つ増やして、後でその 1 つを減らすだけです。`drop(mem::take(&mut self.log))` は本物のログを
-解放しますが、代わりに新しい `Rc`（`Rc::default()` が作ったもの）が入り、それを `forget` がリークさせます。
-値を `forget` しても問題がないのは、残ったフィールドがどれも何も所有していないときだけです。
+1 に戻らず、Miri がリークを報告します。その場しのぎの修正もうまくいきません。`forget` の前に
+`let log = self.log.clone()` とすると、カウントを 1 つ増やして、後でその 1 つを減らすだけです。
+`drop(mem::take(&mut self.log))` は本物のログを解放しますが、代わりに新しい `Rc`（`Rc::default()` が
+作ったもの）が入り、それを `forget` がリークさせます。値を `forget` しても問題がないのは、残ったフィールドが
+どれも何も所有していないときだけです。
 
 模範解答は `drop` をまったく飛ばしません。`persisted` フラグを追加し、`persist` はそれを立てて名前と内容を
 取り出します。`self` はメソッドの終わりで普通に破棄され（このとき `log` も解放されます）、`drop` は永続化された
@@ -37,10 +38,10 @@ use std::ptr;
 
 // `impl TempFile` の中
 pub fn persist(self) -> (String, Vec<u8>) {
-    // Neither `drop` nor the destructors of the fields run on `file`.
+    // `file` に対しては、`drop` もフィールドのデストラクタも実行されない
     let file = ManuallyDrop::new(self);
-    // SAFETY: each field is read exactly once and `file` is never used again,
-    // so nothing is dropped twice.
+    // SAFETY: どのフィールドもちょうど 1 回だけ読み、その後 `file` は使わないので、
+    // 二重に破棄されるものはない
     let (name, data, log) =
         unsafe { (ptr::read(&file.name), ptr::read(&file.data), ptr::read(&file.log)) };
     drop(log);

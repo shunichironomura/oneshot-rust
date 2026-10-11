@@ -35,8 +35,9 @@ fn counter<T: 'static>() -> &'static AtomicUsize {
 
 ### 別解
 
-`HashMap` でも書けます。ただし `HashMap::new` は `const` ではないので、`LazyLock` を使って、最初に
-使うときに実行時にマップを作ります。4 つの関数は模範解答と同じです。
+`HashMap` でも書けます。`HashMap::new` は `const` ではない（`RandomState` が実行時にランダムな鍵を
+選ぶ）ので、ここでは `LazyLock` を使って、最初に使うときにマップを作ります。4 つの関数は模範解答と
+同じです。
 
 ```rust
 use std::any::TypeId;
@@ -45,6 +46,20 @@ use std::sync::{LazyLock, Mutex};
 
 static COUNTS: LazyLock<Mutex<HashMap<TypeId, usize>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
+```
+
+ただし `HashMap::with_hasher` は `const` なので、ランダムな鍵を必要としないハッシャーを使えば、
+遅延初期化も要りません（4 つの関数はやはり同じです）。
+
+```rust
+use std::any::TypeId;
+use std::collections::HashMap;
+use std::hash::{BuildHasherDefault, DefaultHasher};
+use std::sync::Mutex;
+
+type Counts = HashMap<TypeId, usize, BuildHasherDefault<DefaultHasher>>;
+
+static COUNTS: Mutex<Counts> = Mutex::new(HashMap::with_hasher(BuildHasherDefault::new()));
 ```
 
 static には構造体も入れられますし、構造体の式は `const` な初期化式の中に書けます。ここでは合計をマップの

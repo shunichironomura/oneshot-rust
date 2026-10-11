@@ -1,9 +1,10 @@
 A read guard is exactly the view the statement describes. `RwLockReadGuard<'_, Settings>`
 dereferences to the settings, any number of read guards may exist at the same time (on one thread
 or on several), and no writer gets in while one exists. So `read` simply returns
-`self.settings.read().unwrap()`, and the `+ '_` in the signature ties the guard to `&self`.
-`update` takes the write guard, which waits until every read guard is gone. `f(&mut settings)`
-works because the write guard dereferences mutably to `Settings`.
+`self.settings.read().unwrap()`. The guard borrows the lock, so it cannot outlive `&self`; the
+`+ '_` in the signature says so (in edition 2024 the returned `impl Trait` captures that lifetime
+even without it). `update` takes the write guard, which waits until every read guard is gone.
+`f(&mut settings)` works because the write guard dereferences mutably to `Settings`.
 
 A `Mutex` compiles too, since `MutexGuard` also implements `Deref`. But a mutex has one owner at a
 time: the second `read()` on the same thread waits for the first guard, which that thread will
@@ -14,9 +15,9 @@ each other.
 `try_update` must not wait. `try_write` returns a `TryLockResult`, and
 `Err(TryLockError::WouldBlock)` means that a view or another update holds the lock, which becomes
 `None`. Calling `write()` instead would wait forever for a view held by the same thread, and
-`try_write().unwrap()` panics. Get the guard first and call `f` only once you have it; otherwise
-`f` runs even when the update fails. `Poisoned` only happens after a panic while the lock was held,
-which cannot happen here because `f` never panics.
+`try_write().unwrap()` panics on `WouldBlock`. Get the guard first and call `f` only once you
+have it; otherwise `f` runs even when the update fails. `Poisoned` only happens after a panic while
+the lock was held, which cannot happen here because `f` never panics.
 
 The version is an `AtomicU64` next to the lock, so `version()` can read it without locking. It is
 increased while the write guard is still alive, so the version and the settings change together: a

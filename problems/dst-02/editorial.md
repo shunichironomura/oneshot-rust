@@ -43,10 +43,11 @@ pub fn describe(ps: &[Box<Packet<dyn Display + '_>>]) -> Vec<String>
 
 `describe` and `longest` can also be generic. `describe` needs `T: ?Sized`, because the harness calls
 it with `T = dyn Display`. With `P: Deref`, `longest` accepts slices of boxes as well as slices of
-references or `Rc`s (add `use std::ops::Deref;`).
+references or `Rc`s. The path `std::ops::Deref` is written in full, so that only the `fn` line
+changes.
 
 ```rust
 pub fn describe<T: Display + ?Sized>(ps: &[Box<Packet<T>>]) -> Vec<String>
 
-pub fn longest<P: Deref<Target = Packet<[u8]>>>(ps: &[P]) -> Option<u32>
+pub fn longest<P: std::ops::Deref<Target = Packet<[u8]>>>(ps: &[P]) -> Option<u32>
 ```

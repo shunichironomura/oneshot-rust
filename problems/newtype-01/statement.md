@@ -52,9 +52,9 @@ A `Username` stands for its name everywhere:
   `alice`.
 - Two usernames are equal when their names are equal, and usernames are ordered like their names
   (as `str`s): for example, `al_x` < `alice` < `bob`.
-- The tests put usernames in `HashSet`s, `HashMap`s, `BTreeSet`s and `BTreeMap`s and query them
-  with a `&str`: `set.contains("alice")`, `map.get("bob")`, `map.remove("carol")` and the like
-  must find the username with that name.
+- The tests put usernames in `HashSet`s, `HashMap`s and `BTreeMap`s and query them with a `&str`:
+  `set.contains("alice")`, `map.get("bob")`, `map.remove("carol")` and the like must find the
+  username with that name.
 
 ### Examples
 

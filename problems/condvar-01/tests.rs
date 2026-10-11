@@ -10,7 +10,7 @@ struct Job(u32);
 
 /// Gives the other threads many turns, so that the ones that are going to wait are waiting.
 fn let_others_run() {
-    for _ in 0..30 {
+    for _ in 0..10 {
         thread::yield_now();
     }
 }
@@ -119,30 +119,37 @@ pub fn run() {
         check_eq(empty.len(), 0)
     });
     case("hidden-3", || {
-        // Two threads wait in pop on an empty queue with room for 1 item. The main thread pushes 1
-        // and 2 right away, so its second push usually waits for room while the other pop still
-        // waits for an item: the pop that takes 1 must wake the waiting push (waking only the
-        // other pop loses the wakeup). Then the threads pop until the queue is closed, and wait in
-        // push on a full queue until it is closed. Closing a queue wakes both threads.
-        let q = BoundedQueue::new(1);
-        let full = BoundedQueue::new(1);
+        // Two threads pop until `None`, then wait in push on a full queue. The first queue has room
+        // for 1 item, and the main thread pushes 1 to 10 in a row, so a push often waits for room
+        // while one thread still waits for an item. A pop must then wake the waiting push (waking
+        // only the other waiting pop loses the wakeup). Closing a queue wakes both threads.
+        let q = &BoundedQueue::new(1);
+        let full = &BoundedQueue::new(1);
         check_eq(full.push(Job(0)), Ok(()))?;
-        let (pushed, [a, b]) = thread::scope(|s| {
-            let a = s.spawn(|| (q.pop(), q.pop(), full.push(Job(1))));
-            let b = s.spawn(|| (q.pop(), q.pop(), full.push(Job(2))));
+        let (pushed, [(a, a_pushed), (b, b_pushed)]) = thread::scope(|s| {
+            let threads = [Job(1), Job(2)].map(|job| {
+                s.spawn(move || {
+                    let mut got = Vec::new();
+                    while let Some(x) = q.pop() {
+                        got.push(x);
+                    }
+                    (got, full.push(job))
+                })
+            });
             let_others_run();
-            let pushed = [q.push(1), q.push(2)];
+            let pushed: Vec<_> = (1..=10).map(|x| q.push(x)).collect();
             let_others_run();
             q.close();
             let_others_run();
             full.close();
-            (pushed, [a.join().unwrap(), b.join().unwrap()])
+            (pushed, threads.map(|t| t.join().unwrap()))
         });
-        check_eq(pushed, [Ok(()), Ok(())])?;
-        let mut popped = [a.0, a.1, b.0, b.1];
-        popped.sort();
-        check_eq(popped, [None, None, Some(1), Some(2)])?;
-        check_eq([a.2, b.2], [Err(Job(1)), Err(Job(2))])?;
+        check(pushed.iter().all(|r| r.is_ok()), "a push before close returned Err")?;
+        check(a.is_sorted() && b.is_sorted(), "a thread got items out of order")?;
+        let mut all = [a, b].concat();
+        all.sort();
+        check_eq(all, (1..=10).collect::<Vec<_>>())?;
+        check_eq([a_pushed, b_pushed], [Err(Job(1)), Err(Job(2))])?;
         check_eq(full.len(), 1)?;
         check_eq(full.pop(), Some(Job(0)))?;
         check_eq(full.pop(), None)

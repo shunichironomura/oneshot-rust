@@ -1,5 +1,5 @@
 id = "variance-01"
-title = { en = "Invariant &mut", ja = "変えられない &mut" }
+title = { en = "No duplicates", ja = "重複なし" }
 difficulty = 3
 concepts = ["lifetime subtyping", "&mut T is invariant in T", "Vec<T> is covariant", "the &'a mut X<'a> anti-pattern", "over-annotating 'static"]
 kind = "repair"

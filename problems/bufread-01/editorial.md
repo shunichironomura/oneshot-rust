@@ -7,7 +7,8 @@ Each item of `lines()` is an `io::Result<String>`, not a `String`: reading a lin
 not valid UTF-8. The Book unwraps it, which would panic on such a request; `.ok()?` turns the error
 into `None` as required. `flatten()` (skip the errors) and `map_while(Result::ok)` (stop at the first
 error) compile just as easily, but they can return a request for invalid input. `lines()` also
-strips the `\r\n`, so the version can be compared with `"HTTP/1.1"` directly.
+removes the line ending (it splits at `\n` and drops a `\r` just before it), so the version can be
+compared with `"HTTP/1.1"` directly.
 
 The loop stops at the first empty line, so the body is never read, let alone decoded. Converting
 all of `raw` with `str::from_utf8` first would reject a request whose body is binary.
