@@ -16,8 +16,9 @@ covariant. Covariance is sound here because a shared handle only hands out `&T`:
 **`Send` and `Sync` must be written by hand,** because raw pointers (and `NonNull`) are neither.
 Both need `T: Send + Sync`. Handles on different threads give out `&T` at the same time, which
 requires `T: Sync`. And whichever thread drops the last handle drops the `T`, so sending a handle is
-like sending the value: `T: Send`. With only `T: Send` on `Send`, a `MyArc<Cell<u8>>` could be
-cloned into two threads that both call `set`: a data race in safe code.
+like sending the value: `T: Send`. `Sync` needs the same bounds, because a `&MyArc<T>` on another
+thread can be cloned into a handle there. With only `T: Send` on `Send`, a `MyArc<Cell<u8>>` could
+be cloned into two threads that both call `set`: a data race in safe code.
 
 **Memory orderings.** `fetch_add` and `fetch_sub` keep the count itself correct with any ordering;
 the ordering is about the *other* memory accesses around them.
@@ -35,8 +36,8 @@ the ordering is about the *other* memory accesses around them.
 
 The Nomicon's version of `Arc` also has a `PhantomData<ArcInner<T>>` field, "for the drop checker".
 Since `MyArc` has its own `Drop` impl, the compiler already assumes that dropping a `MyArc<T>` may
-use a `T`, so that field changes nothing here. The standard library needs it because its `Drop` impl
-uses the unstable `#[may_dangle]` attribute, which removes that assumption.
+use a `T`, so that field changes nothing for the drop checker here. The standard library needs it
+because its `Drop` impl uses the unstable `#[may_dangle]` attribute, which removes that assumption.
 
 ### Alternatives
 
