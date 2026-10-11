@@ -27,7 +27,7 @@ pub static GLOBAL: Stats = Stats::new();
   タイミングにかかわらず、サンプルが失われてはいけません。
 - `count`、`sum`、`max`、`min` は、同じ `Stats` の `record` が実行中のときには呼ばれません。
   それまでに終わったすべての `record` の呼び出しが反映されます。`join` したスレッド
-  （たとえば `std::thread::scope` の終わりで）が行った呼び出しも含みます。
+  （たとえば `std::thread::scope` の終わりで `join` されたスレッド）が行った呼び出しも含みます。
 - `new` は `const fn` のままにしてください。テストは `GLOBAL` と同じように `Stats` を `static` に置きます。
 
 公開されているシグネチャと `GLOBAL` は変えないでください。`Stats` のフィールド（エディタにあるものは

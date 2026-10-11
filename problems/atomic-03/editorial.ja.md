@@ -105,4 +105,5 @@ fn raise_to(max: &AtomicU64, value: u64) {
 
 ```rust
 self.max.update(Ordering::Relaxed, Ordering::Relaxed, |max| max.max(value));
+self.min.update(Ordering::Relaxed, Ordering::Relaxed, |min| min.min(value));
 ```

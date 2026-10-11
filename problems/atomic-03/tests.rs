@@ -54,6 +54,7 @@ fn record_in_buckets() -> Result<(), String> {
 pub fn run() {
     case("sample-1", || {
         let stats = Stats::new();
+        check_eq(summary(&stats), (0, 0, None, None))?;
         stats.record(5);
         stats.record(1);
         stats.record(9);

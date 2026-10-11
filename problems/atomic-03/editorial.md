@@ -16,9 +16,9 @@ which is larger than any sample, so the first `fetch_min` replaces it (a minimum
 stays `0`). `max` starts at `0`, but `0` cannot mean "no samples", since `0` is a valid sample: `max`
 and `min` look at the count instead.
 
-`Ordering::Relaxed` is enough everywhere. All the operations on one atomic happen in a single order
-(its modification order), so read-modify-write operations never lose an update, whatever the
-ordering. The results are read only after the recording threads have been joined, and joining a
+`Ordering::Relaxed` is enough everywhere. All the changes to one atomic happen in a single order
+(its modification order), and a read-modify-write always reads the value just before its own change
+in that order, whatever the ordering, so no update is lost. The results are read only after the recording threads have been joined, and joining a
 thread makes everything it did visible to the joining thread. Stronger orderings matter when an
 atomic tells another thread that *other* data is ready, like the flag of a spin lock.
 
@@ -103,4 +103,5 @@ that does not have its own `fetch_*` method:
 
 ```rust
 self.max.update(Ordering::Relaxed, Ordering::Relaxed, |max| max.max(value));
+self.min.update(Ordering::Relaxed, Ordering::Relaxed, |min| min.min(value));
 ```
