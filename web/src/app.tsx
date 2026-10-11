@@ -35,7 +35,7 @@ function Page({ route }: { route: Route }) {
     case "round":
       return <RoundPage />;
     case "scorecard":
-      return <ScorecardPage roundId={route.roundId} />;
+      return <ScorecardPage roundId={route.roundId} fresh={route.fresh === true} />;
     case "practice":
       return <PracticePage problemId={route.problemId} />;
     case "history":

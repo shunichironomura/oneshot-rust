@@ -7,7 +7,7 @@ import { PlayView, type Session } from "./PlayPage.tsx";
 import { RoundLauncher } from "./RoundLauncher.tsx";
 
 function showScorecard(round: Round): void {
-  window.location.hash = routeHref({ page: "scorecard", roundId: round.id });
+  window.location.hash = routeHref({ page: "scorecard", roundId: round.id, fresh: true });
 }
 
 /** The round in progress, one problem after another; the launcher when there is none. */
@@ -76,7 +76,9 @@ export function RoundPage() {
     return (
       <section class="round-start">
         <p>
-          <a href={routeHref({ page: "scorecard", roundId: round.id })}>{t.toScorecard}</a>
+          <a href={routeHref({ page: "scorecard", roundId: round.id, fresh: true })}>
+            {t.toScorecard}
+          </a>
         </p>
       </section>
     );
