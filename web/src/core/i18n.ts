@@ -68,6 +68,9 @@ export interface Messages {
   judging: string;
   history: string;
   giveUp: string;
+  /** Runs the code without scoring, after the run has ended. */
+  tryRun: string;
+  tryRunTooltip: string;
   nextProblem: string;
   tabStatement: string;
   tabHarness: string;
@@ -98,6 +101,8 @@ export interface Messages {
   rejected: string;
   forbiddenMacro: (name: string) => string;
   submitError: string;
+  /** Marks the result of a trial run. */
+  unscoredResult: string;
   output: string;
   hiddenCase: string;
   caseStatus: Record<CaseStatus, string>;
@@ -185,6 +190,9 @@ const en: Messages = {
   judging: "Judging…",
   history: "Submission history",
   giveUp: "Give up",
+  tryRun: "Run",
+  tryRunTooltip:
+    "Runs your code without scoring: nothing is recorded. Try the model solution's ideas.",
   nextProblem: "Next problem",
   tabStatement: "Problem",
   tabHarness: "tests.rs",
@@ -213,6 +221,7 @@ const en: Messages = {
   rejected: "Not submitted (not counted)",
   forbiddenMacro: (m) => `\`${m}!\` is not allowed: it could read the judge's secrets.`,
   submitError: "Error (not counted)",
+  unscoredResult: "Not scored",
   output: "Output",
   hiddenCase: "hidden",
   caseStatus: { pass: "PASS", fail: "FAIL", "not-run": "not run" },
@@ -334,6 +343,9 @@ const ja: Messages = {
   judging: "判定中…",
   history: "提出履歴",
   giveUp: "ギブアップ",
+  tryRun: "実行",
+  tryRunTooltip:
+    "採点なしで実行します。記録には残りません。模範解答を参考に手を動かしてみましょう。",
   nextProblem: "次の問題へ",
   tabStatement: "問題文",
   tabHarness: "tests.rs",
@@ -362,6 +374,7 @@ const ja: Messages = {
   rejected: "提出できません（カウントされません）",
   forbiddenMacro: (m) => `\`${m}!\` は使用できません（判定の改ざん防止のため）`,
   submitError: "エラー（カウントされません）",
+  unscoredResult: "採点対象外",
   output: "出力",
   hiddenCase: "非公開",
   caseStatus: { pass: "PASS", fail: "FAIL", "not-run": "未実行" },

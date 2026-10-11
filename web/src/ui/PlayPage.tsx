@@ -98,30 +98,34 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
   // limit only starts once a Worker has picked the submission up.
   const toolchainFailed =
     toolchain.state.status === "missing" || toolchain.state.status === "error";
-  const { state, setCode, submit, restart, giveUp, dismissFinished, revealSolution } = usePlay({
-    problem,
-    judgeSources: content.judge,
-    storage,
-    pool: toolchain.pool,
-    roundId: round?.round.id,
-    onRunFinished: round?.onRunFinished,
-  });
+  const { state, setCode, submit, tryRun, restart, giveUp, dismissFinished, revealSolution } =
+    usePlay({
+      problem,
+      judgeSources: content.judge,
+      storage,
+      pool: toolchain.pool,
+      roundId: round?.round.id,
+      onRunFinished: round?.onRunFinished,
+    });
   const [confirming, setConfirming] = useState<"submit" | "give-up" | null>(null);
   const [tab, setTab] = useState<StatementTab>("statement");
 
   const run = state.run;
   const playing = run?.status === "playing";
-  // Solved or given up: what is left is moving on, and the model solution.
+  // Solved or given up: what is left is moving on, and the model solution, which the
+  // player can learn from by changing the code and running it, unscored.
   const ended = run !== null && !playing;
   const tries = run?.attempts.length ?? 0;
   // A run started after seeing the model solution does not update the best.
   const assisted = run === null ? state.revealed : run.assisted === true;
 
   const running = state.phase.kind !== "idle";
-  const canSubmit = !toolchainFailed && !running && state.loaded && !ended;
+  const canRun = !toolchainFailed && !running && state.loaded;
+  const canSubmit = canRun && !ended;
+  // A submission counts, so it is confirmed; a trial run after the end is not.
   const requestSubmit = () => {
-    if (!canSubmit) return;
-    setConfirming("submit");
+    if (ended) void tryRun();
+    else if (canSubmit) setConfirming("submit");
   };
 
   // On small screens the view scrolls as one page (see styles.css): a problem starts at the
@@ -191,14 +195,25 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
               that the buttons stay put when it appears. */}
           <ShotChip shots={run === null ? [] : verdictsOf(run)} label={t.shotsTooltip(tries)} />
           {ended ? (
-            <IconButton
-              icon={round === undefined ? RotateCcw : SkipForward}
-              label={next.label}
-              onClick={next.action}
-              class="primary"
-            >
-              {next.label}
-            </IconButton>
+            <>
+              <IconButton
+                icon={Play}
+                label={`${t.tryRunTooltip} (${SUBMIT_SHORTCUT})`}
+                onClick={() => void tryRun()}
+                disabled={!canRun}
+              >
+                {running ? t.judging : t.tryRun}
+                <kbd>{SUBMIT_SHORTCUT}</kbd>
+              </IconButton>
+              <IconButton
+                icon={round === undefined ? RotateCcw : SkipForward}
+                label={next.label}
+                onClick={next.action}
+                class="primary"
+              >
+                {next.label}
+              </IconButton>
+            </>
           ) : (
             <>
               <IconButton
@@ -236,7 +251,7 @@ export function PlayView({ problem, session }: { problem: Problem; session: Sess
               onChange={setCode}
               onSubmit={requestSubmit}
               markers={presentation?.markers ?? NO_MARKERS}
-              readOnly={running || ended}
+              readOnly={running}
             />
           )}
         </div>
