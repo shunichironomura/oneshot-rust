@@ -10,8 +10,8 @@ impl Lookup {
     pub fn get(&self, key: &str) -> Option<u32>;
     pub fn hits(&self) -> u32;
     pub fn misses(&self) -> u32;
-    pub fn total(&self) -> u32;
-    pub fn computations(&self) -> u32;
+    pub fn keys(&self) -> &[String];
+    pub fn sorts(&self) -> u32;
 }
 ```
 
@@ -19,30 +19,31 @@ impl Lookup {
 - `insert` adds `key` with `value`, or replaces the value if `key` is already in the table.
 - `get` returns the value for `key` and counts a **hit**. If there is no such key, it returns `None`
   and counts a **miss**. `hits` and `misses` return those counts. Only `get` changes them.
-- `total` returns the sum of all values in the table (`0` for an empty table). The sum is computed
-  the first time `total` is called and then cached: later calls return the cached sum without
-  computing it again. `insert` discards the cached sum, so the next `total` computes it again.
-  `new` and `insert` never compute the sum themselves.
-- `computations` returns how many times the sum has been computed so far.
-- You may assume that every sum fits in a `u32`.
+- `keys` returns all the keys of the table in ascending order, as `<` compares strings (byte by
+  byte, so `"10" < "9"` and `"Z" < "a"`). For an empty table, it returns an empty slice.
+- The list is sorted the first time `keys` is called and then cached: later calls return the
+  cached list without sorting again. `insert` discards the cached list (even if the key was already
+  in the table), so the next `keys` sorts again. `new` and `insert` never sort the keys themselves.
+- `sorts` returns how many times the list has been sorted so far.
 
-Do not change the public signatures: the tests call `get` and `total` through several shared
-references (`&Lookup`) to one `Lookup` at the same time, and through an `Rc<Lookup>`. You may change
-the private fields of `Lookup`.
+Do not change the public signatures: the tests call `get` and `keys` through several shared
+references (`&Lookup`) to one `Lookup` at the same time, and through an `Rc<Lookup>`, and keep
+using a slice returned by `keys` while they call other methods. You may change the private fields
+of `Lookup`.
 
 Remove the UB so that it works correctly. (You may keep using `unsafe` if you like.)
 
 ### Examples
 
 ```rust
-let mut lookup = Lookup::new(&[("a", 1), ("b", 2)]);
+let mut lookup = Lookup::new(&[("b", 2), ("a", 1)]);
 lookup.get("a"); // Some(1), a hit
 lookup.get("z"); // None, a miss
-lookup.total(); // 3 (computed)
-lookup.total(); // 3 (cached)
-// hits() == 1, misses() == 1, computations() == 1
+lookup.keys(); // ["a", "b"] (sorted)
+lookup.keys(); // ["a", "b"] (cached)
+// hits() == 1, misses() == 1, sorts() == 1
 
 lookup.insert("c", 10);
-lookup.total(); // 13 (computed again)
-// computations() == 2
+lookup.keys(); // ["a", "b", "c"] (sorted again)
+// sorts() == 2
 ```

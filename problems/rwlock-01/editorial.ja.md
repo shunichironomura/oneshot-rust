@@ -108,7 +108,7 @@ fn apply(mut state: RwLockWriteGuard<'_, State>, f: impl FnOnce(&mut Settings)) 
 }
 ```
 
-模範解答の `try_update` は、`try_write().ok()?` を使うと短く書けます。ロックが毒されている（poisoned）場合も
+模範解答の `try_update` は、`try_write().ok()?` を使うと短く書けます。ロックがポイズンされている（poisoned）場合も
 `None` になりますが、`f` はパニックしないので、ここでは問題になりません。
 
 ```rust

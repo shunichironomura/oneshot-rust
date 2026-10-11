@@ -2,10 +2,11 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 pub struct Stats {
     count: AtomicU64,
+    /// std has no atomic `f64`, so the `f64` fields are stored as their bits (`f64::to_bits`).
     sum: AtomicU64,
-    /// Starts at `0`. That is also a valid sample, so `max()` asks the count whether there is one.
+    /// Starts at `-inf`, which is smaller than any sample, so the first sample replaces it.
     max: AtomicU64,
-    /// Starts at `u64::MAX`, which is larger than any sample, so the first `fetch_min` replaces it.
+    /// Starts at `+inf`, which is larger than any sample.
     min: AtomicU64,
 }
 
@@ -13,43 +14,44 @@ impl Stats {
     pub const fn new() -> Stats {
         Stats {
             count: AtomicU64::new(0),
-            sum: AtomicU64::new(0),
-            max: AtomicU64::new(0),
-            min: AtomicU64::new(u64::MAX),
+            sum: AtomicU64::new(0.0_f64.to_bits()),
+            max: AtomicU64::new(f64::NEG_INFINITY.to_bits()),
+            min: AtomicU64::new(f64::INFINITY.to_bits()),
         }
     }
 
-    pub fn record(&self, value: u64) {
-        // Each line is one indivisible read-modify-write, so no update from another thread is lost.
+    pub fn record(&self, value: f64) {
         self.count.fetch_add(1, Ordering::Relaxed);
-        self.sum.fetch_add(value, Ordering::Relaxed);
-        self.max.fetch_max(value, Ordering::Relaxed);
-        self.min.fetch_min(value, Ordering::Relaxed);
+        update_f64(&self.sum, |sum| sum + value);
+        update_f64(&self.max, |max| max.max(value));
+        update_f64(&self.min, |min| min.min(value));
     }
 
     pub fn count(&self) -> u64 {
         self.count.load(Ordering::Relaxed)
     }
 
-    pub fn sum(&self) -> u64 {
-        self.sum.load(Ordering::Relaxed)
+    pub fn sum(&self) -> f64 {
+        load_f64(&self.sum)
     }
 
-    pub fn max(&self) -> Option<u64> {
-        if self.count() == 0 {
-            None
-        } else {
-            Some(self.max.load(Ordering::Relaxed))
-        }
+    pub fn max(&self) -> Option<f64> {
+        if self.count() == 0 { None } else { Some(load_f64(&self.max)) }
     }
 
-    pub fn min(&self) -> Option<u64> {
-        if self.count() == 0 {
-            None
-        } else {
-            Some(self.min.load(Ordering::Relaxed))
-        }
+    pub fn min(&self) -> Option<f64> {
+        if self.count() == 0 { None } else { Some(load_f64(&self.min)) }
     }
 }
 
 pub static GLOBAL: Stats = Stats::new();
+
+fn load_f64(cell: &AtomicU64) -> f64 {
+    f64::from_bits(cell.load(Ordering::Relaxed))
+}
+
+/// Replaces the `f64` stored in `cell` with `f(old)` as one atomic step. `update` retries `f` with
+/// the new value whenever another thread changed `cell` between the load and the store.
+fn update_f64(cell: &AtomicU64, f: impl Fn(f64) -> f64) {
+    cell.update(Ordering::Relaxed, Ordering::Relaxed, |bits| f(f64::from_bits(bits)).to_bits());
+}

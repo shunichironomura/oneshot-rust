@@ -1,5 +1,5 @@
 `Lock` は名前の付いた資源で、取得したときと解放したときに共有のログへ書き込みます。
-`Lock` を破棄（drop）すると解放されます。`Lock` と、それを使う 3 つの関数を実装してください。
+`Lock` を破棄（drop）すると解放されます。`Lock` と、それを使う 4 つの関数を実装してください。
 
 ```rust
 pub type Log = Rc<RefCell<Vec<String>>>;
@@ -12,11 +12,11 @@ pub struct Lock {
 impl Lock {
     pub fn acquire(name: &str, log: &Log) -> Lock;
     pub fn name(&self) -> &str;
-    pub fn into_name(self) -> String;
 }
 
 impl Drop for Lock { /* 実装する */ }
 
+pub fn with_lock<R>(name: &str, log: &Log, f: impl FnOnce() -> R) -> R;
 pub fn release_all(locks: Vec<Lock>);
 pub fn swap_in(slot: &mut Lock, name: &str);
 pub fn keep_first(locks: Vec<Lock>) -> Option<Lock>;
@@ -26,18 +26,16 @@ pub fn keep_first(locks: Vec<Lock>) -> Option<Lock>;
   追加します。
 - ロックが破棄されると、そのログに `"release <name>"` を追加します。
 - `name` はロックの名前を返します。名前はどんな文字列でもよく、空文字列のこともあります。
-- `into_name` はロックを消費して、その名前を返します。このときロックは**解放しません**。
-  ログには、そのときも後からも何も追加されません。
+- `with_lock` は `log` に書き込む `name` という名前のロックを取得し、ロックを持ったまま `f` を呼び、
+  その後でロックを解放して、`f` の戻り値を返します。したがって、`f` が `log` に追加するものは
+  `"acquire <name>"` より後、`"release <name>"` より前に入ります。
 - `release_all` は `locks` のロックをすべて、**最後の**ロックから先頭に向かって順に解放します。
 - `swap_in` は `slot` のロックを、同じログに書き込む `name` という名前の新しいロックに
   置き換えます。先に新しいロックを取得し、その後で古いロックを解放します。
 - `keep_first` は `locks` の最初のロックを返し（`locks` が空なら `None`）、ほかのロックを
   すべて、`locks` での並び順に解放します。
-- 解放されたロックや `into_name` で消費されたロックは、ログを生かし続けてはいけません。
-  `log` に書き込むロックがすべてなくなったら、`Rc::strong_count(&log)` は `1` に戻ります。
 
 上のコードはエディタに入っています。`Log` と公開されているシグネチャは変えないでください。
-`Lock` の非公開のフィールドは変更して構いません。
 
 ### 例
 
@@ -61,6 +59,13 @@ let a = Lock::acquire("a", &log);
 let b = Lock::acquire("b", &log);
 let c = Lock::acquire("c", &log);
 let first = keep_first(vec![a, b, c]); // "release b", "release c" を追加
-let a = first.unwrap();                // a.name() == "a"
-a.into_name();                         // "a" を返し、何も追加しない
+// first.unwrap().name() == "a"
+```
+
+```rust
+let n = with_lock("m", &log, || {
+    log.borrow_mut().push("work".to_string());
+    42
+});
+// n == 42 で、この呼び出しで "acquire m", "work", "release m" が追加される
 ```

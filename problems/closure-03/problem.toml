@@ -1,5 +1,5 @@
 id = "closure-03"
-title = { en = "Captured counters", ja = "捕まえたままのカウンタ" }
+title = { en = "Tally and greet", ja = "集計とあいさつ" }
 difficulty = 2
 concepts = [
     "closures capture by &mut",

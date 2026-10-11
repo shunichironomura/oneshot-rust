@@ -1,5 +1,5 @@
 id = "rwlock-01"
-title = { en = "Many readers, one writer", ja = "読む人は大勢、書く人はひとり" }
+title = { en = "Versioned settings", ja = "バージョンつきの設定" }
 difficulty = 2
 concepts = [
     "RwLock read/write guards",

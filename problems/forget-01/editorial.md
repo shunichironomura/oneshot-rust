@@ -37,12 +37,12 @@ between `ptr::read` and `forget`; if something could, the unwinding would drop b
 
 ```rust
 pub fn persist(mut self) -> (String, Vec<u8>) {
-    let name = mem::take(&mut self.name);
-    let data = mem::take(&mut self.data);
+    let name = std::mem::take(&mut self.name);
+    let data = std::mem::take(&mut self.data);
     // SAFETY: `self` is forgotten right after this, so `log` becomes the only owner of
     // this file's handle to the log.
-    let log = unsafe { ptr::read(&self.log) };
-    mem::forget(self);
+    let log = unsafe { std::ptr::read(&self.log) };
+    std::mem::forget(self);
     drop(log);
     (name, data)
 }

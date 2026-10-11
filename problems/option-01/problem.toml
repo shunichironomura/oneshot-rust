@@ -1,5 +1,5 @@
 id = "option-01"
-title = { en = "Options behind references", ja = "参照の奥の Option" }
+title = { en = "User profile", ja = "ユーザーのプロフィール" }
 difficulty = 1
 concepts = [
     "moving out of borrowed content (E0507)",

@@ -3,63 +3,34 @@
 単に `locks` をスコープの外に出しても、`a`、`b`、`c` の順に解放されてしまい、`release_all` としては
 誤りです。代わりに末尾から `pop` していきます。
 
+もう 1 つの落とし穴は `with_lock` にあります。`let _ = Lock::acquire(name, log);` は関数の終わりまで
+ロックを持ち続けるように見えますが、`_` は変数ではありません。このパターンは値に一致するだけで
+束縛はしないので、新しいロックを所有するものがなく、ロックは文の終わりで、つまり `f` を呼ぶ前に
+破棄されてしまいます。式文 `Lock::acquire(name, log);` も同じです。名前の付いた変数なら、スコープの
+終わりまでロックを所有します。先頭にアンダースコアを付けてもこれは変わりません。`_lock` は本物の変数で、
+アンダースコアは「使われていない変数」の警告を消すだけです。末尾の式 `f()` はローカル変数が破棄される
+前に評価されるので、その結果をそのまま返せます。ロックは `f` から戻った直後に解放されます。
+
 `swap_in` には特別な工夫は要りません。`*slot = Lock::acquire(name, &slot.log)` では右辺が先に
 評価され、その後で代入が `*slot` の古い値を破棄します。戻り値の型 `Lock` は何も借用していない
 （新しいロックは `Rc` の複製を自分で持つ）ので、`slot.log` の共有借用は `acquire` から戻った
 時点で終わり、`*slot` に代入できます。
 
-`keep_first` も同じ「先頭から」の規則を使いますが、今度はこれが求める順番です。`into_iter()` で
-ロックをイテレータに移し、`next()` で最初のロックを取り出します。残りのロックはイテレータが
-持ったままで、関数の終わりにイテレータが破棄されるときに、先頭から順に破棄されます。
+`keep_first` も `release_all` と同じ「先頭から」の規則を使いますが、今度はこれが求める順番です。
+`into_iter()` でロックをイテレータに移し、`next()` で最初のロックを取り出します。残りのロックは
+イテレータが持ったままで、関数の終わりにイテレータが破棄されるときに、先頭から順に破棄されます。
 `swap_remove(0)` は最後のロックを先頭に移すので注意してください。
-
-落とし穴は `into_name` です。`self.name` を返すコードはコンパイルが通りません。`Drop` を実装した
-型からは、フィールドをムーブで取り出せないからです（E0509）。値には後で `drop` が実行され、
-そのときすべてのフィールドがそろっている必要があります。コンパイラは `self.name.clone()` を
-提案しますが、これだとコンパイルは通るものの、`self` が破棄されるときにロックが解放されて
-しまいます。名前を取り出し、`drop` が見分けられるものを代わりに残す必要があります。模範解答では
-フィールドを `Option<String>` にしています。`take()` は `None` を残し、`drop` は `None` なら
-何も記録しません。
-
-`std::mem::forget(self)` もコンパイルは通り、`drop` を飛ばせますが、フィールドの破棄も飛ばして
-しまいます。`log` の `Rc` が解放されないまま残るので、`Rc::strong_count(&log)` は 1 に戻らず、
-Miri はメモリリークを報告します。`std::mem::take` で名前を取り出し、`drop` で空の名前を
-読み飛ばす方法も不十分です。空文字列も正しい名前だからです。
 
 ### 別解
 
-`name: String` はそのままにして、フラグを足す方法です。`std::mem::take` は空の `String` を残し、
-ロックが消費されたことはフラグで `drop` に伝えます。
+`with_lock` では、ロックを明示的に解放して順番を見えるようにすることもできます。
 
 ```rust
-pub struct Lock {
-    name: String,
-    log: Log,
-    armed: bool,
-}
-
-impl Lock {
-    pub fn acquire(name: &str, log: &Log) -> Lock {
-        log.borrow_mut().push(format!("acquire {name}"));
-        Lock { name: name.to_string(), log: Rc::clone(log), armed: true }
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn into_name(mut self) -> String {
-        self.armed = false;
-        std::mem::take(&mut self.name)
-    }
-}
-
-impl Drop for Lock {
-    fn drop(&mut self) {
-        if self.armed {
-            self.log.borrow_mut().push(format!("release {}", self.name));
-        }
-    }
+pub fn with_lock<R>(name: &str, log: &Log, f: impl FnOnce() -> R) -> R {
+    let lock = Lock::acquire(name, log);
+    let result = f();
+    drop(lock);
+    result
 }
 ```
 

@@ -2,10 +2,10 @@ id = "array-02"
 title = { en = "Letter buckets", ja = "頭文字で仕分け" }
 difficulty = 1
 concepts = [
-    "array repeat expressions need Copy or a constant",
-    "std::array::from_fn",
-    "inline const",
-    "char/u8 arithmetic and casts",
+    "char has no arithmetic (convert to u8 first)",
+    "arrays and slices are indexed by usize only (SliceIndex)",
+    "u8 is not char: char::from / as char, only u8 can be cast to char",
+    "Default for arrays up to length 32",
     "to_ascii_lowercase / is_ascii_alphabetic",
 ]
 kind = "repair"

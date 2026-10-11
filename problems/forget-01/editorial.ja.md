@@ -36,12 +36,12 @@
 
 ```rust
 pub fn persist(mut self) -> (String, Vec<u8>) {
-    let name = mem::take(&mut self.name);
-    let data = mem::take(&mut self.data);
+    let name = std::mem::take(&mut self.name);
+    let data = std::mem::take(&mut self.data);
     // SAFETY: この直後に `self` を `forget` するので、
     // このファイルのログへのハンドルを所有するのは `log` だけになる
-    let log = unsafe { ptr::read(&self.log) };
-    mem::forget(self);
+    let log = unsafe { std::ptr::read(&self.log) };
+    std::mem::forget(self);
     drop(log);
     (name, data)
 }

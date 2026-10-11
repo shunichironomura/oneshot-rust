@@ -1,7 +1,7 @@
 id = "drop-01"
 title = { en = "Release order", ja = "片付けの順番" }
 difficulty = 2
-concepts = ["Drop", "drop order: Vec elements front to back, locals in reverse", "assignment drops the old value", "IntoIter drops the remaining items", "cannot move out of a type implementing Drop (E0509)", "mem::take vs mem::forget leaks"]
+concepts = ["Drop", "drop order: Vec elements front to back, locals in reverse", "let _ = drops the value at once, _name is a real binding", "tail expression evaluated before locals are dropped", "assignment drops the old value", "IntoIter drops the remaining items"]
 kind = "implement"
 
 [judge]

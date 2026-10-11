@@ -1,16 +1,16 @@
 pub struct Stats {
     count: u64,
-    sum: u64,
-    max: Option<u64>,
-    min: Option<u64>,
+    sum: f64,
+    max: Option<f64>,
+    min: Option<f64>,
 }
 
 impl Stats {
     pub const fn new() -> Stats {
-        Stats { count: 0, sum: 0, max: None, min: None }
+        Stats { count: 0, sum: 0.0, max: None, min: None }
     }
 
-    pub fn record(&self, value: u64) {
+    pub fn record(&self, value: f64) {
         todo!()
     }
 
@@ -18,15 +18,15 @@ impl Stats {
         todo!()
     }
 
-    pub fn sum(&self) -> u64 {
+    pub fn sum(&self) -> f64 {
         todo!()
     }
 
-    pub fn max(&self) -> Option<u64> {
+    pub fn max(&self) -> Option<f64> {
         todo!()
     }
 
-    pub fn min(&self) -> Option<u64> {
+    pub fn min(&self) -> Option<f64> {
         todo!()
     }
 }
