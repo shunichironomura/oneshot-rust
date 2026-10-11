@@ -39,9 +39,23 @@ pub fn mode(v: &[i32]) -> Option<i32> {
 ```
 
 `median` では、真ん中の値を `i64` で足す方法もあります。`i32` の値 2 つの和は必ず `i64` に収まり、その和を
-`f64` に変換するのも正確です。変換する前に 2 で割ってはいけません。整数の割り算では `-1 / 2` が `0` になります。
+`f64` に変換するのも正確です。`f64::from` は `i64` を受け付けない（`i64` のすべての値を `f64` で正確に表せる
+わけではない）ので、この変換には `as` が必要です。変換する前に 2 で割ってはいけません。整数の割り算では
+`-1 / 2` が `0` になります。
 
 ```rust
-let sum = i64::from(sorted[mid - 1]) + i64::from(sorted[mid]);
-Some(sum as f64 / 2.0)
+pub fn median(v: &[i32]) -> Option<f64> {
+    if v.is_empty() {
+        return None;
+    }
+    let mut sorted = v.to_vec();
+    sorted.sort_unstable();
+    let mid = sorted.len() / 2;
+    if sorted.len() % 2 == 1 {
+        Some(f64::from(sorted[mid]))
+    } else {
+        let sum = i64::from(sorted[mid - 1]) + i64::from(sorted[mid]);
+        Some(sum as f64 / 2.0)
+    }
+}
 ```

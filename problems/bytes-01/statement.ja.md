@@ -47,7 +47,7 @@ pub fn decode_all(stream: &[u8]) -> Result<Vec<Packet<'_>>, PacketError>
 
 - `Kind::try_from(b)` は `1`、`2`、`3` をそれぞれ `Ping`、`Data`、`Ack` に変換します。
   それ以外の `b` では `Err(PacketError::UnknownKind(b))` を返します。
-- `Packet::try_from(bytes)` は、ちょうど 1 つのパケットを持つスライスをデコードします。
+- `Packet::try_from(bytes)` は、ちょうど 1 つのパケットが入ったスライスをデコードします。
   次のチェックをこの順に行い、最初に失敗したチェックのエラーを返します。
   1. `bytes` が 9 バイトより短い：`TooShort`。
   2. 先頭の 2 バイトが `b"OS"` でない（大文字と小文字は区別します）：`BadMagic`。
@@ -56,14 +56,15 @@ pub fn decode_all(stream: &[u8]) -> Result<Vec<Packet<'_>>, PacketError>
      `LengthMismatch { declared, actual }`。`declared` はヘッダにあるペイロード長、
      `actual` はヘッダより後ろのバイト数です。
 
-  すべてのチェックに通れば、パケットを返します。その `payload` は、
+  すべてのチェックを通過すれば、パケットを返します。その `payload` は、
   `bytes` のうちヘッダより後ろの部分です。
 - `encode` はその逆で、ヘッダとそれに続くペイロードを返します。つまり、
-  `Packet::try_from(&p.encode()[..])` で `Ok(p)` に戻ります。
+  `Packet::try_from(&p.encode()[..])` は `Ok(p)` を返します。
   ペイロードの長さは `u32::MAX` バイト以下だと仮定して構いません。
 - `decode_all(stream)` は、すき間なく並んだパケットをデコードします。最初のパケットは
   `stream` の先頭から始まり、次のパケットは前のパケットのペイロードの直後から始まります。
-  すべてのパケットを順に返します。`stream` が空なら `Ok(vec![])` です。
+  パケットの後ろにバイトが残っていなければデコードを終え、すべてのパケットを順に返します。
+  `stream` が空なら `Ok(vec![])` です。
   - 各パケットは `Packet::try_from` と同じようにチェックしますが、チェック 4 だけは違います。
     ペイロードはヘッダの後の `declared` バイトで、その後ろのバイトは次のパケットのものです。
     ヘッダの後に残っているバイトが `declared` バイトより少なければ、エラーは

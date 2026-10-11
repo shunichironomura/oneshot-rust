@@ -1,6 +1,8 @@
 `Default` is implemented by hand: `#[derive(Default)]` would use the default of each field, which
 gives an empty name and `0` retries. Once it exists, `..Default::default()` fills in every field you
-do not list, so `with_tags` only states what differs from the default.
+do not list, so `with_tags` only states what differs from the default. The one place where you
+cannot use it is `default` itself: there, `..Default::default()` calls the same function again and
+never returns (rustc warns that the function "cannot return without recursing").
 
 The struct update syntax `..base` is not "copy the rest": like an assignment, it **moves** the
 remaining fields out of `base` (and copies the `Copy` ones). In `quiet`, `base` is owned, so moving

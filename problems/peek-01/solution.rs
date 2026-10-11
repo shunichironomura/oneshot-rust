@@ -34,7 +34,7 @@ pub fn tokenize(src: &str) -> Result<Vec<Token>, LexError> {
                     digits.push(d);
                 }
                 // Only digits, at least one: the only possible error is overflow.
-                let value = digits.parse().map_err(|_| LexError::Overflow { pos })?;
+                let value = digits.parse::<u64>().map_err(|_| LexError::Overflow { pos })?;
                 Token::Num(value)
             }
             'a'..='z' | 'A'..='Z' | '_' => {

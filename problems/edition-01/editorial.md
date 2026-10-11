@@ -10,9 +10,9 @@ the exact word is reserved, so `gen_below` and the string `"gen"` need no change
 `r#type`. A raw identifier works for local variables and in the field init shorthand
 `Token { r#type, text: ... }` too, so `classify` compiles as it is.
 
-The second change is quieter. Before 2024, calling `.into_iter()` on a `Box<[T]>` went through the
-slice and yielded references `&T`, for backwards compatibility (Rust 2021 even warns about it with
-the `boxed_slice_into_iter` lint). In 2024 the call uses `IntoIterator for Box<[T]>`, which consumes
+The second change is quieter. Before 2024, calling `.into_iter()` on a `Box<[T]>` only borrowed the
+box and yielded references `&T`, for backwards compatibility (Rust 2021 even warns about it with the
+`boxed_slice_into_iter` lint). In 2024 the call uses `IntoIterator for Box<[T]>`, which consumes
 the box and yields the values. So `p` is now a `u32`, and `*p` does not compile (E0614). Removing
 the `*` is not enough: `into_iter()` now moves `points`, so the `points.len()` after the loop uses a
 moved value (E0382). `points.iter()` keeps the old meaning, and it is also what

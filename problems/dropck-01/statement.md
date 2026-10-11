@@ -16,7 +16,7 @@ impl<'a> Tracer<'a> {
 
 impl Drop for Tracer<'_> { /* ... */ }
 
-pub fn trace(names: &[&str]) -> Vec<String>
+pub fn trace(names: &[&str]) -> Vec<String>;
 ```
 
 - `Tracer::new(sink, name)` appends `"begin <name>"` to `sink` and returns a tracer.

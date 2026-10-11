@@ -25,9 +25,9 @@ as long as possible:
 - A run of ASCII digits (`0` to `9`) is a `Num` holding its decimal value. Leading zeros are allowed
   and do not change the value: `007` is `Num(7)`. If the value is greater than `u64::MAX`, the
   result is `LexError::Overflow`.
-- An identifier starts with an ASCII letter or `_` and continues with ASCII letters, ASCII digits
-  and `_`. It becomes an `Ident` holding its text. A digit cannot start one: `3x` is `Num(3)`
-  followed by `Ident("x")`.
+- An identifier starts with an ASCII letter or `_`, followed by zero or more ASCII letters, ASCII
+  digits and `_` (so `_` alone is one too). It becomes an `Ident` holding its text. A digit cannot
+  start one: `3x` is `Num(3)` followed by `Ident("x")`.
 - `->` (a `-` immediately followed by `>`) is `Arrow`.
 - Each of `+ - * / ( ) =` on its own is an `Op` holding that character.
 - Whitespace separates tokens and produces no token. Whitespace is every character for which

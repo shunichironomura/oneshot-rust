@@ -1,11 +1,11 @@
 Each function is one slice method away, and none of them needs a hand-written index loop.
 
-- `chunk_by` (stable since Rust 1.77) calls the closure with every two neighbors `a` and `b`, and
+- `chunk_by` (stable since Rust 1.77) calls the closure on each pair of neighbors `a` and `b`, and
   starts a new group wherever it returns `false`. With `a == b` the groups are the runs of equal
   values; with `a < b` they are the strictly increasing runs. Every group is a non-empty subslice of
   `v`, so `group[0]` is safe, and an empty `v` has no groups at all.
-- `windows(3)` yields every three neighbors `[v[i], v[i + 1], v[i + 2]]`. Window `i` is centered on
-  index `i + 1`, hence the `+ 1`. A slice shorter than three has no windows.
+- `windows(3)` yields every window of three neighbors `[v[i], v[i + 1], v[i + 2]]`. Window `i` is
+  centered on index `i + 1`, hence the `+ 1`. A slice shorter than three has no windows.
 - `chunks_exact(2)` yields only full pairs, and `remainder()` returns what is left over (an empty
   slice or one element). `map` takes the iterator by value, so ask for `remainder()` **before**
   calling `map`. Calling it afterwards is a "borrow of moved value" error.

@@ -15,9 +15,10 @@ in the first compile, but in `find_cell` its suggestions lead to wrong code.
    the block, not a return from the function. Write `return None;`.
 3. **An unlabeled `break` never leaves a labeled block.** A plain `break` (or `continue`) refers to
    the innermost loop. So that it is always clear what a `break` leaves, Rust rejects an unlabeled
-   `break` inside a labeled block (E0695), even when there is no loop around it. Write
-   `break 'check "empty"`. The `break 'check "negative"` inside the `for` loop was right all along:
-   its target is the block, not the loop.
+   `break` that is inside a labeled block but not inside a loop within it (E0695), even when there is
+   no loop around the block. Write `break 'check "empty"`. The `break 'check "negative"` inside the
+   `for` loop was right all along: its target is the block, not the loop. A plain `break` there
+   would compile, but it would leave only the `for` loop.
 
 The key returned by `parse_setting` borrows `line`. By lifetime elision, the returned `&str` has the
 lifetime of the only reference parameter, and `split_once` and `trim` return slices of the string

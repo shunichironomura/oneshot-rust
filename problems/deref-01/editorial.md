@@ -13,7 +13,8 @@ so write `self.items.insert(...)` and `self.items.remove(...)`.
 
 With equal elements, `binary_search` returns *some* matching index, and the documentation does not
 say which one. (Today it happens to return the last one, so a `remove` built on it takes the wrong
-element.) `partition_point(pred)` instead returns the first index where `pred` is false:
+element, and an `insert` that puts the value at `i + 1` after `Ok(i)` is right only by luck.)
+`partition_point(pred)` instead returns the first index where `pred` is false:
 
 - `partition_point(|x| x <= &value)` is the first element greater than `value`, just after all the
   equal ones: where `insert` puts `value`.

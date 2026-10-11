@@ -13,8 +13,8 @@ the compiler chooses an `'a` short enough to fit all of them.
 message suggests), compiles on its own, but it claims that the result may borrow from `tag` as well.
 The caller must then keep `tag` alive as long as the result, and the harness, which builds the tag in
 a temporary `String` and drops it before using the result, fails with "`tag` does not live long
-enough". The body only ever returns slices of `line`, so only `line` shares the lifetime of the
-result, and `tag` keeps its own, elided lifetime.
+enough" (E0597). The body only ever returns slices of `line`, so only `line` shares the lifetime
+of the result, and `tag` keeps its own, elided lifetime.
 
 ### Alternatives
 

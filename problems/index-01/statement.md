@@ -46,7 +46,7 @@ impl Grid<i32> {
   comparisons: `..=usize::MAX`, for example, ends after column `usize::MAX`, so it gives `None` on
   every grid. Otherwise `row_sum` returns the exact sum of the selected cells, which may not fit in
   an `i32`; if `start == end`, nothing is selected and the result is `Some(0)`. On a grid of width
-  3, for example, `3..3` gives `Some(0)`, but `4..4` gives `None` because `end > width`.
+  3, `3..3` gives `Some(0)`, but `4..4` gives `None` because `end > width`.
 
 ### Examples
 

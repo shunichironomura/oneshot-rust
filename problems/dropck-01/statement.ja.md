@@ -15,7 +15,7 @@ impl<'a> Tracer<'a> {
 
 impl Drop for Tracer<'_> { /* ... */ }
 
-pub fn trace(names: &[&str]) -> Vec<String>
+pub fn trace(names: &[&str]) -> Vec<String>;
 ```
 
 - `Tracer::new(sink, name)` は記録先 `sink` に `"begin <name>"` を追加し、トレーサーを返します。

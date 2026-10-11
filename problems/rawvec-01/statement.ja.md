@@ -1,4 +1,4 @@
-`Vec<T>` のような伸長可能な配列 `MyVec<T>` を、`std::alloc` と生ポインタを使ってゼロから作ってください。
+`Vec<T>` のような可変長配列 `MyVec<T>` を、`std::alloc` と生ポインタを使ってゼロから作ってください。
 3 つのフィールドを持つ構造体はエディタに入っています。
 
 ```rust
@@ -42,11 +42,12 @@ impl<T> Drop for MyVec<T> { /* 実装する */ }
 
 ```rust
 let mut v = MyVec::new();
+// len() は 0、capacity() は 0
 for s in ["a", "b", "c", "d", "e"] {
     v.push(String::from(s));
 }
 // 各 push の後の capacity() は 4, 4, 4, 4, 8
-// as_slice() は ["a", "b", "c", "d", "e"]
+// len() は 5、as_slice() は ["a", "b", "c", "d", "e"]
 v.pop(); // Some("e")
 v.pop(); // Some("d")
 // get(2) は Some("c")、get(3) は None、len() は 3、capacity() は 8
@@ -55,7 +56,7 @@ let mut z: MyVec<()> = MyVec::new();
 // capacity() は usize::MAX
 z.push(());
 z.push(());
-// len() は 2
+// len() は 2、capacity() は usize::MAX のまま
 z.pop(); // Some(())
 // len() は 1
 ```

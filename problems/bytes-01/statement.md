@@ -63,7 +63,8 @@ A packet is a 9-byte header followed by the payload:
   most `u32::MAX` bytes long.
 - `decode_all(stream)` decodes packets that are stored back to back: the first packet starts at
   the beginning of `stream`, and each following packet starts right after the payload of the
-  previous one. It returns all the packets in order. An empty `stream` gives `Ok(vec![])`.
+  previous one. When no bytes are left after a packet, decoding stops and the function returns
+  all the packets in order. An empty `stream` gives `Ok(vec![])`.
   - Each packet is checked like in `Packet::try_from`, except for check 4. The payload is the
     next `declared` bytes after the header, and the bytes after it belong to the next packet. If
     fewer than `declared` bytes are left after the header, the error is

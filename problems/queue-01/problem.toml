@@ -1,10 +1,10 @@
 id = "queue-01"
-title = { en = "A queue with a raw tail", ja = "生ポインタで尾をつかむ" }
+title = { en = "A queue with a raw tail", ja = "末尾を指す生ポインタ" }
 difficulty = 3
 concepts = [
     "raw pointers",
     "Box::into_raw / Box::from_raw",
-    "Stacked Borrows: moving a Box invalidates raw pointers derived from it",
+    "Stacked Borrows: moving a Box (even inside a moved struct) invalidates raw pointers derived from it",
     "safe abstraction over unsafe code",
     "Drop to free the remaining nodes (leak)",
     "resetting the tail when the queue becomes empty (use after free)",

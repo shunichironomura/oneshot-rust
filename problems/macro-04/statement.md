@@ -1,8 +1,8 @@
 The code below does not compile. **Without looking at the error message**, predict where the compiler
 complains and fix it.
 
-It defines two declarative macros that take patterns and three functions that use them. Each macro
-is followed by a `pub(crate) use` line that lets other modules call it by path.
+It defines two declarative macros that take patterns, and three functions that use them. Each
+macro is followed by a `pub(crate) use` line that lets other modules call it by path.
 
 ```rust
 macro_rules! matches_any { /* ... */ }
@@ -20,8 +20,8 @@ pub fn char_class(c: char) -> Option<usize>;
   `PATTERN` is any pattern that may appear in a `match` arm, including or-patterns at the top level
   (`1 | 4..=6`) and inside other patterns (`Some(1 | 2)`).
 - `index_of!(value; P0, P1, ...)` takes one or more such patterns separated by commas, and a
-  trailing comma is allowed. It is an `Option<usize>`: `Some(i)` for the first pattern `Pi`
-  (counting from 0) that `value` matches, or `None` if `value` matches none of them.
+  trailing comma is allowed. The result is an `Option<usize>`: `Some(i)` for the first pattern
+  `Pi` (counting from 0) that `value` matches, or `None` if `value` matches none of them.
 - In both macros, `value` is an arbitrary expression and is evaluated exactly once.
 - `is_vowel(c)` is `true` if `c` is one of the ASCII vowels `a`, `e`, `i`, `o` and `u`, in lowercase
   or uppercase.

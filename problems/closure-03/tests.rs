@@ -43,13 +43,17 @@ pub fn run() {
     });
     case("hidden-5", || {
         // Greeters outlive the Strings they were made from and can be called many times.
+        // `trim` removes Unicode whitespace (U+3000) at both ends but keeps inner whitespace.
         let mut greeters = Vec::new();
-        for greeting in ["\tHola\n", " こんにちは ", "   "] {
+        for greeting in ["\tHola\n", "\u{3000}こんにちは ", "   ", " Good  day "] {
             greeters.push(make_greeter(greeting.to_string()));
         }
         let name = String::from("Ferris");
         let got: Vec<String> = greeters.iter().rev().map(|g| g(&name)).collect();
-        check_eq(got, [", Ferris!", "こんにちは, Ferris!", "Hola, Ferris!"])?;
+        check_eq(
+            got,
+            ["Good  day, Ferris!", ", Ferris!", "こんにちは, Ferris!", "Hola, Ferris!"],
+        )?;
         drop(name);
         check_eq(greeters[0](" Bob "), "Hola,  Bob !")
     });

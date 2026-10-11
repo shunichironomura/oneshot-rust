@@ -84,6 +84,7 @@ pub fn run() {
         parses_to("1.18446744073709551615", ver(1, u64::MAX, 0, None))?;
         parses_to("1-alpha", ver(1, 0, 0, Some("alpha")))?;
         parses_to("1.2-rc.1", ver(1, 2, 0, Some("rc.1")))?;
+        parses_to("2.0.0-RC.1", ver(2, 0, 0, Some("RC.1")))?;
         parses_to("0010.02.3-007", ver(10, 2, 3, Some("007")))
     });
     case("hidden-5", || {

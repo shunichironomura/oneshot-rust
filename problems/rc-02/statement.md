@@ -1,5 +1,5 @@
-This code compiles, and the trees it builds have the right shape. But Miri reports a **memory leak**
-at the end of the run.
+This code compiles, and the trees it builds seem to have the right shape. But Miri reports a
+**memory leak** at the end of the run.
 
 `Node` is a person in a family tree (it is already in the editor). The tree is built and read with
 these functions:

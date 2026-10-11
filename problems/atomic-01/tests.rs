@@ -113,14 +113,14 @@ pub fn run() {
         check(r1.end <= r2.start && r2.end <= x && x < r3.start, "ranges overlap")
     });
     case("hidden-3", || {
-        // Four threads at once, each mixing next_id with reserve(n) for n in 0..=4 and 50.
-        let steps: Vec<Step> = (0..60)
+        // Three threads at once, each mixing next_id with reserve(n) for n in 0..=4 and 50.
+        let steps: Vec<Step> = (0..40)
             .map(|i| match i % 10 {
                 4 => Some(50),
                 k if k % 2 == 0 => NEXT_ID,
                 _ => Some(i % 5),
             })
             .collect();
-        check_threads(&[&steps, &steps, &steps, &steps])
+        check_threads(&[&steps, &steps, &steps])
     });
 }

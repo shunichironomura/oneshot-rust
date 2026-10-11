@@ -50,7 +50,8 @@ pub fn run() {
         check_eq(parse_setting("width = eighty"), None)?;
         check_eq(parse_setting("width = 4294967296"), None)?;
         check_eq(parse_setting("width = 8 0"), None)?;
-        check_eq(parse_setting("a = b = 1"), None)
+        check_eq(parse_setting("a = b = 1"), None)?;
+        check_eq(parse_setting("n = 1 = 2"), None)
     });
     case("hidden-6", || {
         check_eq(classify(&[]), "empty")?;

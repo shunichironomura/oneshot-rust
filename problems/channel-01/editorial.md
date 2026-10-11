@@ -2,8 +2,8 @@
 and pushing `item` in the error branch is a compile error (use of a moved value). The value is not lost,
 though: when the receiver is gone, `send` returns `Err(SendError(item))`, and `.0` hands it back.
 Cloning is not an option, because `T` has no bounds (the tests use a type that is neither `Clone` nor
-`Copy`). Once the receiver is dropped, every later `send` fails too, so the loop must keep going
-instead of stopping at the first error.
+`Copy`). Once the receiver is dropped, every later `send` fails too, and those items must be
+returned as well: a loop that simply `break`s at the first error loses them.
 
 `try_recv` never blocks and has two kinds of failure: `TryRecvError::Empty` (nothing yet, but a
 sender may still send) and `TryRecvError::Disconnected` (nothing left and every sender is gone).

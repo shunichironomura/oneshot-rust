@@ -1,4 +1,4 @@
-Build `MyVec<T>`, a growable array like `Vec<T>`, from scratch: on top of `std::alloc` and raw
+Build `MyVec<T>`, a growable array like `Vec<T>`, from scratch with `std::alloc` and raw
 pointers. The struct with its three fields is already in the editor.
 
 ```rust
@@ -43,11 +43,12 @@ impl<T> Drop for MyVec<T> { /* to implement */ }
 
 ```rust
 let mut v = MyVec::new();
+// len() is 0, capacity() is 0
 for s in ["a", "b", "c", "d", "e"] {
     v.push(String::from(s));
 }
 // capacity() after each push: 4, 4, 4, 4, 8
-// as_slice() is ["a", "b", "c", "d", "e"]
+// len() is 5, as_slice() is ["a", "b", "c", "d", "e"]
 v.pop(); // Some("e")
 v.pop(); // Some("d")
 // get(2) is Some("c"), get(3) is None, len() is 3, capacity() is 8
@@ -56,7 +57,7 @@ let mut z: MyVec<()> = MyVec::new();
 // capacity() is usize::MAX
 z.push(());
 z.push(());
-// len() is 2
+// len() is 2, capacity() is still usize::MAX
 z.pop(); // Some(())
 // len() is 1
 ```

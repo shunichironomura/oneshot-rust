@@ -6,8 +6,9 @@ order: `#[derive(PartialOrd, Ord)]`, `self.pre.cmp(&other.pre)`, and a tuple com
 everything before it was `Equal`, and `then_with` takes a closure, so the `match` only runs in that
 case.
 
-`<`, `>` and `partial_cmp` use `PartialOrd`, while `sort`, `max`, `min` and `BTreeSet` use `Ord`.
-Writing `partial_cmp` as `Some(self.cmp(other))` guarantees that the two never disagree. The order
+`<`, `>` and `partial_cmp` call `PartialOrd`. `sort`, `max`, `min` and `BTreeSet` require `Ord`,
+but inside they may call the methods of either trait (`sort`, for example, compares with `<`), so
+the two must agree. Writing `partial_cmp` as `Some(self.cmp(other))` guarantees that. The order
 must also agree with the derived `PartialEq`, `Eq` and `Hash`: `cmp` must return `Equal` exactly
 when all four fields are equal. It does, because it looks at every field and compares the labels
 exactly. Comparing them while ignoring case, for example, would make `1.2.0-RC1` and `1.2.0-rc1`

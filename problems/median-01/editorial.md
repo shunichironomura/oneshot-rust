@@ -40,10 +40,23 @@ pub fn mode(v: &[i32]) -> Option<i32> {
 ```
 
 `median` can also add the middle values as `i64`, where the sum of two `i32` values always fits.
-Converting that sum to `f64` is exact. Do not divide by 2 before converting: integer division turns
-`-1 / 2` into `0`.
+Converting that sum to `f64` is exact. `f64::from` does not accept an `i64` (not every `i64` fits in
+an `f64` exactly), so this conversion needs `as`. Do not divide by 2 before converting: integer
+division turns `-1 / 2` into `0`.
 
 ```rust
-let sum = i64::from(sorted[mid - 1]) + i64::from(sorted[mid]);
-Some(sum as f64 / 2.0)
+pub fn median(v: &[i32]) -> Option<f64> {
+    if v.is_empty() {
+        return None;
+    }
+    let mut sorted = v.to_vec();
+    sorted.sort_unstable();
+    let mid = sorted.len() / 2;
+    if sorted.len() % 2 == 1 {
+        Some(f64::from(sorted[mid]))
+    } else {
+        let sum = i64::from(sorted[mid - 1]) + i64::from(sorted[mid]);
+        Some(sum as f64 / 2.0)
+    }
+}
 ```

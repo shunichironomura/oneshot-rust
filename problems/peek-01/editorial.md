@@ -10,9 +10,9 @@ positions after a non-ASCII character such as U+3000.
 
 The digits are collected into a `String` and parsed with `parse::<u64>()`. The string is never
 empty and holds only ASCII digits, so the only possible error is a value that is too large.
-Computing `value * 10 + digit` directly panics on overflow in debug builds (and under Miri); use
-`checked_mul` and `checked_add` instead. A wider type such as `u128` does not fix it, because a
-number can have any number of digits.
+If you compute the value yourself, `value * 10 + digit` panics on overflow in debug builds (and
+under Miri); use `checked_mul` and `checked_add` instead, as the first alternative does. A wider
+type such as `u128` does not fix it, because a number can have any number of digits.
 
 Returning as soon as an error is found (`?` or `return Err(...)`) gives the first error for free.
 
