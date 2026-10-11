@@ -33,10 +33,10 @@ The compiler chains these impls for nested types: `Vec<Option<i32>>` implements 
   `Describe` for `dyn Describe`. With `?Sized`, `&dyn Describe` is `Describe` too, so a
   `Vec<&dyn Describe>` can hold values of different types.
 
-`?Sized` does not fit the other impls. A slice, a `Vec<T>` and an `Option<T>` store `T` values
-directly, so `T` must have a size known at compile time, and
-`impl<T: Describe + ?Sized> Describe for Vec<T>` is rejected (E0277). (In a tuple, only the last
-element may be unsized: `B: ?Sized` is accepted, `A: ?Sized` is not. Neither is needed.)
+`?Sized` does not fit the other impls. A slice and a `Vec<T>` lay out their `T` values one after
+another, and an `Option<T>` holds its `T` value inline, so `T` must have a size known at compile
+time, and `impl<T: Describe + ?Sized> Describe for Vec<T>` is rejected (E0277). (In a tuple, only
+the last element may be unsized: `B: ?Sized` is accepted, `A: ?Sized` is not. Neither is needed.)
 
 Adding `impl Describe for &str` instead is against the rules, and it would only handle `&str`, not
 `&[i32]` or `&dyn Describe`. Once `&T` has `?Sized`, it covers `&str` as well, and a second impl for

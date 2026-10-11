@@ -33,10 +33,11 @@ impl<T: Describe + ?Sized> Describe for &T
   実装をコンパイラ自身が用意します。`?Sized` があれば `&dyn Describe` も `Describe` になるので、
   `Vec<&dyn Describe>` に型の違う値を入れられます。
 
-ほかの `impl` には `?Sized` は合いません。スライス、`Vec<T>`、`Option<T>` は `T` の値を直接
-格納するので、`T` の大きさはコンパイル時にわかっていなければならず、
-`impl<T: Describe + ?Sized> Describe for Vec<T>` はエラー（E0277）になります（タプルでは最後の要素だけが
-サイズ不定になれるので、`B: ?Sized` は通りますが `A: ?Sized` は通りません。どちらも不要です）。
+ほかの `impl` には `?Sized` は合いません。スライスと `Vec<T>` は `T` の値を隙間なく並べて格納し、
+`Option<T>` は `T` の値をそのまま中に持つので、`T` の大きさはコンパイル時にわかっていなければ
+なりません。そのため `impl<T: Describe + ?Sized> Describe for Vec<T>` はエラー（E0277）になります
+（タプルでは最後の要素だけがサイズ不定になれるので、`B: ?Sized` は通りますが `A: ?Sized` は
+通りません。どちらも不要です）。
 
 代わりに `impl Describe for &str` を追加するのはルール違反ですし、それでは `&str` しか扱えず、
 `&[i32]` や `&dyn Describe` には効きません。`&T` に `?Sized` を付けると `&str` もそれに含まれるので、

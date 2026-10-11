@@ -232,4 +232,22 @@ pub fn run() {
         drop(all);
         check_eq(drops.load(Ordering::Relaxed), 1)
     });
+    case("hidden-7", || {
+        // Two threads drop the last two handles of many values, taking turns. Exactly one of the
+        // two drops each value.
+        let drops = AtomicUsize::new(0);
+        let mine: Vec<_> = (0..10).map(|id| MyArc::new(Counted { id, drops: &drops })).collect();
+        let theirs: Vec<_> = mine.iter().map(MyArc::clone).collect();
+        let drop_all = |handles: Vec<MyArc<Counted<'_>>>| {
+            for h in handles {
+                drop(h);
+                thread::yield_now();
+            }
+        };
+        thread::scope(|s| {
+            s.spawn(move || drop_all(theirs));
+            drop_all(mine);
+        });
+        check_eq(drops.load(Ordering::Relaxed), 10)
+    });
 }

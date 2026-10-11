@@ -1,6 +1,6 @@
 id = "trait-04"
 title = { en = "Describe everything", ja = "なんでも説明" }
-difficulty = 3
+difficulty = 2
 concepts = [
     "implementing a local trait for std types (orphan rule)",
     "generic impls for containers (Vec<T>, [T], Option<T>, tuples)",

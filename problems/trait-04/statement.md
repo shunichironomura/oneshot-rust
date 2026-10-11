@@ -36,8 +36,8 @@ The bodies describe values as follows.
 The elements of a slice or a `Vec`, the value in an `Option`, and the two parts of a pair can be of
 any type that implements `Describe`, and the two parts of a pair may have different types. The
 harness nests these types, describes references at any depth, and uses string slices (`&str`),
-references to slices (`&[i32]`), trait objects (`&dyn Describe`) and a type of its own, `Celsius`,
-as elements.
+references to slices (`&[i32]`, `&[bool]`), trait objects (`&dyn Describe`) and a type of its own,
+`Celsius`, as elements.
 
 ### Examples
 
