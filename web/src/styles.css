@@ -281,7 +281,6 @@ button.chip:hover:not(:disabled) {
 
 .dim {
   color: var(--muted);
-  opacity: 0.6;
 }
 
 /* App header */
@@ -969,6 +968,11 @@ main > section.round-start {
   min-height: 7em;
 }
 
+/* Before the first submission there is nothing to show: the editor takes the room. */
+.play > .result:empty {
+  display: none;
+}
+
 .verdict-line {
   display: flex;
   align-items: center;
@@ -1533,9 +1537,17 @@ dialog .actions {
     flex: none;
     min-height: 0;
   }
+}
 
-  .play > .result:empty {
-    display: none;
+/* The spinner keeps turning: it is what shows that judging is still going on. */
+@media (prefers-reduced-motion: reduce) {
+  .demo-result,
+  .demo-title {
+    animation: none;
+  }
+
+  .history summary::before {
+    transition: none;
   }
 }
 
