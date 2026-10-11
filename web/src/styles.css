@@ -817,6 +817,10 @@ main > section.round-start {
   text-align: center;
 }
 
+.problem-table .title {
+  width: 100%;
+}
+
 .problem-link {
   color: var(--fg);
   font-weight: 600;
@@ -1389,6 +1393,17 @@ dialog .actions {
   margin: 1.6em 0 0.4em;
 }
 
+.empty-rounds {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6em 1em;
+}
+
+.empty-rounds p {
+  margin: 0;
+}
+
 .round-history {
   margin: 0;
   padding: 0;
@@ -1460,7 +1475,6 @@ dialog .actions {
 
   .problem-table tr {
     display: grid;
-    /* The title, the cell without a class, takes the area left free. */
     grid-template: "status title best" "status difficulty best" / 2.6em 1fr auto;
     align-items: center;
     border-bottom: 1px solid var(--border);
@@ -1478,6 +1492,11 @@ dialog .actions {
     grid-area: status;
     width: auto;
     padding-right: 0;
+  }
+
+  .problem-table .title {
+    grid-area: title;
+    width: auto;
   }
 
   .problem-table .difficulty {

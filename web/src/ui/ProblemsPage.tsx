@@ -1,11 +1,18 @@
-import { CircleCheck, CircleDot } from "lucide-preact";
+import { ArrowRight, CircleCheck, CircleDot, Play } from "lucide-preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
-import { type Round, roundSummary, seenProblemIds, totalSubmissions } from "../core/round.ts";
+import {
+  activeRound,
+  type Round,
+  roundSummary,
+  seenProblemIds,
+  totalSubmissions,
+} from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
 import { type Best, bestsByProblem, bestVerdicts, type Run } from "../core/run.ts";
 import { useApp } from "./context.ts";
 import { DifficultyBadge } from "./DifficultyBadge.tsx";
+import { startRound } from "./RoundLauncher.tsx";
 import { RoundProgress } from "./RoundProgress.tsx";
 import { ShotMeter } from "./ShotMeter.tsx";
 
@@ -31,10 +38,13 @@ function BestRecord({ best, run }: { best: Best; run: Run | undefined }) {
  */
 export function ProblemsPage() {
   const { content, storage, locale, t } = useApp();
+  const [starting, setStarting] = useState(false);
   const [bests, setBests] = useState<Map<string, Best>>(new Map());
   const [bestRuns, setBestRuns] = useState<Map<string, Run>>(new Map());
   const [inProgress, setInProgress] = useState<Set<string>>(new Set());
   const [rounds, setRounds] = useState<Round[]>([]);
+  /** `undefined` until loaded, `null` with no round in progress. */
+  const [active, setActive] = useState<Round | null>();
   /** Problems shown in any round, including the one being played. */
   const [seen, setSeen] = useState<Set<string>>(new Set());
   const dateFormat = useMemo(
@@ -51,6 +61,7 @@ export function ProblemsPage() {
     void storage.problemsInProgress().then(setInProgress);
     void storage.rounds().then((all) => {
       setSeen(seenProblemIds(all));
+      setActive(activeRound(all) ?? null);
       setRounds(all.filter((r) => r.finishedAt !== undefined));
     });
   }, [storage]);
@@ -59,13 +70,43 @@ export function ProblemsPage() {
     (p) => seen.has(p.id) || bests.has(p.id) || inProgress.has(p.id),
   );
 
+  // Starts a round, or opens the one in progress.
+  const play = () => {
+    setStarting(true);
+    void startRound(storage, content.problems).then(() => {
+      window.location.hash = routeHref({ page: "round" });
+    });
+  };
+
   return (
     <section class="problems">
       <h1>{t.recordsHeading}</h1>
 
       <h2>{t.roundsHeading}</h2>
       {rounds.length === 0 ? (
-        <p class="dim">{t.noRounds}</p>
+        <div class="empty-rounds">
+          <p class="dim">{t.noRounds}</p>
+          {active !== undefined && (
+            <button
+              type="button"
+              class="primary"
+              onClick={play}
+              disabled={starting || content.problems.length === 0}
+            >
+              {active === null ? (
+                <>
+                  <Play size={16} aria-hidden="true" />
+                  {t.play}
+                </>
+              ) : (
+                <>
+                  {t.continueRound}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </>
+              )}
+            </button>
+          )}
+        </div>
       ) : (
         <ul class="round-history">
           {rounds.map((r) => (
@@ -92,12 +133,20 @@ export function ProblemsPage() {
                 <tr key={p.id}>
                   <td class="status">
                     {best !== undefined ? (
-                      <CircleCheck size={18} class="solved" aria-label={t.solvedHeadline} />
+                      <CircleCheck
+                        size={18}
+                        class="solved"
+                        aria-label={t.solvedHeadline}
+                      />
                     ) : inProgress.has(p.id) ? (
-                      <CircleDot size={18} class="in-progress" aria-label={t.runPlaying} />
+                      <CircleDot
+                        size={18}
+                        class="in-progress"
+                        aria-label={t.runPlaying}
+                      />
                     ) : null}
                   </td>
-                  <td>
+                  <td class="title">
                     <a class="problem-link" href={routeHref({ page: "history", problemId: p.id })}>
                       {localize(p.title, locale)}
                     </a>
