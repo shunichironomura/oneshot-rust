@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
+import { useApp } from "./context.ts";
 
 interface Props {
   open: boolean;
@@ -42,5 +43,32 @@ export function Dialog({ open, onClose, onEnter, children, class: className }: P
     <dialog ref={ref} class={className} onClose={onClose} onKeyDown={onKeyDown} tabIndex={-1}>
       {children}
     </dialog>
+  );
+}
+
+interface ConfirmProps {
+  open: boolean;
+  message: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+/** A yes/no question in a modal dialog; Enter confirms. */
+export function Confirm({ open, message, confirmLabel, onConfirm, onCancel }: ConfirmProps) {
+  const { t } = useApp();
+  return (
+    <Dialog open={open} onClose={onCancel} onEnter={onConfirm} class="confirm">
+      <p>{message}</p>
+      <div class="actions">
+        <button type="button" class="primary" onClick={onConfirm}>
+          <kbd>↵</kbd>
+          {confirmLabel}
+        </button>
+        <button type="button" onClick={onCancel}>
+          {t.cancel}
+        </button>
+      </div>
+    </Dialog>
   );
 }

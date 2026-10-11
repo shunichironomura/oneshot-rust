@@ -24,6 +24,8 @@ export interface Round {
   startedAt: number;
   entries: RoundEntry[];
   finishedAt?: number;
+  /** Set when the round was abandoned before all of its problems were played. */
+  abandoned?: true;
 }
 
 /** The problems of a course, in the given order. */
@@ -120,6 +122,16 @@ export function skipCurrent(round: Round, now: number): Round {
   return addEntry(round, { problemId, runId: "", solved: false, verdicts: [] }, now);
 }
 
+/**
+ * Ends the round early. The run of the current problem (ended unsolved by the caller), if
+ * it had submissions, is recorded; the problems not played are left without entries.
+ */
+export function abandonRound(round: Round, run: Run | undefined, now: number): Round {
+  if (round.finishedAt !== undefined) return round;
+  const recorded = run === undefined || run.attempts.length === 0 ? round : recordRun(round, run);
+  return { ...recorded, finishedAt: recorded.finishedAt ?? now, abandoned: true };
+}
+
 export function totalSubmissions(round: Round): number {
   return round.entries.reduce((n, e) => n + e.verdicts.length, 0);
 }
@@ -130,11 +142,13 @@ export function solvedCount(round: Round): number {
 
 /**
  * How the round went: "+2 over perfect" when every problem was solved (a perfect round
- * takes one submission per problem), and "2/5 solved" otherwise.
+ * takes one submission per problem), "2/5 solved" otherwise, and "Abandoned (2/5 solved)"
+ * when it was ended early.
  */
 export function roundResult(round: Round, messages: Messages): string {
   const solved = solvedCount(round);
   const count = round.problemIds.length;
+  if (round.abandoned === true) return messages.roundAbandoned(solved, count);
   return solved === count
     ? messages.roundOverPerfect(totalSubmissions(round) - count)
     : messages.roundSolved(solved, count);

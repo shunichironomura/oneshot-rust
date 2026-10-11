@@ -2,9 +2,11 @@ import { ArrowRight, Play } from "lucide-preact";
 import { useEffect, useState } from "preact/hooks";
 import { DIFFICULTIES, type Problem } from "../core/problem.ts";
 import {
+  abandonRound,
   activeRound,
   courseName,
   courseProblemIds,
+  currentProblemId,
   newRound,
   pickProblems,
   ROUND_LENGTH,
@@ -15,6 +17,7 @@ import { routeHref } from "../core/route.ts";
 import type { Settings } from "../core/settings.ts";
 import type { Storage } from "../storage/db.ts";
 import { useApp } from "./context.ts";
+import { Confirm } from "./Dialog.tsx";
 import { ModeOptions } from "./ModeOptions.tsx";
 
 /**
@@ -46,15 +49,28 @@ export async function startRound(
   return round;
 }
 
+/** Ends a round in progress early, ending the run of its current problem unsolved. */
+export async function abandonActiveRound(storage: Storage, round: Round): Promise<void> {
+  const now = Date.now();
+  const problemId = currentProblemId(round);
+  const runs = problemId === undefined ? [] : await storage.runsOf(problemId);
+  const playing = runs.find((r) => r.status === "playing" && r.challengeId === round.id);
+  const ended =
+    playing === undefined ? undefined : { ...playing, status: "failed" as const, finishedAt: now };
+  if (ended !== undefined) await storage.saveRun(ended);
+  await storage.saveRound(abandonRound(round, ended, now));
+}
+
 /**
- * The way into the game: "Continue" when a round is in progress, and otherwise the course
- * (with the feedback mode under a disclosure) and "Start round".
+ * The way into the game: "Continue" (or abandoning) when a round is in progress, and
+ * otherwise the course (with the feedback mode under a disclosure) and "Start round".
  */
 export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void }) {
   const { content, storage, settings, updateSettings, t } = useApp();
   /** `null` once loaded with no round in progress. */
   const [active, setActive] = useState<Round | null>();
   const [starting, setStarting] = useState(false);
+  const [confirmingAbandon, setConfirmingAbandon] = useState(false);
 
   useEffect(() => {
     void storage.rounds().then((all) => setActive(activeRound(all) ?? null));
@@ -77,6 +93,23 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
           {t.continueRound}
           <ArrowRight size={18} aria-hidden="true" />
         </a>
+        <button
+          type="button"
+          class="link-button abandon-round"
+          onClick={() => setConfirmingAbandon(true)}
+        >
+          {t.abandonRound}
+        </button>
+        <Confirm
+          open={confirmingAbandon}
+          message={t.confirmAbandonRound}
+          confirmLabel={t.confirmAbandonRoundYes}
+          onCancel={() => setConfirmingAbandon(false)}
+          onConfirm={() => {
+            setConfirmingAbandon(false);
+            void abandonActiveRound(storage, active).then(() => setActive(null));
+          }}
+        />
       </div>
     );
   }

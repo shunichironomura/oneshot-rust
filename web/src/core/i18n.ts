@@ -184,6 +184,10 @@ export interface Messages {
   roundTotal: (total: number) => string;
   roundOverPerfect: (n: number) => string;
   roundSolved: (solved: number, count: number) => string;
+  roundAbandoned: (solved: number, count: number) => string;
+  abandonRound: string;
+  confirmAbandonRound: string;
+  confirmAbandonRoundYes: string;
   columnTries: string;
   oneMoreRound: string;
   changeCourse: string;
@@ -383,6 +387,11 @@ const en: Messages = {
   roundTotal: (t) => `Total ${t}`,
   roundOverPerfect: (n) => (n === 0 ? "Perfect!" : `+${n} over perfect`),
   roundSolved: (s, c) => `${s}/${c} solved`,
+  roundAbandoned: (s, c) => `Abandoned (${s}/${c} solved)`,
+  abandonRound: "Abandon this round",
+  confirmAbandonRound:
+    "Abandon this round? It ends now, with the problems not solved yet counted as unsolved.",
+  confirmAbandonRoundYes: "Abandon",
   columnTries: "Tries",
   oneMoreRound: "One more round",
   changeCourse: "Change course",
@@ -584,6 +593,11 @@ const ja: Messages = {
   roundTotal: (t) => `合計 ${t}`,
   roundOverPerfect: (n) => (n === 0 ? "完璧！" : `完璧まで +${n}`),
   roundSolved: (s, c) => `${s}/${c} 問正解`,
+  roundAbandoned: (s, c) => `棄権（${s}/${c} 問正解）`,
+  abandonRound: "このラウンドを棄権",
+  confirmAbandonRound:
+    "このラウンドを棄権しますか？ラウンドはここで終了し、まだ解いていない問題は未解決として記録されます。",
+  confirmAbandonRoundYes: "棄権する",
   columnTries: "回数",
   oneMoreRound: "もう 1 ラウンド",
   changeCourse: "コースを変える",
