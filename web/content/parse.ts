@@ -1,6 +1,9 @@
-import { marked } from "marked";
+import { highlightCode } from "@lezer/highlight";
+import { parser } from "@lezer/rust";
+import { Marked } from "marked";
 import { parse as parseToml } from "smol-toml";
 import type { Localized } from "../src/core/i18n.ts";
+import { staticHighlighter } from "../src/ui/editorTheme.ts";
 import {
   DIFFICULTIES,
   type JudgeConfig,
@@ -131,6 +134,29 @@ function parseJudge(dirName: string, value: unknown): JudgeConfig {
     harnessVisible: r.bool("harness_visible", JUDGE_DEFAULTS.harnessVisible),
   };
 }
+
+const marked = new Marked({
+  renderer: {
+    code({ text, lang }) {
+      if (lang?.trim().split(/\s+/)[0] !== "rust") return false;
+      let html = "";
+      highlightCode(
+        text,
+        parser.parse(text),
+        staticHighlighter,
+        (part, classes) => {
+          const escaped = part
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;");
+          html += classes === "" ? escaped : `<span class="${classes}">${escaped}</span>`;
+        },
+        () => (html += "\n"),
+      );
+      return `<pre><code class="language-rust">${html}\n</code></pre>\n`;
+    },
+  },
+});
 
 function renderMarkdown(enMd: string, jaMd: string | undefined): Localized {
   const render = (md: string) => marked.parse(md, { async: false });
