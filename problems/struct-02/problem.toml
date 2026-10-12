@@ -1,7 +1,7 @@
 id = "struct-02"
 title = { en = "Settings with defaults", ja = "既定値つきの設定" }
 difficulty = 1
-concepts = ["struct update syntax moves non-Copy fields", "manual Default impl", "..Default::default()", "destructuring let with match ergonomics", "field init shorthand"]
+concepts = ["struct update syntax moves non-Copy fields", "manual Default impl", "..Default::default()", "field init shorthand"]
 kind = "implement"
 
 [judge]

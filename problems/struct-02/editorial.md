@@ -14,10 +14,6 @@ instead. (`..base` alone does not compile either, since it is a `&Config`, not a
 In `with_tags`, `tags.iter()` yields `&&str` items. `to_string()` works on them, but
 `map(String::from)` does not compile, because `String` implements `From<&str>`, not `From<&&str>`.
 
-`describe` destructures `cfg`. As `cfg` is a reference, `name`, `retries`, `verbose` and `tags` are
-bound as references, which `format!` prints just like the values. `join(",")` puts the separator only
-between tags, so there is no trailing comma, and no tags give an empty string.
-
 ### Alternatives
 
 `..base.clone()` also clones the old name, only to drop it. Listing `tags` explicitly avoids that:
