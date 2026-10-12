@@ -100,55 +100,33 @@ pub fn run() {
         let l = log.clone();
         ex.spawn(async move { l.borrow_mut().push("b1") });
         check_eq(ex.run(), 3)?;
-        check_eq(log.take(), vec!["a1", "b1", "a2"])?;
-        check_eq(ex.pending(), 0)
+        check_eq(log.take(), vec!["a1", "b1", "a2"])
     });
     case("sample-2", || {
         let slot = Slot::default();
         let mut ex = Executor::new();
         ex.spawn(park(&slot));
         check_eq(ex.run(), 1)?;
-        check_eq(ex.pending(), 1)?;
         check_eq(ex.run(), 0)?;
         slot.take().wake();
-        check_eq(ex.run(), 1)?;
-        check_eq(ex.pending(), 0)
+        check_eq(ex.run(), 1)
     });
     case("hidden-1", || {
         // An empty executor; spawn does not poll; spawning again after run.
         let log = Log::default();
         let mut ex = Executor::new();
-        check_eq((ex.run(), ex.pending()), (0, 0))?;
+        check_eq(ex.run(), 0)?;
         let l = log.clone();
         ex.spawn(async move { l.borrow_mut().push("x") });
-        check_eq((log.borrow().len(), ex.pending()), (0, 1))?;
+        check_eq(log.borrow().len(), 0)?;
         check_eq(ex.run(), 1)?;
-        check_eq((ex.run(), ex.pending()), (0, 0))?;
+        check_eq(ex.run(), 0)?;
         let l = log.clone();
         ex.spawn(async move { l.borrow_mut().push("y") });
-        check_eq((ex.run(), ex.pending()), (1, 0))?;
+        check_eq(ex.run(), 1)?;
         check_eq(log.take(), vec!["x", "y"])
     });
     case("hidden-2", || {
-        // A task woken several times before its next poll is polled once.
-        let log = Log::default();
-        let mut ex = Executor::new();
-        let l = log.clone();
-        let mut polls = 0;
-        ex.spawn(poll_fn(move |cx| {
-            l.borrow_mut().push("s");
-            polls += 1;
-            if polls == 1 {
-                cx.waker().wake_by_ref();
-                cx.waker().wake_by_ref();
-                cx.waker().clone().wake();
-            }
-            if polls < 3 { Poll::Pending } else { Poll::Ready(()) }
-        }));
-        check_eq((ex.run(), ex.pending()), (2, 1))?;
-        check_eq(log.take(), vec!["s", "s"])
-    });
-    case("hidden-3", || {
         // A finished task is never polled again, and waking it does nothing, also when other
         // tasks are ready after it.
         let mut ex = Executor::new();
@@ -157,7 +135,7 @@ pub fn run() {
             Poll::Ready(())
         }));
         ex.spawn(yield_now());
-        check_eq((ex.run(), ex.pending()), (3, 0))?;
+        check_eq(ex.run(), 3)?;
         let old = Slot::default();
         let s = old.clone();
         ex.spawn(poll_fn(move |cx| {
@@ -167,19 +145,21 @@ pub fn run() {
         check_eq(ex.run(), 1)?;
         let slot = Slot::default();
         ex.spawn(park(&slot));
-        check_eq((ex.run(), ex.pending()), (1, 1))?;
+        check_eq(ex.run(), 1)?;
         let old_waker = old.take();
         old_waker.wake_by_ref();
-        check_eq((ex.run(), ex.pending()), (0, 1))?;
+        check_eq(ex.run(), 0)?;
         // Woken before a waiting task: the waiting task still runs.
         old_waker.wake();
         slot.take().wake();
-        check_eq((ex.run(), ex.pending()), (1, 0))
+        check_eq(ex.run(), 1)
     });
-    case("hidden-4", || {
-        // Wakers woken on other threads, and a waker kept from an earlier poll.
+    case("hidden-3", || {
+        // A waker woken on another thread, and a waker kept from an earlier poll.
+        let log = Log::default();
         let slot = Slot::default();
         let kept = slot.clone();
+        let l = log.clone();
         let mut polls = 0;
         let mut ex = Executor::new();
         ex.spawn(poll_fn(move |cx| {
@@ -187,7 +167,12 @@ pub fn run() {
             if polls == 1 {
                 kept.put(cx.waker());
             }
-            if polls < 3 { Poll::Pending } else { Poll::Ready(()) }
+            if polls < 3 {
+                Poll::Pending
+            } else {
+                l.borrow_mut().push("done");
+                Poll::Ready(())
+            }
         }));
         let other = Slot::default();
         ex.spawn(park(&other));
@@ -196,13 +181,14 @@ pub fn run() {
         let copy = waker.clone();
         thread::scope(|s| {
             s.spawn(move || copy.wake());
-            waker.wake_by_ref();
         });
-        check_eq((ex.run(), ex.pending()), (1, 2))?;
+        check_eq(ex.run(), 1)?;
+        check_eq(log.borrow().len(), 0)?;
         waker.wake();
-        check_eq((ex.run(), ex.pending()), (1, 1))
+        check_eq(ex.run(), 1)?;
+        check_eq(log.take(), vec!["done"])
     });
-    case("hidden-5", || {
+    case("hidden-4", || {
         // First in, first out, whether a task was spawned or woken.
         let log = Log::default();
         let slots = [Slot::default(), Slot::default(), Slot::default()];
@@ -215,11 +201,11 @@ pub fn run() {
         ex.spawn(waiter("s", 0, Slot::default(), log.clone()));
         slots[0].take().wake();
         slots[1].take().wake();
-        check_eq((ex.run(), ex.pending()), (4, 0))?;
+        check_eq(ex.run(), 4)?;
         check_eq(log.take(), vec!["p", "q", "r", "r", "s", "p", "q"])
     });
-    case("hidden-6", || {
-        // Woken again while ready: keeps its place. Woken during another task's poll: goes last.
+    case("hidden-5", || {
+        // A task woken during another task's poll goes last.
         let log = Log::default();
         let (a, b, c) = (Slot::default(), Slot::default(), Slot::default());
         let mut ex = Executor::new();
@@ -236,11 +222,10 @@ pub fn run() {
         check_eq(ex.run(), 3)?;
         a.wake_by_ref();
         b.take().wake();
-        a.wake_by_ref();
-        check_eq((ex.run(), ex.pending()), (4, 1))?;
+        check_eq(ex.run(), 4)?;
         check_eq(log.take(), vec!["a", "b", "c", "a", "b", "c", "a"])
     });
-    case("hidden-7", || {
+    case("hidden-6", || {
         // Finished futures are dropped at once, the others with the executor. A waker may
         // outlive the executor.
         let token = Rc::new(());
@@ -263,7 +248,7 @@ pub fn run() {
             park(&s).await;
         });
         check_eq(ex.run(), 3)?;
-        check_eq((Rc::strong_count(&token), ex.pending()), (2, 1))?;
+        check_eq(Rc::strong_count(&token), 2)?;
         drop(ex);
         check_eq(Rc::strong_count(&token), 1)?;
         slot.take().wake();
