@@ -1000,14 +1000,7 @@ main > section.round-start {
 }
 
 .statement .tabs {
-  display: flex;
-  gap: 0.3em;
-  padding-top: 0.8em;
-}
-
-.statement .tabs button[aria-selected="true"] {
-  border-color: var(--accent);
-  color: var(--accent);
+  margin-top: 0.8em;
 }
 
 .markdown code {
@@ -1059,12 +1052,6 @@ main > section.round-start {
 }
 
 /* Model solution tab */
-.statement .tabs button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-}
-
 .solution {
   display: flex;
   flex-direction: column;
@@ -1401,15 +1388,7 @@ dialog .actions {
   grid-column: 1 / -1;
 }
 
-.attempts {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.attempts button {
-  width: 100%;
-  margin-bottom: 0.3em;
+.attempts [role="tab"] {
   font-family: var(--mono);
   font-size: 0.85em;
 }
@@ -1417,10 +1396,6 @@ dialog .actions {
 .attempts .verdict {
   min-width: 3.4em;
   font-size: 0.9em;
-}
-
-.attempts button[aria-pressed="true"] {
-  border-color: var(--accent);
 }
 
 .attempt h3 {
@@ -1460,14 +1435,72 @@ dialog .actions {
   background: var(--removed);
 }
 
-.segmented {
-  display: inline-flex;
-  gap: 0.3em;
+/* Tabs: labels over one panel, the selected one marked by a bar along the list's rule. A
+   vertical list keeps the rule on its left. The bar is an inset shadow, so it takes no
+   room and is not clipped when the list scrolls. */
+.tabs {
+  --tab-bar: 0 -2px;
+  display: flex;
+  gap: 0.2em;
+  box-shadow: inset 0 -1px var(--border);
 }
 
-.segmented button[aria-pressed="true"] {
-  border-color: var(--accent);
+.tabs [role="tab"] {
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: var(--muted);
+  padding: 0.45em 0.8em;
+}
+
+.tabs [role="tab"]:hover:not([aria-selected="true"]) {
+  color: var(--fg);
+  box-shadow: inset var(--tab-bar) var(--border);
+}
+
+.tabs [role="tab"][aria-selected="true"] {
+  color: var(--accent);
+  box-shadow: inset var(--tab-bar) var(--accent);
+}
+
+.tabs[aria-orientation="vertical"] {
+  --tab-bar: 2px 0;
+  flex-direction: column;
+  align-self: start;
+  gap: 0;
+  box-shadow: inset 1px 0 var(--border);
+}
+
+.tabs[aria-orientation="vertical"] [role="tab"][aria-selected="true"] {
   background: var(--accent-soft);
+}
+
+/* Segmented control: views of the same content, as joined segments, the chosen one filled */
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--code-bg);
+}
+
+.segmented [role="radio"] {
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: none;
+  color: var(--muted);
+  padding: 0.25em 0.8em;
+}
+
+.segmented [role="radio"]:hover:not([aria-checked="true"]) {
+  color: var(--fg);
+}
+
+.segmented [role="radio"][aria-checked="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
 }
 
 /* Scorecard: the printed card, one column per hole */
@@ -1686,6 +1719,18 @@ dialog .actions {
 
   .run-detail {
     grid-template-columns: 1fr;
+  }
+
+  /* The submissions run along the top, scrolling sideways when there are many. */
+  .tabs[aria-orientation="vertical"] {
+    --tab-bar: 0 -2px;
+    flex-direction: row;
+    overflow-x: auto;
+    box-shadow: inset 0 -1px var(--border);
+  }
+
+  .tabs[aria-orientation="vertical"] [role="tab"][aria-selected="true"] {
+    background: none;
   }
 
   /* Page titles, one step down. */

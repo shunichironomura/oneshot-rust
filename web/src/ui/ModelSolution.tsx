@@ -6,6 +6,7 @@ import { CodeView } from "./CodeView.tsx";
 import { Copyable } from "./CopyButton.tsx";
 import { useApp } from "./context.ts";
 import { DiffView } from "./DiffView.tsx";
+import { Segmented } from "./Tabs.tsx";
 
 type Loaded =
   | { kind: "loading" }
@@ -42,14 +43,15 @@ export function ModelSolution({ problem, code }: { problem: Problem; code: strin
   const { solution } = loaded;
   return (
     <>
-      <div class="segmented" role="group">
-        <button type="button" aria-pressed={view === "code"} onClick={() => setView("code")}>
-          {t.solutionCode}
-        </button>
-        <button type="button" aria-pressed={view === "diff"} onClick={() => setView("diff")}>
-          {t.solutionDiff}
-        </button>
-      </div>
+      <Segmented
+        label={t.solutionView}
+        options={[
+          { id: "code", label: t.solutionCode },
+          { id: "diff", label: t.solutionDiff },
+        ]}
+        selected={view}
+        onSelect={setView}
+      />
       {view === "code" ? (
         <Copyable text={solution.code}>
           <CodeView code={solution.code} />

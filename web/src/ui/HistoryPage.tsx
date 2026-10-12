@@ -16,6 +16,7 @@ import { IconButton } from "./IconButton.tsx";
 import { ModelSolution } from "./ModelSolution.tsx";
 import { ShareButton } from "./ShareButton.tsx";
 import { ShotMeter } from "./ShotMeter.tsx";
+import { Tabs } from "./Tabs.tsx";
 
 function RunStatus({ run }: { run: Run }) {
   const { t } = useApp();
@@ -72,17 +73,23 @@ function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
   return (
     <div class="run-detail">
       {run.status !== "playing" && <RunShare run={run} problem={problem} />}
-      <ol class="attempts">
-        {run.attempts.map((a, i) => (
-          <li key={i}>
-            <button type="button" aria-pressed={i === selected} onClick={() => setSelected(i)}>
+      <Tabs
+        label={t.attemptsLabel}
+        orientation="vertical"
+        class="attempts"
+        panelClass="attempt"
+        tabs={run.attempts.map((a, i) => ({
+          id: i,
+          label: (
+            <>
               <span class={`verdict ${a.judgement.verdict.kind}`}>{a.judgement.verdict.kind}</span>#
               {i + 1}
-            </button>
-          </li>
-        ))}
-      </ol>
-      <div class="attempt">
+            </>
+          ),
+        }))}
+        selected={selected}
+        onSelect={setSelected}
+      >
         <h3>{t.attemptHeading(selected + 1, t.verdicts[view.kind])}</h3>
         {view.summary !== undefined && <p class="summary">{view.summary}</p>}
         {view.diagnostics.map((d, i) => (
@@ -95,7 +102,7 @@ function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
           <CopyButton text={attempt.code} label={t.copyCode} />
         </div>
         <DiffView before={before} after={attempt.code} />
-      </div>
+      </Tabs>
     </div>
   );
 }
