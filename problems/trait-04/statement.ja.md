@@ -16,7 +16,7 @@ impl Describe for str { /* ... */ }
 impl Describe for String { /* ... */ }
 impl Describe for [i32] { /* ... */ }
 impl Describe for Vec<i32> { /* ... */ }
-impl Describe for Option<i32> { /* ... */ }
+impl<T: Describe> Describe for Option<T> { /* ... */ }
 impl Describe for (i32, i32) { /* ... */ }
 impl<T: Describe + ?Sized> Describe for &T { /* ... */ }
 ```
@@ -24,8 +24,7 @@ impl<T: Describe + ?Sized> Describe for &T { /* ... */ }
 本体は、値を次のように説明します。
 
 - `i32` は 10 進数で、`bool` は `yes` か `no` で書きます。
-- 文字列（`str` と `String`）は、`{:?}` で整形したとおりに書きます。つまり二重引用符で囲み、
-  `"`、`\`、改行などの制御文字はエスケープします。
+- 文字列（`str` と `String`）は二重引用符で囲んで書きます。
 - スライスと `Vec` は、`[`、要素の説明をカンマと空白で区切って並べたもの、`]` の順に書きます。
   空なら `[]` です。
 - `Some(x)` は `some(`、`x` の説明、`)` の順に書きます。`None` は `none` です。

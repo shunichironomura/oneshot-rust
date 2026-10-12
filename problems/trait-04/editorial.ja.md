@@ -4,12 +4,12 @@
 
 ジェネリックな `impl` は「境界を満たすすべての `T` について、この型は `Describe` を実装する」と読みます。
 コンテナの本体は要素の `describe` を呼ぶので、コンテナの `impl` にはそれぞれ、`Describe` 境界の付いた
-型引数が必要です。
+型引数が必要です。テンプレートの `Option<T>` の `impl` がすでにこの形なので、ほかのコンテナもそれに
+倣います。
 
 ```rust
 impl<T: Describe> Describe for [T]
 impl<T: Describe> Describe for Vec<T>
-impl<T: Describe> Describe for Option<T>
 impl<A: Describe, B: Describe> Describe for (A, B)
 ```
 
@@ -21,8 +21,8 @@ impl<A: Describe, B: Describe> Describe for (A, B)
   `impl Describe for [i32]` のままでは、ジェネリックにした `Vec` の `impl` のコンパイルが通りません。
 - ペアには型引数が 2 つ必要です。`(T, T)` では `(true, vec!["a", "b"])` に合いません。要素が `bool` と
   `Vec<&str>` だからです。
-- 本体が要素の `describe` を呼べるのは境界があるからです。`impl<T> Describe for Option<T>` では
-  `T` について何もわからないので、`value.describe()` がエラー（E0599）になります。
+- 本体が要素の `describe` を呼べるのは境界があるからです。`impl<T> Describe for [T]` では
+  `T` について何もわからないので、`item.describe()` がエラー（E0599）になります。
 - 型引数は `impl` の直後で宣言しなければなりません。`impl Describe for Vec<T>` とだけ書くと
   「cannot find type `T` in this scope」になります。
 

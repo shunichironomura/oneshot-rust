@@ -16,7 +16,7 @@ impl Describe for str { /* ... */ }
 impl Describe for String { /* ... */ }
 impl Describe for [i32] { /* ... */ }
 impl Describe for Vec<i32> { /* ... */ }
-impl Describe for Option<i32> { /* ... */ }
+impl<T: Describe> Describe for Option<T> { /* ... */ }
 impl Describe for (i32, i32) { /* ... */ }
 impl<T: Describe + ?Sized> Describe for &T { /* ... */ }
 ```
@@ -24,8 +24,7 @@ impl<T: Describe + ?Sized> Describe for &T { /* ... */ }
 The bodies describe values as follows.
 
 - An `i32` is written in decimal, and a `bool` as `yes` or `no`.
-- A string (`str` or `String`) is written the way `{:?}` formats it: in double quotes, with `"`, `\`
-  and control characters such as a line break escaped.
+- A string (`str` or `String`) is written in double quotes.
 - A slice or a `Vec` is written as `[`, the descriptions of its elements separated by a comma and a
   space, and `]`. An empty one is `[]`.
 - `Some(x)` is written as `some(`, the description of `x`, and `)`. `None` is `none`.
