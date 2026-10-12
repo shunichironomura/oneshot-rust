@@ -14,18 +14,13 @@ version ignores extra arguments, so remember to check that no fifth item follows
 `str::lines` already handles `\r\n` and a final line ending; `split('\n')` would keep the `\r` and
 produce an extra empty line after a final line ending.
 
-For the case-insensitive search, lowercase `query` once, before going through the lines. Use
-`to_lowercase`, not `to_ascii_lowercase`, which leaves `É` as it is. `to_lowercase` returns a new
-`String`, and `contains(&query)` takes a reference to it: `&String` can be used as a pattern,
-`String` cannot. Return the original `line`, not `line.to_lowercase()`. The lowercased line is a
-temporary `String`, not a `&'a str`, and a reference to it would not live long enough. The `'a` in
-the signature ties the results to `contents` only, which is why they stay valid after `query` is
+`search` returns the `line`s that `contents.lines()` yields, which are slices of `contents`. The `'a`
+in the signature ties the results to `contents` only, which is why they stay valid after `query` is
 dropped.
 
 ### Alternatives
 
-The style of the Book, with `match` expressions and a `for` loop. `search` can be written the same
-way with `line.contains(query)`.
+The style of the Book, with `match` expressions and a `for` loop.
 
 ```rust
 impl Config {
@@ -55,11 +50,10 @@ impl Config {
     }
 }
 
-pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let query = query.to_lowercase();
+pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let mut results = Vec::new();
     for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
+        if line.contains(query) {
             results.push(line);
         }
     }
