@@ -6,7 +6,6 @@ use std::num::ParseIntError;
 pub enum ConfigError {
     Missing(&'static str),
     BadPort { value: String, source: ParseIntError },
-    OutOfRange(u32),
 }
 
 impl fmt::Display for ConfigError {
@@ -24,10 +23,6 @@ pub fn parse_port(s: &str) -> Result<u16, ConfigError> {
 }
 
 pub fn load(pairs: &[(&str, &str)]) -> Result<(String, u16, u64), Box<dyn Error>> {
-    todo!()
-}
-
-pub fn root_cause<'a>(e: &'a (dyn Error + 'static)) -> &'a (dyn Error + 'static) {
     todo!()
 }
 

@@ -6,7 +6,6 @@ use std::num::ParseIntError;
 pub enum ConfigError {
     Missing(&'static str),
     BadPort { value: String, source: ParseIntError },
-    OutOfRange(u32),
 }
 
 impl fmt::Display for ConfigError {
@@ -15,7 +14,6 @@ impl fmt::Display for ConfigError {
             ConfigError::Missing(key) => write!(f, "missing key: {key}"),
             // The cause is not repeated here: callers reach it through `source()`.
             ConfigError::BadPort { value, .. } => write!(f, "bad port '{value}'"),
-            ConfigError::OutOfRange(n) => write!(f, "port {n} out of range"),
         }
     }
 }
@@ -24,20 +22,16 @@ impl Error for ConfigError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             ConfigError::BadPort { source, .. } => Some(source),
-            _ => None,
+            ConfigError::Missing(_) => None,
         }
     }
 }
 
 pub fn parse_port(s: &str) -> Result<u16, ConfigError> {
-    let n: u32 = s.parse().map_err(|source| ConfigError::BadPort {
+    s.parse().map_err(|source| ConfigError::BadPort {
         value: s.to_string(),
         source,
-    })?;
-    match u16::try_from(n) {
-        Ok(port) if port != 0 => Ok(port),
-        _ => Err(ConfigError::OutOfRange(n)),
-    }
+    })
 }
 
 /// The value of the first pair whose key is `key`.
@@ -54,14 +48,6 @@ pub fn load(pairs: &[(&str, &str)]) -> Result<(String, u16, u64), Box<dyn Error>
         None => 30,
     };
     Ok((host.to_string(), port, timeout))
-}
-
-pub fn root_cause<'a>(e: &'a (dyn Error + 'static)) -> &'a (dyn Error + 'static) {
-    let mut cur = e;
-    while let Some(next) = cur.source() {
-        cur = next;
-    }
-    cur
 }
 
 pub fn report(e: &dyn Error) -> String {

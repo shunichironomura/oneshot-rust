@@ -25,20 +25,15 @@ compiler cannot tell which one the result borrows from (E0106). The result borro
 the pattern `&&(k, _)` copies the key out. With `|(k, _)|`, `k` would be a `&&str`, and `k == key`
 does not compile (`&str` cannot be compared with `str`).
 
-In `root_cause`, `'a` cannot be elided either, because the parameter type contains two lifetimes,
-`'a` and `'static`. The loop moves `cur` down the chain: `cur.source()` returns a reference that
-lives as long as `cur`, so `cur = next` is fine. `report` takes a `&dyn Error` without `'static`:
-walking and printing a chain needs no downcasting.
+In `report`, the loop moves `cur` down the chain: `cur.source()` returns a reference that lives as
+long as `cur`, so `cur = next` is fine. `report` takes a `&dyn Error` without `'static`: walking and
+printing a chain needs no downcasting.
 
 ### Alternatives
 
 `std::iter::successors` turns the chain into an iterator.
 
 ```rust
-pub fn root_cause<'a>(e: &'a (dyn Error + 'static)) -> &'a (dyn Error + 'static) {
-    std::iter::successors(Some(e), |&e| e.source()).last().unwrap()
-}
-
 pub fn report(e: &dyn Error) -> String {
     std::iter::successors(Some(e), |&e| e.source())
         .map(|e| e.to_string())
@@ -55,13 +50,6 @@ returned ("lifetime may not live long enough"). `|&e|` copies the inner `&dyn Er
 Recursion follows the chain as well.
 
 ```rust
-pub fn root_cause<'a>(e: &'a (dyn Error + 'static)) -> &'a (dyn Error + 'static) {
-    match e.source() {
-        Some(cause) => root_cause(cause),
-        None => e,
-    }
-}
-
 pub fn report(e: &dyn Error) -> String {
     match e.source() {
         Some(cause) => format!("{e}: {}", report(cause)),
@@ -80,14 +68,10 @@ timeout into a `Result<Option<u64>, _>`, so that `?` can be applied.
 type Result<T, E = Box<dyn Error>> = std::result::Result<T, E>;
 
 pub fn parse_port(s: &str) -> Result<u16, ConfigError> {
-    let n: u32 = s.parse().map_err(|source| ConfigError::BadPort {
+    s.parse().map_err(|source| ConfigError::BadPort {
         value: s.to_string(),
         source,
-    })?;
-    u16::try_from(n)
-        .ok()
-        .filter(|&port| port != 0)
-        .ok_or(ConfigError::OutOfRange(n))
+    })
 }
 
 pub fn load(pairs: &[(&str, &str)]) -> Result<(String, u16, u64)> {

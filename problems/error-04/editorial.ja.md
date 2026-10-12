@@ -24,9 +24,8 @@
 `&&(&str, &str)` を渡すので、パターン `&&(k, _)` でキーをコピーして取り出しています。
 `|(k, _)|` だと `k` は `&&str` になり、`k == key` はコンパイルが通りません（`&str` と `str` は比べられません）。
 
-`root_cause` でも `'a` は省略できません。引数の型に `'a` と `'static` の 2 つのライフタイムがあるからです。
-ループでは `cur` を連鎖に沿って進めます。`cur.source()` が返す参照は `cur` と同じだけ生きるので、
-`cur = next` で問題ありません。`report` は `'static` なしの `&dyn Error` を受け取ります。
+`report` のループでは `cur` を連鎖に沿って進めます。`cur.source()` が返す参照は `cur` と同じだけ
+生きるので、`cur = next` で問題ありません。`report` は `'static` なしの `&dyn Error` を受け取ります。
 連鎖をたどって表示するだけなら、ダウンキャストは要らないからです。
 
 ### 別解
@@ -34,10 +33,6 @@
 `std::iter::successors` を使うと、連鎖をイテレータにできます。
 
 ```rust
-pub fn root_cause<'a>(e: &'a (dyn Error + 'static)) -> &'a (dyn Error + 'static) {
-    std::iter::successors(Some(e), |&e| e.source()).last().unwrap()
-}
-
 pub fn report(e: &dyn Error) -> String {
     std::iter::successors(Some(e), |&e| e.source())
         .map(|e| e.to_string())
@@ -54,13 +49,6 @@ pub fn report(e: &dyn Error) -> String {
 再帰でも連鎖をたどれます。
 
 ```rust
-pub fn root_cause<'a>(e: &'a (dyn Error + 'static)) -> &'a (dyn Error + 'static) {
-    match e.source() {
-        Some(cause) => root_cause(cause),
-        None => e,
-    }
-}
-
 pub fn report(e: &dyn Error) -> String {
     match e.source() {
         Some(cause) => format!("{e}: {}", report(cause)),
@@ -79,14 +67,10 @@ pub fn report(e: &dyn Error) -> String {
 type Result<T, E = Box<dyn Error>> = std::result::Result<T, E>;
 
 pub fn parse_port(s: &str) -> Result<u16, ConfigError> {
-    let n: u32 = s.parse().map_err(|source| ConfigError::BadPort {
+    s.parse().map_err(|source| ConfigError::BadPort {
         value: s.to_string(),
         source,
-    })?;
-    u16::try_from(n)
-        .ok()
-        .filter(|&port| port != 0)
-        .ok_or(ConfigError::OutOfRange(n))
+    })
 }
 
 pub fn load(pairs: &[(&str, &str)]) -> Result<(String, u16, u64)> {
