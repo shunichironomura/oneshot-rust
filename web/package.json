@@ -8,6 +8,7 @@
     "build": "tsc -b && vp build",
     "preview": "vp preview",
     "check-dist": "node scripts/check-dist.ts",
+    "problem-size": "node scripts/problem-size.ts",
     "deploy": "vp run build:deploy && wrangler deploy",
     "fetch-toolchain": "node scripts/fetch-toolchain.ts",
     "build:deploy": "node scripts/fetch-toolchain.ts && vp run build && vp run check-dist",

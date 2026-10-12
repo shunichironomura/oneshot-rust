@@ -2,13 +2,19 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { JudgeSources } from "../src/core/problem.ts";
-import { compareProblems, parseProblem, type ProblemWithSolution } from "./parse.ts";
+import {
+  compareProblems,
+  parseProblem,
+  type ProblemFiles,
+  type ProblemWithSolution,
+} from "./parse.ts";
 
 export const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
 export const PROBLEMS_DIR = path.join(REPO_ROOT, "problems");
 export const JUDGE_DIR = path.join(REPO_ROOT, "judge");
 
-export async function readProblemDir(dirName: string): Promise<ProblemWithSolution> {
+/** Reads the raw files of `problems/<dirName>/` without parsing them. */
+export async function readProblemFiles(dirName: string): Promise<ProblemFiles> {
   const read = (file: string) => readFile(path.join(PROBLEMS_DIR, dirName, file), "utf8");
   const readOptional = (file: string) =>
     read(file).catch((e: unknown) => {
@@ -34,7 +40,7 @@ export async function readProblemDir(dirName: string): Promise<ProblemWithSoluti
     readOptional("editorial.md"),
     readOptional("editorial.ja.md"),
   ]);
-  return parseProblem({
+  return {
     dirName,
     problemToml,
     statementMd,
@@ -44,14 +50,25 @@ export async function readProblemDir(dirName: string): Promise<ProblemWithSoluti
     solutionRs,
     editorialMd,
     editorialJaMd,
-  });
+  };
+}
+
+export async function readProblemDir(dirName: string): Promise<ProblemWithSolution> {
+  return parseProblem(await readProblemFiles(dirName));
+}
+
+async function problemDirNames(): Promise<string[]> {
+  const entries = await readdir(PROBLEMS_DIR, { withFileTypes: true });
+  return entries.filter((e) => e.isDirectory()).map((e) => e.name);
+}
+
+/** The raw files of every problem, in directory order. */
+export async function loadProblemFiles(): Promise<ProblemFiles[]> {
+  return Promise.all((await problemDirNames()).map(readProblemFiles));
 }
 
 export async function loadProblems(): Promise<ProblemWithSolution[]> {
-  const entries = await readdir(PROBLEMS_DIR, { withFileTypes: true });
-  const problems = await Promise.all(
-    entries.filter((e) => e.isDirectory()).map((e) => readProblemDir(e.name)),
-  );
+  const problems = await Promise.all((await problemDirNames()).map(readProblemDir));
   return problems.sort((a, b) => compareProblems(a.problem, b.problem));
 }
 

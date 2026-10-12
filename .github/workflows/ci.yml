@@ -41,6 +41,8 @@ jobs:
       - run: vp test
       - name: Verify problems with miri.wasm
         run: node scripts/verify-problems.ts
+      - name: Measure problem sizes (advisory)
+        run: node scripts/problem-size.ts
       - name: Build
         run: vp run build
       - name: Check Cloudflare limits
