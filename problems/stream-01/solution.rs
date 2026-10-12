@@ -86,11 +86,3 @@ impl<A: Stream + Unpin, B: Stream + Unpin> Stream for Zip<A, B> {
         }
     }
 }
-
-pub async fn collect<S: Stream + Unpin>(mut s: S) -> Vec<S::Item> {
-    let mut items = Vec::new();
-    while let Some(item) = s.next().await {
-        items.push(item);
-    }
-    items
-}

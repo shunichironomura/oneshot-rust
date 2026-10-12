@@ -59,7 +59,3 @@ impl<A: Stream + Unpin, B: Stream + Unpin> Stream for Zip<A, B> {
         todo!()
     }
 }
-
-pub async fn collect<S: Stream + Unpin>(s: S) -> Vec<S::Item> {
-    todo!()
-}

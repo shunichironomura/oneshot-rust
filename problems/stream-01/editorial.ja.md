@@ -10,9 +10,6 @@
   `Pin::new(&mut *self)` なら、呼び出しのたびに再借用するだけで済みます。Future はストリームを借用し続けます。
   返り値の型の `+ '_` はそのことを表しています。
 
-`collect` は `mut s` にして、`while let Some(item) = s.next().await` で回します。`next` がすぐに完了したときは、
-同じポーリングの中で次の要素に進むので、`collect` の Future が `Pending` を返すのは `s` が `Pending` を返したときだけです。
-
 **`Iter` と `Zip` の `Unpin`。** `self: Pin<&mut Self>` のフィールドを変更するには `get_mut`
 （または `mut self` にして `DerefMut`）が必要で、どちらも `Self: Unpin` を要求します。`Unpin` は自動トレイトです。
 `Iter<I>` が `Unpin` になるのは `I` が `Unpin` のときだけで、`Zip<A, B>` は `a` の要素を保持するので、

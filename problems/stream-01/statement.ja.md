@@ -28,19 +28,15 @@ impl<A: Stream + Unpin, B: Stream + Unpin> Stream for Zip<A, B> {
     type Item = (A::Item, B::Item);
     /* poll_next */
 }
-
-pub async fn collect<S: Stream + Unpin>(s: S) -> Vec<S::Item>;
 ```
 
-- `poll_next` は、次の要素があれば `Ready(Some(item))`、ストリームが終わっていれば `Ready(None)`、
-  まだ要素がなければ `Pending` を返します。`Pending` を返すストリームは、（`cx` のウェイカーを通して）
-  タスクが後で起こされるようにします。`Ready(None)` を返したストリームが再びポーリングされることはありません。
+- `poll_next` は次の要素か、終わりなら `Ready(None)` を返し、まだなければ `cx` を通してタスクが
+  起こされるようにしてから `Pending` を返し、`Ready(None)` の後に再びポーリングされることはありません。
 - `s.next()` は Future を返します。この Future は `s` の次の要素に解決し、`s` が終わっていれば `None` に
   解決します。ポーリングされるたびに、同じ `cx` で `s` を 1 回ポーリングし、`s` が `Pending` を返したら
   `Pending` を返します。`next` は `Unpin` なストリームならどれにでも呼べます。
   `dyn Stream<Item = u32> + Unpin` のようなトレイトオブジェクトにも呼べます。
 - `iter(items)` は `items` の要素を順に返すストリームを返します。`Pending` になることはありません。
-  ポーリングされるたびに次の要素を返し、要素がなくなったら `Ready(None)` を返します。
 - `zip(a, b)` は組のストリームを返します。`a` の 1 番目の要素と `b` の 1 番目の要素、
   次に 2 番目どうし、という順に組にします。ポーリングされるたびに、次のように動きます。
   1. `a` の要素を持っていなければ、`a` を 1 回ポーリングします。`a` が `Pending` を返したら、`b` をポーリングせずに
@@ -51,12 +47,8 @@ pub async fn collect<S: Stream + Unpin>(s: S) -> Vec<S::Item>;
      要素を持っていない状態に戻ります。
 
   `zip` は受け取った `cx` をそのまま `a` と `b` に渡し、自分では何も起こしません。
-- `collect(s)` は `s` のすべての要素を順に並べた `Vec` に解決します。その Future はポーリングされるたびに、
-  `s` が `Pending` を返す（このとき Future も `Pending` を返す）か `Ready(None)` を返す
-  （このとき Future は完了する）まで、`s` をポーリングします。
-- トレイトの定義、シグネチャ、与えられた `impl` ブロックの境界は変えないでください。`iter` はどんな
-  イテレータも、`zip` は `Unpin` なストリームならどの 2 つも、要素の型に関係なく受け付けなければなりません。
-  型、`impl` ブロック、関数を自分で追加するのは構いません。
+- トレイトの定義、シグネチャ、`impl` の境界は与えられたまま（`iter` はどんなイテレータも、`zip` は
+  `Unpin` なストリームならどの 2 つも受け付ける）にし、型、`impl` ブロック、関数は自由に追加して構いません。
 
 テストハーネスは独自のエグゼキュータで Future を動かします。このエグゼキュータは、Future が起こされてからでないと
 再びポーリングしません。ハーネスは独自のストリームも使い、各ストリームがポーリングされた回数を数えます。
@@ -65,7 +57,8 @@ pub async fn collect<S: Stream + Unpin>(s: S) -> Vec<S::Item>;
 
 ### 例
 
-- `collect(iter(vec![1, 2, 3]))` は最初のポーリングで `[1, 2, 3]` に解決し、`iter` のストリームは 4 回ポーリングされます。
+- `iter(vec![1, 2, 3])` を終わるまでポーリングすると、`Ready(Some(1))`、`Ready(Some(2))`、`Ready(Some(3))`、
+  `Ready(None)` の順に返ります。
 - `let mut s = iter(["x"]);` の後、`s.next().await` は `Some("x")`、その次は `None` です。
 - `zip(iter(1..=3), slow(vec!['a', 'b']))` を終わるまでポーリングすると、`Pending`、`Ready(Some((1, 'a')))`、
   `Pending`、`Ready(Some((2, 'b')))`、`Pending`、`Ready(None)` の順に返ります。`iter` のストリームは 3 回
