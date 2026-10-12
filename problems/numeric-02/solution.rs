@@ -15,10 +15,6 @@ pub fn wrap_index(i: i64, len: usize) -> usize {
     i.rem_euclid(len as i64) as usize
 }
 
-pub fn bucket(x: i32, width: i32) -> i32 {
-    x.div_euclid(width)
-}
-
 pub fn page_count(items: u64, per_page: u64) -> u64 {
     items.div_ceil(per_page)
 }

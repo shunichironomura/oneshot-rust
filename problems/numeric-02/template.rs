@@ -14,10 +14,6 @@ pub fn wrap_index(i: i64, len: usize) -> usize {
     todo!()
 }
 
-pub fn bucket(x: i32, width: i32) -> i32 {
-    todo!()
-}
-
 pub fn page_count(items: u64, per_page: u64) -> u64 {
     todo!()
 }

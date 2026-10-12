@@ -1,6 +1,6 @@
 use crate::judge::{case, check_eq};
 use crate::user::{
-    bucket, charge, distance, middle, page_count, sum_checked, sum_wrapping, wrap_index,
+    charge, distance, middle, page_count, sum_checked, sum_wrapping, wrap_index,
 };
 
 pub fn run() {
@@ -14,8 +14,6 @@ pub fn run() {
     case("sample-2", || {
         check_eq(wrap_index(-1, 5), 4)?;
         check_eq(wrap_index(12, 5), 2)?;
-        check_eq(bucket(-1, 10), -1)?;
-        check_eq(bucket(-11, 10), -2)?;
         check_eq(page_count(10, 3), 4)
     });
     case("sample-3", || {
@@ -59,21 +57,6 @@ pub fn run() {
         check_eq(wrap_index(i64::MAX, 1_000_000), 775_807)
     });
     case("hidden-4", || {
-        // Bucket boundaries, and `x` near `i32::MIN`.
-        check_eq(bucket(0, 10), 0)?;
-        check_eq(bucket(9, 10), 0)?;
-        check_eq(bucket(10, 10), 1)?;
-        check_eq(bucket(15, 10), 1)?;
-        check_eq(bucket(-10, 10), -1)?;
-        check_eq(bucket(-9, 1), -9)?;
-        check_eq(bucket(i32::MIN, 1), i32::MIN)?;
-        check_eq(bucket(i32::MIN, 10), -214_748_365)?;
-        check_eq(bucket(i32::MIN, i32::MAX), -2)?;
-        check_eq(bucket(-1, i32::MAX), -1)?;
-        check_eq(bucket(i32::MAX, 2), 1_073_741_823)?;
-        check_eq(bucket(i32::MAX, i32::MAX), 1)
-    });
-    case("hidden-5", || {
         // No items need no pages; large counts and page sizes must not overflow.
         check_eq(page_count(0, 3), 0)?;
         check_eq(page_count(9, 3), 3)?;
@@ -84,7 +67,7 @@ pub fn run() {
         check_eq(page_count(u64::MAX, 2), 1u64 << 63)?;
         check_eq(page_count(u64::MAX, u64::MAX), 1)
     });
-    case("hidden-6", || {
+    case("hidden-5", || {
         // Rounding down, either argument order, and the full `u64` range.
         check_eq(middle(0, 0), 0)?;
         check_eq(middle(1, 1), 1)?;
@@ -95,7 +78,7 @@ pub fn run() {
         check_eq(middle(u64::MAX, 1), 1u64 << 63)?;
         check_eq(middle(u64::MAX, u64::MAX), u64::MAX)
     });
-    case("hidden-7", || {
+    case("hidden-6", || {
         // Either argument order, and differences that do not fit in an `i64`.
         check_eq(distance(5, 5), 0)?;
         check_eq(distance(-3, 4), 7)?;

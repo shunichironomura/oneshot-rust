@@ -9,9 +9,8 @@ a method for each of these situations, which makes every function a one-liner:
   `try_fold` stops at the first `None`. `saturating_add` stops at `u8::MAX`, and `.min(100)` then
   applies the real cap.
 - `/` rounds toward zero, and `%` returns the matching remainder, which has the sign of the
-  dividend: `-1 / 10` is `0`, and `-1 % 5` is `-1`, which `as usize` turns into a huge number.
-  `div_euclid` and `rem_euclid` choose the remainder that is never negative; for a positive
-  divisor, that means division rounded down and a remainder in `0..len`.
+  dividend: `-1 % 5` is `-1`, which `as usize` turns into a huge number. `rem_euclid` chooses the
+  remainder that is never negative; for a positive divisor, that is a remainder in `0..len`.
 - `div_ceil` divides rounding up (it is stable only for unsigned integers), `midpoint` averages two
   numbers without overflow (rounding down for unsigned integers), and `abs_diff` returns the
   distance in the unsigned type. That is needed because `i64::MAX - i64::MIN` does not fit in an
@@ -55,12 +54,6 @@ pub fn wrap_index(i: i64, len: usize) -> usize {
     let n = len as i64;
     // `i % n` is greater than `-n` and less than `n`, so adding `n` cannot overflow.
     ((i % n + n) % n) as usize
-}
-
-pub fn bucket(x: i32, width: i32) -> i32 {
-    let q = x / width;
-    // A negative remainder means that `/` rounded up, toward zero.
-    if x % width < 0 { q - 1 } else { q }
 }
 
 pub fn page_count(items: u64, per_page: u64) -> u64 {
