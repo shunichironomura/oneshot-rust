@@ -1,0 +1,16 @@
+id = "basics-02"
+title = { en = "Expressions with values", ja = "値を持つ式" }
+difficulty = 1
+concepts = [
+    "if and loop are expressions that yield values",
+    "if as an expression (same arm types)",
+    "break with a value from loop",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
