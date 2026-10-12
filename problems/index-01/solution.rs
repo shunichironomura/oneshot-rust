@@ -1,4 +1,4 @@
-use std::ops::{Bound, Index, IndexMut, RangeBounds};
+use std::ops::{Index, IndexMut};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Grid<T> {
@@ -28,6 +28,7 @@ impl<T> Grid<T> {
         self.offset(x, y).map(|i| &self.cells[i])
     }
 
+    /// Row `y` as a slice of `width` cells. Panics if `y >= height`.
     pub fn row(&self, y: usize) -> &[T] {
         assert!(y < self.height, "row {y} is outside a grid of height {}", self.height);
         let start = y * self.width;
@@ -52,26 +53,5 @@ impl<T> IndexMut<(usize, usize)> for Grid<T> {
             Some(i) => &mut self.cells[i],
             None => panic!("({x}, {y}) is outside a {}x{} grid", self.width, self.height),
         }
-    }
-}
-
-impl Grid<i32> {
-    pub fn row_sum<R: RangeBounds<usize>>(&self, y: usize, cols: R) -> Option<i64> {
-        if y >= self.height {
-            return None;
-        }
-        let start = match cols.start_bound() {
-            Bound::Included(&s) => s,
-            Bound::Excluded(&s) => s.checked_add(1)?,
-            Bound::Unbounded => 0,
-        };
-        let end = match cols.end_bound() {
-            Bound::Included(&e) => e.checked_add(1)?,
-            Bound::Excluded(&e) => e,
-            Bound::Unbounded => self.width,
-        };
-        // `get` returns `None` when `end > width` or `start > end`.
-        let cells = self.row(y).get(start..end)?;
-        Some(cells.iter().map(|&v| i64::from(v)).sum())
     }
 }

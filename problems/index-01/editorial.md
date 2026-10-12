@@ -9,36 +9,7 @@ Check `x < width && y < height` **before** computing the index: with a huge coor
 `usize::MAX`, `y * width + x` overflows, which panics in debug builds (and in Miri) instead of giving
 `None`. The private helper `offset` does this once for `get`, `index` and `index_mut`.
 
-`row` needs its own check too. With `width == 0`, `&self.cells[y * 0..y * 0 + 0]` is an empty slice
-for every `y`, so it would never panic.
-
-For `row_sum`, `start_bound()` and `end_bound()` return `Bound<&usize>`, a bound holding a
-**reference**. The pattern `Bound::Included(&s)` copies the number out. An excluded start or an
-included end needs `+ 1`, and `usize::MAX + 1` overflows: `checked_add(1)?` turns that into `None`,
-which is the right answer because such a range reaches past every grid. Then `slice::get(start..end)`
-returns `None` both when `end > len` and when `start > end`, which is exactly the rule of the
-statement.
-
-Finally, sum in `i64`. `iter().sum::<i32>()` overflows for three cells of `i32::MAX`, so convert each
-value with `i64::from` first. (`as i64` also works, but `from` makes it clear that nothing is lost.)
-
 ### Alternatives
-
-Slices can be indexed by a pair of `Bound<usize>` directly, and `slice::get` with such a pair does
-the overflow checks itself. `Bound::cloned` turns `Bound<&usize>` into `Bound<usize>`.
-
-```rust
-impl Grid<i32> {
-    pub fn row_sum<R: RangeBounds<usize>>(&self, y: usize, cols: R) -> Option<i64> {
-        if y >= self.height {
-            return None;
-        }
-        let range = (cols.start_bound().cloned(), cols.end_bound().cloned());
-        let cells = self.row(y).get(range)?;
-        Some(cells.iter().map(|&v| i64::from(v)).sum())
-    }
-}
-```
 
 The indexing can also be built on `get` and a private `get_mut`, with `expect` producing the panic.
 
@@ -60,7 +31,7 @@ impl<T> Grid<T> {
         }
     }
 
-    // `row` stays as in the model solution.
+    // `row` stays as given.
 }
 
 impl<T> Index<(usize, usize)> for Grid<T> {

@@ -1,0 +1,17 @@
+id = "index-02"
+title = { en = "Row sums over any range", ja = "どんな範囲でも行の合計" }
+difficulty = 2
+concepts = [
+    "RangeBounds<usize> and Bound",
+    "overflow-free bound arithmetic",
+    "slice::get with a range",
+    "i64 accumulation",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
