@@ -8,6 +8,7 @@ import { type Run, verdictsOf } from "../core/run.ts";
 import { shareText } from "../core/scoring.ts";
 import { shareCard } from "../core/share.ts";
 import { hasFinishedRun } from "../core/solution.ts";
+import { Copyable, CopyButton } from "./CopyButton.tsx";
 import { useApp } from "./context.ts";
 import { DiffView } from "./DiffView.tsx";
 import { DifficultyBadge } from "./DifficultyBadge.tsx";
@@ -85,11 +86,14 @@ function RunDetail({ run, problem }: { run: Run; problem: Problem }) {
         <h3>{t.attemptHeading(selected + 1, t.verdicts[view.kind])}</h3>
         {view.summary !== undefined && <p class="summary">{view.summary}</p>}
         {view.diagnostics.map((d, i) => (
-          <pre class="diagnostic" key={i}>
-            {d}
-          </pre>
+          <Copyable class="diagnostic-block" text={d} key={i}>
+            <pre class="diagnostic">{d}</pre>
+          </Copyable>
         ))}
-        <h4>{selected === 0 ? t.changesFromTemplate : t.changesFrom(selected)}</h4>
+        <div class="attempt-code-head">
+          <h4>{selected === 0 ? t.changesFromTemplate : t.changesFrom(selected)}</h4>
+          <CopyButton text={attempt.code} label={t.copyCode} />
+        </div>
         <DiffView before={before} after={attempt.code} />
       </div>
     </div>

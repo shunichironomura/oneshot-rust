@@ -8,6 +8,7 @@ import type { Round } from "../core/round.ts";
 import { routeHref } from "../core/route.ts";
 import { type Run, verdictsOf } from "../core/run.ts";
 import { CodeView } from "./CodeView.tsx";
+import { Copyable } from "./CopyButton.tsx";
 import { useApp } from "./context.ts";
 import { Confirm } from "./Dialog.tsx";
 import { DifficultyBadge } from "./DifficultyBadge.tsx";
@@ -70,9 +71,9 @@ function Statement({ problem, tab, onTab, solution }: StatementProps) {
           dangerouslySetInnerHTML={{ __html: localize(problem.statementHtml, locale) }}
         />
       ) : (
-        <div class="harness">
+        <Copyable class="harness" text={problem.tests}>
           <CodeView code={problem.tests} />
-        </div>
+        </Copyable>
       )}
     </aside>
   );

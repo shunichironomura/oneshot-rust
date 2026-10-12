@@ -1,6 +1,7 @@
 import { CircleCheck, CircleDashed, CircleX, EyeOff, type LucideIcon } from "lucide-preact";
 import type { CaseStatus } from "../core/classify.ts";
 import type { Presentation } from "../core/present.ts";
+import { Copyable } from "./CopyButton.tsx";
 import { useApp } from "./context.ts";
 import type { LastResult, SubmitPhase } from "./usePlay.ts";
 
@@ -112,9 +113,9 @@ export function ResultPanel({ phase, last, presentation }: Props) {
       </div>
       {presentation.summary !== undefined && <p class="summary">{presentation.summary}</p>}
       {presentation.diagnostics.map((d, i) => (
-        <pre class="diagnostic" key={i}>
-          {d}
-        </pre>
+        <Copyable class="diagnostic-block" text={d} key={i}>
+          <pre class="diagnostic">{d}</pre>
+        </Copyable>
       ))}
       {presentation.cases !== null && <Cases cases={presentation.cases} />}
       <Output stdout={presentation.output.stdout} stderr={presentation.output.stderr} />

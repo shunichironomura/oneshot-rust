@@ -3,6 +3,7 @@ import { useEffect, useState } from "preact/hooks";
 import { localize } from "../core/i18n.ts";
 import type { ModelSolution as Solution, Problem } from "../core/problem.ts";
 import { CodeView } from "./CodeView.tsx";
+import { Copyable } from "./CopyButton.tsx";
 import { useApp } from "./context.ts";
 import { DiffView } from "./DiffView.tsx";
 
@@ -50,7 +51,9 @@ export function ModelSolution({ problem, code }: { problem: Problem; code: strin
         </button>
       </div>
       {view === "code" ? (
-        <CodeView code={solution.code} />
+        <Copyable text={solution.code}>
+          <CodeView code={solution.code} />
+        </Copyable>
       ) : (
         <>
           <p class="solution-note">{t.solutionDiffLegend}</p>
