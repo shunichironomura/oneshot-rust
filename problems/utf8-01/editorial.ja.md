@@ -18,15 +18,6 @@
 U+10FFFF を超える値によって変わります。不正なバイトを 1 つずつ置き換えると、
 `F0 9F 98 41` は `"?A"` ではなく `"???A"` になってしまいます。
 
-`Utf8Stream::push` では、`utf8_chunks` だけでは未完の文字（`E2 82`）と、何をつなげても完成
-しない不正なシーケンス（`FF`）を区別できません。どちらも最後のチャンクの `invalid()` に
-なるからです。末尾の不正なシーケンスをすべて保留すると、`FF` の `'?'` が遅れてしまいます。
-`decode` を使えば区別できますが、使ってよいのは末尾にあるシーケンスだけです。`x` が続く
-`E2 82` は不正なシーケンスですが、`decode(&[0xE2, 0x82])` 単独では `Incomplete` になります。
-ループは `utf8_chunks()` を通じて `self.pending` を借用しているので、デコードし終えた
-バイトはループの後で `drain(..used)` で取り除きます。`finish` の時点で残っているのは、
-未完の文字か、何もないかのどちらかです。
-
 ### 別解
 
 `from_utf8` をループで呼ぶ `decode_lossy` です。未完の文字（`error_len()` が `None`）は
@@ -53,38 +44,5 @@ pub fn decode_lossy(bytes: &[u8]) -> (String, usize) {
             }
         }
     }
-}
-```
-
-`push` も同じように `decode` で書けます。`Incomplete` がちょうどバイトを保留する場合です。
-`rest` は `self.pending` を借用しているので、使ったバイト数を `drain` の前に計算しておきます。
-
-```rust
-pub fn push(&mut self, chunk: &[u8]) -> String {
-    self.pending.extend_from_slice(chunk);
-    let mut text = String::new();
-    let mut rest = &self.pending[..];
-    loop {
-        match decode(rest) {
-            Ok(valid) => {
-                text.push_str(valid);
-                rest = &[];
-                break;
-            }
-            Err(DecodeError::Invalid { at, len }) => {
-                text.push_str(decode(&rest[..at]).unwrap());
-                text.push('?');
-                rest = &rest[at + len..];
-            }
-            Err(DecodeError::Incomplete { at }) => {
-                text.push_str(decode(&rest[..at]).unwrap());
-                rest = &rest[at..];
-                break;
-            }
-        }
-    }
-    let used = self.pending.len() - rest.len();
-    self.pending.drain(..used);
-    text
 }
 ```

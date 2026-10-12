@@ -1,0 +1,17 @@
+id = "utf8-02"
+title = { en = "Bytes in pieces", ja = "細切れのバイト列" }
+difficulty = 2
+concepts = [
+    "decoding UTF-8 across chunk boundaries",
+    "<[u8]>::utf8_chunks",
+    "incomplete character vs invalid sequence",
+    "Vec::drain after a loop that borrows the buffer",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
