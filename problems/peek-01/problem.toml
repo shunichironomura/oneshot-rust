@@ -1,7 +1,7 @@
 id = "peek-01"
 title = { en = "Expression tokenizer", ja = "式のトークナイザ" }
 difficulty = 2
-concepts = ["Iterator::peekable", "Peekable::peek", "next_if / next_if_eq", "by_ref", "take_while pitfall", "checked arithmetic", "char classification", "char vs byte index"]
+concepts = ["Iterator::peekable", "Peekable::peek", "next_if / next_if_eq", "take_while pitfall", "char classification", "char vs byte index"]
 kind = "implement"
 
 [judge]

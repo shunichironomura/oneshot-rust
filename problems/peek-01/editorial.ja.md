@@ -1,4 +1,4 @@
-トークナイザは、次の文字を**消費せずに**見る必要があります。`42+y` の数字の並びは `+` で終わり、
+トークナイザは、次の文字を**消費せずに**見る必要があります。`42+3` の数字の並びは `+` で終わり、
 その `+` が次のトークンになるからです。これをしてくれるのが `chars().peekable()` です。`peek` は次の要素を
 見るだけで、`next_if(pred)` は `pred` が `true` を返したときだけ次の要素を取り出します。そのため
 `while let Some((_, d)) = chars.next_if(...)` は数字の並びを読み、数字でない最初の文字の手前で止まります。
@@ -8,31 +8,27 @@
 なります。`char_indices` が返すのは**バイト**単位の位置なので、U+3000 のような ASCII 以外の文字の後では
 文字単位の位置とずれます。
 
-数は、数字を `String` に集めて `parse::<u64>()` で変換しています。この文字列は空ではなく ASCII の数字だけ
-なので、起こりうるエラーは値が大きすぎることだけです。値を自分で計算する場合、`value * 10 + digit` は
-デバッグビルド（と Miri）ではオーバーフローでパニックします。1 つ目の別解のように、代わりに
-`checked_mul` と `checked_add` を使います。数の桁数に上限はないので、`u128` のような大きい型にしても
-解決しません。
+数は、数字を `String` に集めて `parse::<u64>()` で変換しています。この文字列は空ではなく、ASCII の数字だけで、
+値は `u64` に収まるので、変換は失敗しません。
 
-エラーを見つけたらすぐに返せば（`?` や `return Err(...)`）、自然に最初のエラーが返ります。
+エラーを見つけたらすぐに返せば（`return Err(...)`）、自然に最初のエラーが返ります。
 
 詰まりやすい点：
 
 - `chars.by_ref().take_while(...)` はぴったりの道具に見えますが、条件を満たさなかった最初の文字を
-  消費して捨ててしまいます。`42+y` では `+` が消えます。
+  消費して捨ててしまいます。`42+3` では `+` が消えます。
 - `peek` は `&mut self` を取り、イテレータの中への参照を返します。
-  `while let Some(d) = chars.peek() { chars.next(); name.push(*d); }` では `next` を呼ぶ時点で
+  `while let Some(d) = chars.peek() { chars.next(); digits.push(*d); }` では `next` を呼ぶ時点で
   `d` がまだ使われているので、借用チェッカーに拒否されます（E0499）。`Some(&d)` というパターンで
   値をコピーして取り出してください（`next` を別に呼ばずに済む `next_if` を使う手もあります）。
 - `next_if_eq` は参照を取ります。`next_if_eq('>')` ではなく `next_if_eq(&'>')` です。
-- `is_alphanumeric`、`is_alphabetic`、`is_numeric` は ASCII 以外の英字や数字も受け付け、
-  `is_ascii_whitespace` は U+3000 を空白とみなしません。トークンには `is_ascii_*` のメソッドを、
-  空白には `is_whitespace` を使います。
+- `is_numeric` は `٣` のような ASCII 以外の数字も受け付け、`is_ascii_whitespace` は U+3000 を空白と
+  みなしません。数には `is_ascii_digit` を、空白には `is_whitespace` を使います。
 
 ### 別解
 
-`peek` と自前の位置カウンタを使い、`checked_mul` と `checked_add` で値を計算する方法です。
-`next` のたびに `pos += 1` が必要で、忘れやすいところです。`enumerate` を使えばこれが要りません。
+`peek` と自前の位置カウンタを使い、値を 1 桁ずつ計算する方法です。`next` のたびに `pos += 1` が必要で、
+忘れやすいところです。`enumerate` を使えばこれが要りません。
 
 ```rust
 pub fn tokenize(src: &str) -> Result<Vec<Token>, LexError> {
@@ -53,24 +49,9 @@ pub fn tokenize(src: &str) -> Result<Vec<Token>, LexError> {
                     let Some(digit) = d.to_digit(10) else { break };
                     chars.next();
                     pos += 1;
-                    value = value
-                        .checked_mul(10)
-                        .and_then(|v| v.checked_add(u64::from(digit)))
-                        .ok_or(LexError::Overflow { pos: start })?;
+                    value = value * 10 + u64::from(digit);
                 }
                 Token::Num(value)
-            }
-            'a'..='z' | 'A'..='Z' | '_' => {
-                let mut name = String::from(c);
-                while let Some(&d) = chars.peek() {
-                    if !(d.is_ascii_alphanumeric() || d == '_') {
-                        break;
-                    }
-                    name.push(d);
-                    chars.next();
-                    pos += 1;
-                }
-                Token::Ident(name)
             }
             '-' => {
                 if chars.next_if_eq(&'>').is_some() {
@@ -108,14 +89,7 @@ pub fn tokenize(src: &str) -> Result<Vec<Token>, LexError> {
                     i += 1;
                 }
                 let digits: String = chars[start..i].iter().collect();
-                let value = digits.parse().map_err(|_| LexError::Overflow { pos: start })?;
-                Token::Num(value)
-            }
-            'a'..='z' | 'A'..='Z' | '_' => {
-                while i < chars.len() && (chars[i].is_ascii_alphanumeric() || chars[i] == '_') {
-                    i += 1;
-                }
-                Token::Ident(chars[start..i].iter().collect())
+                Token::Num(digits.parse().expect("a run of digits that fits in a u64"))
             }
             '-' if chars.get(i) == Some(&'>') => {
                 i += 1;
