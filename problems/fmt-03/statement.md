@@ -28,8 +28,7 @@ impl fmt::Debug for Color { /* to implement */ }
 
 - Each type prints exactly what `#[derive(Debug)]` would print for the shape described below.
   Strings, lists and maps inside are shown the way `{:?}` shows a `String`, a `Vec` and a
-  `BTreeMap`: strings in double quotes with special characters escaped, lists as `[...]`, and maps
-  as `{key: value, ...}` in key order.
+  `BTreeMap`.
 - `Credentials` looks like a struct named `Credentials` with the fields `user`, `password` and
   `scopes`, in this order. The value of `password` is always the bare text `<redacted>`, without
   quotes, whatever the password is (even an empty one).
@@ -38,19 +37,9 @@ impl fmt::Debug for Color { /* to implement */ }
   when `cache` is empty.
 - `Color` looks like the tuple struct `Rgb(r, g, b)` when `a` is 255 (fully opaque), and like the
   tuple struct `Rgba(r, g, b, a)` otherwise.
-- The output follows the format spec the same way a derived `Debug` does:
-  - `{:?}` prints everything on one line, as in the examples.
-  - `{:#?}` prints the pretty form. The name and the opening `{` or `(` are on the first line. Then
-    each field is on its own line, indented by four spaces and followed by `,`. The `..` of
-    `Inventory` gets its own line after the fields, without a `,`. The closing `}` or `)` is on the
-    last line. Non-empty lists and maps inside are expanded in the same way, four spaces further
-    in; empty ones stay `[]` and `{}`.
-  - `{:x?}` and `{:X?}` print every integer inside in lowercase or uppercase hexadecimal, without
-    a prefix (`ff`, `FF`). With `#` as well (`{:#x?}`, `{:#X?}`), the output is in the pretty form
-    and every integer gets a `0x` prefix (`0xff`, `0xFF`, `0x0`).
-  - All of this also holds when the value is printed as part of another value, for example as an
-    element of a `Vec` printed with `{:#?}`. Its lines are then indented one more level, like any
-    nested value.
+- Like a derived `Debug`, the output follows the formatter's flags: the pretty form of `{:#?}`,
+  the hexadecimal integers of `{:x?}` and `{:X?}` (with `0x` under `#`), and the extra indentation
+  when the value is nested inside another value printed with `{:#?}`.
 - Width, fill, alignment, precision and the `+` and `0` flags are not used.
 
 ### Examples
