@@ -16,48 +16,7 @@
 使っている間に `self.sent.borrow_mut().push(...)` を呼ぶようなコードは、コンパイルは通りますが、
 最初のメッセージでパニックします。
 
-`set_value` では、高いレベルから順に `else if` で調べれば、送るメッセージは多くても 1 つになります。
-`value * 100 >= max * 90` は割合を整数のまま正確に比べる式で、与えられた範囲ならオーバーフローもしません。
-整数の割り算には注意してください。`value / max * 100` は、`value` が `max` より小さければいつも `0` です。
-`max * 3 / 4` はしきい値を切り捨てます（`max = 7` のとき、`5` は 71% しかないのに `5 >= 7 * 3 / 4` が成り立ちます）。
-割合を四捨五入する（74.6 を 75 にする）のも、同じように間違えます。
-
 ### 別解
-
-The Book では浮動小数点数の比で比べています。値が 1,000,000 以下なら、`f64` の精度で十分で、
-正確に計算した場合と同じ答えになります。
-
-```rust
-pub fn set_value(&mut self, value: usize) {
-    self.value = value;
-    let percentage_of_max = self.value as f64 / self.max as f64;
-    if percentage_of_max >= 1.0 {
-        self.messenger.send("Error: You are over your quota!");
-    } else if percentage_of_max >= 0.9 {
-        self.messenger.send("Urgent warning: You've used up over 90% of your quota!");
-    } else if percentage_of_max >= 0.75 {
-        self.messenger.send("Warning: You've used up over 75% of your quota!");
-    }
-}
-```
-
-先にメッセージを選んで、送るのを 1 か所にまとめることもできます。切り捨てたパーセントが 90 に届くのは
-ちょうど `value * 100 >= max * 90` のときなので、ここでは整数の割り算で構いません。`100..` は 100 以上に
-マッチする範囲パターンで、アームは上から順に試されます。
-
-```rust
-pub fn set_value(&mut self, value: usize) {
-    self.value = value;
-    let percent = self.value * 100 / self.max;
-    let message = match percent {
-        100.. => "Error: You are over your quota!",
-        90.. => "Urgent warning: You've used up over 90% of your quota!",
-        75.. => "Warning: You've used up over 75% of your quota!",
-        _ => return,
-    };
-    self.messenger.send(message);
-}
-```
 
 `Cell` は `Copy` でない値にも使えますが、中身を借用することはできません。`take` でベクタを取り出し
 （代わりに空のベクタが残ります）、変更してから `set` で戻します。ガードがないのでパニックすることは

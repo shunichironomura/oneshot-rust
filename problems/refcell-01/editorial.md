@@ -17,48 +17,7 @@ guard is a temporary that is dropped at the end of its statement, so they never 
 as `let sent = self.sent.borrow();` followed by `self.sent.borrow_mut().push(...)` while `sent` is
 still in use compiles, but panics on the first message.
 
-In `set_value`, check the levels from the highest down with `else if`, so that at most one message
-is sent. `value * 100 >= max * 90` compares the percentages exactly in whole numbers, and with the
-given bounds nothing overflows. Watch out for integer division: `value / max * 100` is `0` for every
-`value` below `max`, and `max * 3 / 4` rounds the threshold down (with `max = 7`, `5` is only 71%,
-yet `5 >= 7 * 3 / 4`). Rounding the percentage, say from 74.6 to 75, goes wrong the same way.
-
 ### Alternatives
-
-The Book compares a floating-point ratio. With values up to 1,000,000, an `f64` is precise enough to
-give the same answers as exact arithmetic.
-
-```rust
-pub fn set_value(&mut self, value: usize) {
-    self.value = value;
-    let percentage_of_max = self.value as f64 / self.max as f64;
-    if percentage_of_max >= 1.0 {
-        self.messenger.send("Error: You are over your quota!");
-    } else if percentage_of_max >= 0.9 {
-        self.messenger.send("Urgent warning: You've used up over 90% of your quota!");
-    } else if percentage_of_max >= 0.75 {
-        self.messenger.send("Warning: You've used up over 75% of your quota!");
-    }
-}
-```
-
-You can also pick the message first and send it in one place. The percentage rounded down reaches
-90 exactly when `value * 100 >= max * 90`, so integer division is fine here. `100..` is a range
-pattern that matches 100 and above, and the arms are tried from top to bottom.
-
-```rust
-pub fn set_value(&mut self, value: usize) {
-    self.value = value;
-    let percent = self.value * 100 / self.max;
-    let message = match percent {
-        100.. => "Error: You are over your quota!",
-        90.. => "Urgent warning: You've used up over 90% of your quota!",
-        75.. => "Warning: You've used up over 75% of your quota!",
-        _ => return,
-    };
-    self.messenger.send(message);
-}
-```
 
 `Cell` also works for values that are not `Copy`, but you cannot borrow its contents. Move the
 vector out with `take` (which leaves an empty one behind), change it, and put it back with `set`.

@@ -1,7 +1,7 @@
 id = "refcell-01"
 title = { en = "Quota tracker with a mock messenger", ja = "使用量の見張りとモック" }
 difficulty = 1
-concepts = ["RefCell", "interior mutability", "mock objects", "structs with lifetime parameters", "generic trait bounds", "integer percentages"]
+concepts = ["RefCell", "interior mutability", "mock objects"]
 kind = "implement"
 
 [judge]
