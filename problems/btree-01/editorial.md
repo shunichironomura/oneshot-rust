@@ -1,10 +1,9 @@
 A `BTreeMap` keeps its keys sorted, so `range` visits exactly the keys inside a range, in ascending
 order. Its iterator is double-ended: `next()` gives the smallest key in the range and `next_back()`
-the largest. Each of the three queries is a single `range` call.
+the largest. Each of the two queries is a single `range` call.
 
 - `between`: `range(from..=to)`.
 - `last_before`: `range(..t).next_back()`, the largest key below `t`.
-- `next_at_or_after`: `range(t..).next()`, the smallest key from `t` on.
 
 The trap is in the documentation of `range`: it **panics** if the start is greater than the end
 (`range start is greater than range end in BTreeMap`). So `between(9, 3)` must be handled before
@@ -18,8 +17,7 @@ time `0` when `t` is `0`. The range forms `..=to` and `..t` express the same bou
 arithmetic.
 
 `split_off(&t)` moves the keys `>= t` into a new map and keeps the smaller ones in place, which is
-exactly `split_from`. `prune_before` wants the other half: keep what `split_off` returns and swap it
-in with `std::mem::replace`, which hands back the removed part so you can count it.
+exactly `split_from`.
 
 The iterator yields `(&u32, &String)` pairs. Deref coercion does not reach inside a tuple, so
 mapping to `(time, what)` gives a `(u32, &String)`, and collecting that into `Vec<(u32, &str)>`
@@ -38,15 +36,5 @@ pub fn between(&self, from: u32, to: u32) -> Vec<(u32, &str)> {
         .filter(|&(&time, _)| from <= time && time <= to)
         .map(|(&time, what)| (time, what.as_str()))
         .collect()
-}
-```
-
-`prune_before` with `retain`, counting the events before and after.
-
-```rust
-pub fn prune_before(&mut self, t: u32) -> usize {
-    let before = self.events.len();
-    self.events.retain(|&time, _| time >= t);
-    before - self.events.len()
 }
 ```

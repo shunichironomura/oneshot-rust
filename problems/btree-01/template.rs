@@ -7,7 +7,9 @@ pub struct Timeline {
 
 impl Timeline {
     pub fn new() -> Self {
-        todo!()
+        Timeline {
+            events: BTreeMap::new(),
+        }
     }
 
     pub fn add(&mut self, t: u32, what: &str) -> Option<String> {
@@ -15,7 +17,7 @@ impl Timeline {
     }
 
     pub fn len(&self) -> usize {
-        todo!()
+        self.events.len()
     }
 
     pub fn between(&self, from: u32, to: u32) -> Vec<(u32, &str)> {
@@ -26,15 +28,7 @@ impl Timeline {
         todo!()
     }
 
-    pub fn next_at_or_after(&self, t: u32) -> Option<(u32, &str)> {
-        todo!()
-    }
-
     pub fn split_from(&mut self, t: u32) -> Timeline {
-        todo!()
-    }
-
-    pub fn prune_before(&mut self, t: u32) -> usize {
         todo!()
     }
 }

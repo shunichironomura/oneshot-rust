@@ -38,22 +38,9 @@ impl Timeline {
             .map(|(&time, what)| (time, what.as_str()))
     }
 
-    pub fn next_at_or_after(&self, t: u32) -> Option<(u32, &str)> {
-        self.events
-            .range(t..)
-            .next()
-            .map(|(&time, what)| (time, what.as_str()))
-    }
-
     pub fn split_from(&mut self, t: u32) -> Timeline {
         Timeline {
             events: self.events.split_off(&t),
         }
-    }
-
-    pub fn prune_before(&mut self, t: u32) -> usize {
-        let kept = self.events.split_off(&t);
-        let removed = std::mem::replace(&mut self.events, kept);
-        removed.len()
     }
 }
