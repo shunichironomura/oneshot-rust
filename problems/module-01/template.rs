@@ -1,5 +1,5 @@
 pub mod shop {
-    const TAX_RATE: u32 = 10;
+    pub const TAX_RATE: u32 = 10;
 
     pub struct Item {
         name: String,
@@ -7,7 +7,7 @@ pub mod shop {
     }
 
     impl Item {
-        fn new(name: &str, price: u32) -> Item {
+        pub fn new(name: &str, price: u32) -> Item {
             Item { name: name.to_string(), price }
         }
 
@@ -45,6 +45,8 @@ pub mod shop {
     }
 
     mod pricing {
+        use super::TAX_RATE;
+
         pub fn discounted(total: u32, percent: u32) -> u32 {
             total - total * percent / 100
         }

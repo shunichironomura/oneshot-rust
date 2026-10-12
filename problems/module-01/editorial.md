@@ -2,18 +2,14 @@ Privacy in Rust is decided per module: an item without `pub` is visible in the m
 it and in all of that module's descendants, and nowhere else. `pub` on a struct only makes the type
 itself visible; each field, method and associated function has its own visibility.
 
-The template has four problems:
+The template has three problems:
 
-- `TAX_RATE` is not found in `pricing`. A `mod` block starts a new namespace, so the names of the
-  parent module are not in scope inside it. Write `super::TAX_RATE`, or `use super::TAX_RATE;`. The
-  constant being private to `shop` does not matter here, because `pricing` is inside `shop`.
 - `pricing` is a private module of `shop`, so `checkout`, which is outside `shop`, cannot reach it,
   even though its functions are `pub`: every module along a path must be visible too.
   `pub(super) mod pricing` opens it to the parent of `shop`, where `checkout` is, and no further.
   Plain `pub` works as well.
-- `Item::new` and `Item::price` are private, and the harness, which is outside `crate::user`, also
-  reads `TAX_RATE`. These need `pub` (or `pub(crate)`). `pub(super)` is not enough, because it only
-  reaches `crate::user`.
+- `Item::price` is private, and the harness, which is outside `crate::user`, calls it. It needs
+  `pub` (or `pub(crate)`). `pub(super)` is not enough, because it only reaches `crate::user`.
 - `sample_cart` builds a `Cart` with a struct literal, but `items` is private to `shop::cart`. A
   struct literal names every field, so all of them must be visible where it is written. With the
   fields kept private, build the cart through its public API, `Cart::new` and `add`. The compiler
@@ -54,8 +50,7 @@ pub use shop::checkout;
 ```
 
 `use` declarations shorten the paths in `crate::user`. Since the harness is in the same crate,
-`pub(crate)` also works for `TAX_RATE`, `Item::new`, `Item::price` and `pricing`
-(`pub(crate) mod pricing`).
+`pub(crate)` also works for `Item::price` and `pricing` (`pub(crate) mod pricing`).
 
 ```rust
 // `shop` as in the solution.

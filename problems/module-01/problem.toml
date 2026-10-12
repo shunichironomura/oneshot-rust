@@ -5,7 +5,6 @@ concepts = [
     "module privacy",
     "pub on struct vs fields and methods",
     "private modules",
-    "super:: paths in child modules",
     "descendants see ancestors' private items",
     "struct literals need visible fields",
 ]
