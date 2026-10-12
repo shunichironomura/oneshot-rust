@@ -7,7 +7,6 @@ concepts = [
     "exclusive range patterns",
     "guards do not count for exhaustiveness",
     "tuple patterns",
-    "catch-all arms",
 ]
 kind = "repair"
 
