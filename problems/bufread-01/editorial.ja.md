@@ -14,16 +14,9 @@
 ループは最初の空行で止まるので、ボディは読まれず、デコードもされません。先に `raw` 全体を
 `str::from_utf8` で変換すると、ボディがバイナリのリクエストを拒否してしまいます。
 
-`split(' ')` は空の部分も残すので、空白が 2 つ続くと空の部分が 1 つ増えます。一方 `split_whitespace` は
-`"GET  / HTTP/1.1"` を受け付けてしまいます。スライスパターン
-`let [method, path, version] = parts[..] else { ... }` を使うと、個数のチェックと名前付けが一度にできます。
+スライスパターン `let [method, path, "HTTP/1.1"] = parts[..] else { ... }` を使うと、個数と
+バージョンのチェックと、残り 2 つの部分の名前付けが一度にできます。
 `split_once(": ")` は最初の区切りで分け、区切りがなければ `None` を返すので、`?` でそのまま返せます。
-
-`respond` では、`str::len` が**バイト数**を返し、これが `Content-Length` に必要な値です。
-`"こんにちは"` は 5 文字（`chars().count()`）ですが 15 バイトです。`Vec<u8>` は `io::Write` を
-実装しているので、`std::io::Write` をスコープに入れれば `write!` で直接書き込めます。`write!` は
-`io::Result` を返し、使わないとコンパイラが警告します。`Vec` への書き込みは失敗しないので、
-`expect` で済ませています。
 
 ### 別解
 
@@ -46,7 +39,7 @@ pub fn parse_request(raw: &[u8]) -> Option<Request> {
     let [method, path, version] = parts[..] else {
         return None;
     };
-    if method.is_empty() || path.is_empty() || version != "HTTP/1.1" {
+    if version != "HTTP/1.1" {
         return None;
     }
 
@@ -75,7 +68,7 @@ pub fn parse_request(mut raw: &[u8]) -> Option<Request> {
     let [method, path, version] = parts[..] else {
         return None;
     };
-    if method.is_empty() || path.is_empty() || version != "HTTP/1.1" {
+    if version != "HTTP/1.1" {
         return None;
     }
     let (method, path) = (method.to_string(), path.to_string());
@@ -114,7 +107,7 @@ pub fn parse_request(raw: &[u8]) -> Option<Request> {
     let [method, path, version] = parts[..] else {
         return None;
     };
-    if method.is_empty() || path.is_empty() || version != "HTTP/1.1" {
+    if version != "HTTP/1.1" {
         return None;
     }
 
@@ -129,19 +122,5 @@ pub fn parse_request(raw: &[u8]) -> Option<Request> {
     }
 
     Some(Request { method: method.to_string(), path: path.to_string(), headers })
-}
-```
-
-`format!` で `String` を作り、`into_bytes` でコピーせずに `Vec<u8>` に変換する方法です。
-`Write` の `use` は要りません。
-
-```rust
-pub fn respond(req: &Request) -> Vec<u8> {
-    let (status, body) = match (req.method.as_str(), req.path.as_str()) {
-        ("GET", "/") => ("200 OK", "<h1>Hello!</h1>"),
-        ("GET", "/greet") => ("200 OK", "こんにちは"),
-        _ => ("404 NOT FOUND", "Oops!"),
-    };
-    format!("HTTP/1.1 {status}\r\nContent-Length: {}\r\n\r\n{body}", body.len()).into_bytes()
 }
 ```

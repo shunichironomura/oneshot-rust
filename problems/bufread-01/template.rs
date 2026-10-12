@@ -8,7 +8,3 @@ pub struct Request {
 pub fn parse_request(raw: &[u8]) -> Option<Request> {
     todo!()
 }
-
-pub fn respond(req: &Request) -> Vec<u8> {
-    todo!()
-}
