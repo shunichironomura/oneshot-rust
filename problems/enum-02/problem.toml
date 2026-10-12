@@ -5,7 +5,6 @@ concepts = [
     "enums holding data",
     "Vec of enums",
     "match ergonomics on &[T] (bindings are &i64 / &String)",
-    "str::parse order (i64 before f64)",
     "returning borrowed &str via lifetime elision",
 ]
 kind = "implement"
