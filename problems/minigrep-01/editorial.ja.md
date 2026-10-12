@@ -11,16 +11,12 @@
 
 `str::lines` は `\r\n` も最後の改行も正しく扱います。`split('\n')` では `\r` が残り、最後の改行の後に余分な空行ができます。
 
-大文字と小文字を区別しない検索では、行を調べる前に `query` を 1 回だけ小文字にします。`to_ascii_lowercase` ではなく
-`to_lowercase` を使ってください。`to_ascii_lowercase` は `É` をそのままにします。`to_lowercase` は新しい `String` を返し、
-`contains(&query)` にはその参照を渡します。`&String` はパターンとして使えますが、`String` は使えません。
-返すのは元の `line` で、`line.to_lowercase()` ではありません。小文字にした行は一時的な `String` で、`&'a str` では
-ありません。その参照も十分長くは生きられません。シグネチャの `'a` は結果を `contents` だけに結び付けているので、
-`query` を破棄した後でも結果は有効です。
+`search` が返すのは `contents.lines()` が返す `line`、つまり `contents` のスライスです。シグネチャの `'a` は
+結果を `contents` だけに結び付けているので、`query` を破棄した後でも結果は有効です。
 
 ### 別解
 
-Book のように `match` 式と `for` ループで書く方法です。`search` も `line.contains(query)` を使って同じように書けます。
+Book のように `match` 式と `for` ループで書く方法です。
 
 ```rust
 impl Config {
@@ -50,11 +46,10 @@ impl Config {
     }
 }
 
-pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let query = query.to_lowercase();
+pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let mut results = Vec::new();
     for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
+        if line.contains(query) {
             results.push(line);
         }
     }

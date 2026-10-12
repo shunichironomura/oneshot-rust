@@ -40,7 +40,7 @@ impl Describe for Vec<i32> {
     }
 }
 
-impl Describe for Option<i32> {
+impl<T: Describe> Describe for Option<T> {
     fn describe(&self) -> String {
         match self {
             Some(value) => format!("some({})", value.describe()),

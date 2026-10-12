@@ -30,7 +30,3 @@ impl History {
         todo!()
     }
 }
-
-pub fn josephus(n: usize, k: usize) -> Vec<usize> {
-    todo!()
-}

@@ -1,7 +1,7 @@
 id = "bufread-01"
-title = { en = "Parse a request, write a response", ja = "リクエストを読み、レスポンスを書く" }
+title = { en = "Parse a request", ja = "リクエストを読む" }
 difficulty = 1
-concepts = ["BufRead over &[u8]", "lines() returning io::Result", "take_while", "split_once", "byte length vs char count", "io::Write for Vec<u8>"]
+concepts = ["BufRead over &[u8]", "lines() returning io::Result", "split_once", "slice patterns"]
 kind = "implement"
 
 [judge]

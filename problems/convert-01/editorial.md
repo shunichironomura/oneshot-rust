@@ -17,12 +17,6 @@ In `from_str`, `s.to_ascii_lowercase()` returns a new `String`. String literal p
 the text exactly as given: `DayError::Unknown(s.to_string())` (the `&str` has to become an owned
 `String` first).
 
-`Result` implements `FromIterator`: collecting an iterator of `Result<Weekday, DayError>` into
-`Result<Vec<Weekday>, DayError>` gives `Ok` with all the days, or stops at the first `Err`. The return
-type tells `collect` what to build, and that in turn tells `parse` to produce a `Weekday`.
-`"".split(',')` yields one empty piece, not none, so a blank input needs the check at the top;
-without it, the result would be `Err(Unknown(""))`.
-
 ### Alternatives
 
 Table-driven conversions: one array of days, used by `try_from` (index `n - 1`) and by `from_str`
@@ -48,7 +42,7 @@ impl Weekday {
         // 1..=6 become 2..=7, and 7 (Sun) becomes 0 + 1 = 1 (Mon).
         Weekday::try_from(self.number() % 7 + 1).unwrap()
     }
-    // number and is_weekend as in the solution
+    // number as in the solution
 }
 
 impl TryFrom<u8> for Weekday {
@@ -73,20 +67,5 @@ impl FromStr for Weekday {
         }
         Err(DayError::Unknown(s.to_string()))
     }
-}
-```
-
-`parse_schedule` can also be a loop with `?`, which returns the first error just like `collect`.
-
-```rust
-pub fn parse_schedule(s: &str) -> Result<Vec<Weekday>, DayError> {
-    let mut days = Vec::new();
-    if s.trim().is_empty() {
-        return Ok(days);
-    }
-    for piece in s.split(',') {
-        days.push(piece.trim().parse()?);
-    }
-    Ok(days)
 }
 ```

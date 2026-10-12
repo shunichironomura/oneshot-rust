@@ -1,0 +1,16 @@
+id = "vecdeque-02"
+title = { en = "Counting off", ja = "輪になって数える" }
+difficulty = 1
+concepts = [
+    "VecDeque rotate_left / pop_front",
+    "rotate_left panics past len",
+    "remainder (k - 1) % len",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

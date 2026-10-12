@@ -1,0 +1,12 @@
+id = "bufread-02"
+title = { en = "Write a response", ja = "レスポンスを書く" }
+difficulty = 1
+concepts = ["io::Write (write! into impl Write)", "byte length vs char count", "match on a tuple of &str"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

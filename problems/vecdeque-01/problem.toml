@@ -5,7 +5,6 @@ concepts = [
     "VecDeque push_back / pop_front / pop_back",
     "bounded history",
     "iter().rev()",
-    "rotate_left",
     "returning &str from a collection",
 ]
 kind = "implement"

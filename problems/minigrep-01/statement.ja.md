@@ -15,7 +15,6 @@ impl Config {
 }
 
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str>;
-pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str>;
 ```
 
 `Config::build` は引数を先頭から順に読みます。
@@ -38,10 +37,6 @@ pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a st
 - 大文字と小文字は区別します。`query` を何回含んでいても、その行を返すのは 1 回だけです。同じ内容の行が
   複数あれば、それぞれ返します。空の `query` は、空行も含めてすべての行に含まれます。
 
-`search_case_insensitive` も同じように動きますが、`line.to_lowercase()` が `query.to_lowercase()` を含むときに
-その行がマッチします（小文字への変換は Unicode の規則に従うので、`É` は `é` になります）。返すのは
-`contents` にあるとおりの行です。
-
 返す行は `contents` だけを借用します。`query` を破棄した後でも使えます。
 
 ### 例
@@ -51,6 +46,6 @@ pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a st
 
 ```rust
 let contents = "Rust:\nsafe, fast, productive.\nPick three.\nTrust me.";
-search("duct", contents)                  // ["safe, fast, productive."]
-search_case_insensitive("rUsT", contents) // ["Rust:", "Trust me."]
+search("duct", contents) // ["safe, fast, productive."]
+search("rust", contents) // ["Trust me."]
 ```

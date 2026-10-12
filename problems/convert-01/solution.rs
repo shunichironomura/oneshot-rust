@@ -33,10 +33,6 @@ impl Weekday {
             Weekday::Sun => Weekday::Mon,
         }
     }
-
-    pub fn is_weekend(self) -> bool {
-        matches!(self, Weekday::Sat | Weekday::Sun)
-    }
 }
 
 impl TryFrom<u8> for Weekday {
@@ -71,11 +67,4 @@ impl FromStr for Weekday {
             _ => Err(DayError::Unknown(s.to_string())),
         }
     }
-}
-
-pub fn parse_schedule(s: &str) -> Result<Vec<Weekday>, DayError> {
-    if s.trim().is_empty() {
-        return Ok(Vec::new());
-    }
-    s.split(',').map(|piece| piece.trim().parse()).collect()
 }

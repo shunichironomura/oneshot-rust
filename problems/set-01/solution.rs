@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashSet};
+use std::collections::BTreeSet;
 
 #[derive(Debug, PartialEq)]
 pub struct Overlap {
@@ -25,15 +25,4 @@ pub fn overlap(left: &[&str], right: &[&str]) -> Overlap {
 /// The set operations yield references to the elements (`&&str` here).
 fn owned<'a>(words: impl Iterator<Item = &'a &'a str>) -> Vec<String> {
     words.map(|w| w.to_string()).collect()
-}
-
-pub fn first_repeat<'a>(words: &[&'a str]) -> Option<&'a str> {
-    let mut seen = HashSet::new();
-    for &word in words {
-        // `insert` returns `false` when the word is already in the set.
-        if !seen.insert(word) {
-            return Some(word);
-        }
-    }
-    None
 }

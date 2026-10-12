@@ -15,7 +15,6 @@ impl Profile {
     pub fn display_name(&self) -> &str;
     pub fn email_domain(&self) -> Option<&str>;
     pub fn take_nickname(&mut self) -> Option<String>;
-    pub fn set_nickname(&mut self, nick: &str) -> Option<String>;
 }
 ```
 
@@ -25,8 +24,6 @@ impl Profile {
   `"abc@"` gives `Some("")`. It returns `None` if there is no email or the email contains no `@`.
 - `take_nickname` removes the nickname and returns it. Afterwards the profile has no nickname
   (`nickname` is `None`). If there was no nickname, it returns `None`.
-- `set_nickname` stores `nick` as the new nickname and returns the previous one (`None` if there was
-  none).
 - The methods change nothing else: `username` and `email` stay as they are.
 
 Do not change the struct or the signatures.
@@ -34,6 +31,5 @@ Do not change the struct or the signatures.
 ### Examples
 
 - If the email is `"a@b.c"`, `email_domain()` returns `Some("b.c")`.
-- For the username `"alice"` with no nickname, `set_nickname("ace")` returns `None`, and
-  `display_name()` is then `"ace"`. After that, `take_nickname()` returns `Some("ace")`, and
-  `display_name()` falls back to `"alice"`.
+- For the username `"alice"` with the nickname `"ace"`, `display_name()` is `"ace"`. After that,
+  `take_nickname()` returns `Some("ace")`, and `display_name()` falls back to `"alice"`.

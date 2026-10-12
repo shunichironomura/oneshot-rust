@@ -16,11 +16,6 @@ A `HashSet` works too, but its iteration order is arbitrary, so every vector mus
 afterwards. Without the sort, a small example may still come out in order by luck, which makes the
 mistake easy to miss.
 
-`first_repeat` relies on the return value of `insert`: `true` when the value is new, `false` when
-it is already in the set. The first word whose `insert` returns `false` is the answer.
-`for &word in words` destructures each `&&'a str` into a `&'a str`, so the word can be returned as
-it is: it borrows from the original strings, not from `words` or from the set.
-
 ### Alternatives
 
 With a `HashSet`, sort each vector at the end.
@@ -67,15 +62,5 @@ pub fn overlap(left: &[&str], right: &[&str]) -> Overlap {
 
 fn owned(words: BTreeSet<&str>) -> Vec<String> {
     words.into_iter().map(String::from).collect()
-}
-```
-
-`first_repeat` fits in one expression with `Iterator::find`. The closure may modify `seen`, because
-`find` accepts an `FnMut` closure.
-
-```rust
-pub fn first_repeat<'a>(words: &[&'a str]) -> Option<&'a str> {
-    let mut seen = HashSet::new();
-    words.iter().copied().find(|&word| !seen.insert(word))
 }
 ```

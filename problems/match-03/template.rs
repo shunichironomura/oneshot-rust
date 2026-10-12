@@ -25,20 +25,3 @@ pub fn quadrant(x: i32, y: i32) -> &'static str {
         (_, 0) => "x-axis",
     }
 }
-
-pub fn grade(score: u32) -> char {
-    match score {
-        90..=100 => 'A',
-        80..=89 => 'B',
-        70..=79 => 'C',
-        60..=69 => 'D',
-        0..=59 => 'F',
-    }
-}
-
-pub fn parse_answer(s: &str) -> Option<bool> {
-    match s {
-        "yes" | "y" => Some(true),
-        "no" | "n" => Some(false),
-    }
-}

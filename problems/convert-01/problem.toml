@@ -1,7 +1,7 @@
 id = "convert-01"
 title = { en = "Days of the week", ja = "曜日の変換" }
 difficulty = 1
-concepts = ["TryFrom / TryInto", "FromStr and parse", "explicit enum discriminants", "enum as u8", "associated types Error vs Err", "collect into Result"]
+concepts = ["TryFrom / TryInto", "FromStr and parse", "explicit enum discriminants", "enum as u8", "associated types Error vs Err"]
 kind = "implement"
 
 [judge]

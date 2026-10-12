@@ -16,7 +16,6 @@ impl Config {
 }
 
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str>;
-pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str>;
 ```
 
 `Config::build` reads the arguments in order:
@@ -40,10 +39,6 @@ other position is an ordinary value.
 - Matching is case-sensitive. A line is returned once, even if it contains `query` several times,
   and equal lines are each returned. Every line, including an empty one, contains the empty query.
 
-`search_case_insensitive` works the same way, except that a line matches when `line.to_lowercase()`
-contains `query.to_lowercase()` (lowercasing follows Unicode, so `É` becomes `é`). It still returns
-the lines as they appear in `contents`.
-
 The returned lines borrow only from `contents`: they stay usable after `query` is dropped.
 
 ### Examples
@@ -53,6 +48,6 @@ With the arguments `minigrep to poem.txt`, `Config::build` returns
 
 ```rust
 let contents = "Rust:\nsafe, fast, productive.\nPick three.\nTrust me.";
-search("duct", contents)                  // ["safe, fast, productive."]
-search_case_insensitive("rUsT", contents) // ["Rust:", "Trust me."]
+search("duct", contents) // ["safe, fast, productive."]
+search("rust", contents) // ["Trust me."]
 ```

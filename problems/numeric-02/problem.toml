@@ -4,7 +4,7 @@ difficulty = 1
 concepts = [
     "overflow panics in debug",
     "wrapping_* / checked_* / saturating_*",
-    "rem_euclid / div_euclid",
+    "rem_euclid",
     "div_ceil",
     "midpoint",
     "abs_diff",

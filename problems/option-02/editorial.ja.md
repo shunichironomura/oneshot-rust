@@ -1,4 +1,4 @@
-`Option` と `bool` の補助メソッドを使えば、どの関数も 1〜3 行で書けます。ただし、どのメソッドにも、
+`Option` と `bool` の補助メソッドを使えば、どの関数も 1 行で書けます。ただし、どのメソッドにも、
 記憶を頼りに書くと間違えやすい点があります。
 
 - `is_admin`：`Option::is_some_and(f)` は、`Some(x)` で `f(x)` が `true` のときにだけ `true` です。
@@ -22,10 +22,6 @@
   - `slot.take().filter(...)` はコンパイルが通りますが、`take` がまずスロットを必ず空にするので、
     まだ有効なセッションは戻されずに捨てられます。
   - `slot.as_ref().filter(...).cloned()` はコピーを返すだけで、期限切れのセッションはスロットに残ります。
-- `authorize`：`Option::ok_or(e)` は `None` を `Err(e)` に変え、`bool::ok_or(e)`（Rust 1.98）は `false` を
-  `Err(e)` に、`true` を `Ok(())` に変えます。`?` と組み合わせると検査 1 つが 1 行になり、行の順番が
-  そのまま検査の順番になります。最後の検査には `?` は要りません。その `Result<(), AuthError>` が
-  そのまま返り値になるからです。
 
 ### 別解
 
@@ -55,19 +51,6 @@ pub fn evict_expired(slot: &mut Option<Session>, now: u64) -> Option<Session> {
     match slot {
         Some(session) if session.expires_at <= now => slot.take(),
         _ => None,
-    }
-}
-
-pub fn authorize(s: Option<&Session>, now: u64) -> Result<(), AuthError> {
-    let Some(s) = s else {
-        return Err(AuthError::NoSession);
-    };
-    if s.expires_at <= now {
-        Err(AuthError::Expired)
-    } else if !s.admin {
-        Err(AuthError::NotAdmin)
-    } else {
-        Ok(())
     }
 }
 ```

@@ -1,5 +1,5 @@
 use crate::judge::{case, check_eq};
-use crate::user::{Config, describe, quiet, renamed, with_tags};
+use crate::user::{Config, quiet, renamed, with_tags};
 
 fn config(name: &str, retries: u32, verbose: bool, tags: &[&str]) -> Config {
     Config {
@@ -12,13 +12,12 @@ fn config(name: &str, retries: u32, verbose: bool, tags: &[&str]) -> Config {
 
 pub fn run() {
     case("sample-1", || {
-        check_eq(describe(&Config::default()), "app: retries=3, verbose=false, tags=")?;
-        check_eq(describe(&with_tags(&["a", "b"])), "app: retries=3, verbose=false, tags=a,b")
+        check_eq(Config::default(), config("app", 3, false, &[]))?;
+        check_eq(with_tags(&["a", "b"]), config("app", 3, false, &["a", "b"]))
     });
     case("sample-2", || check_eq(renamed(&with_tags(&["x"]), "db"), config("db", 3, false, &["x"])));
     case("hidden-1", || {
-        // The default values, and with_tags with no tags.
-        check_eq(Config::default(), config("app", 3, false, &[]))?;
+        // with_tags with no tags is the default config.
         check_eq(with_tags(&[]), Config::default())
     });
     case("hidden-2", || {
@@ -39,8 +38,8 @@ pub fn run() {
         check_eq(with_tags(&["b", "a", "b"]), config("app", 3, false, &["b", "a", "b"]))
     });
     case("hidden-5", || {
-        check_eq(describe(&config("svc", 5, true, &["x"])), "svc: retries=5, verbose=true, tags=x")?;
-        check_eq(describe(&quiet(with_tags(&["p", "q", "r"]))), "app: retries=0, verbose=false, tags=p,q,r")
+        // quiet of a config built by with_tags.
+        check_eq(quiet(with_tags(&["p", "q", "r"])), config("app", 0, false, &["p", "q", "r"]))
     });
     case("hidden-6", || {
         // renamed of a quiet config.

@@ -10,7 +10,3 @@ pub struct Overlap {
 pub fn overlap(left: &[&str], right: &[&str]) -> Overlap {
     todo!()
 }
-
-pub fn first_repeat<'a>(words: &[&'a str]) -> Option<&'a str> {
-    todo!()
-}

@@ -1,7 +1,6 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum Cell {
     Int(i64),
-    Float(f64),
     Text(String),
     Empty,
 }
@@ -15,20 +14,17 @@ fn parse_cell(field: &str) -> Cell {
         Cell::Empty
     } else if let Ok(n) = field.parse::<i64>() {
         Cell::Int(n)
-    } else if let Ok(x) = field.parse::<f64>() {
-        Cell::Float(x)
     } else {
         Cell::Text(field.to_string())
     }
 }
 
-pub fn numeric_sum(row: &[Cell]) -> f64 {
-    let mut sum = 0.0;
+pub fn numeric_sum(row: &[Cell]) -> i64 {
+    let mut sum = 0;
     for cell in row {
-        // `cell` is a `&Cell`, so `n` is a `&i64` and `x` is a `&f64`.
+        // `cell` is a `&Cell`, so `n` is a `&i64`.
         match cell {
-            Cell::Int(n) => sum += *n as f64,
-            Cell::Float(x) => sum += *x,
+            Cell::Int(n) => sum += *n,
             Cell::Text(_) | Cell::Empty => {}
         }
     }

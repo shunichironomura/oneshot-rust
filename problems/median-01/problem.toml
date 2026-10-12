@@ -1,7 +1,7 @@
 id = "median-01"
-title = { en = "Median and mode", ja = "中央値と最頻値" }
+title = { en = "Median", ja = "中央値" }
 difficulty = 1
-concepts = ["slices", "sorting an owned copy", "HashMap counting", "max_by_key tie semantics", "integer overflow", "i32 to f64 conversion"]
+concepts = ["slices", "sorting an owned copy", "integer overflow", "i32 to f64 conversion"]
 kind = "implement"
 
 [judge]

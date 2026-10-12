@@ -6,10 +6,7 @@ concepts = [
     "strip_prefix then strip_suffix on the rest",
     "a lone quote both starts and ends the token: &s[1..0] panics",
     "trim_matches removes every repeated match",
-    "exclusive range patterns",
-    "checked arithmetic",
     "split_once",
-    "slice patterns",
 ]
 kind = "implement"
 

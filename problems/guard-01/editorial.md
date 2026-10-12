@@ -15,15 +15,6 @@ Implementing `TryFrom` is enough. The standard library has the blanket implement
 `impl<T, U> TryInto<U> for T where U: TryFrom<T>`, so once `Guess: TryFrom<i32>` holds,
 `value.try_into()` works too (the same way `From` gives you `Into`).
 
-`a.cmp(&b)` describes `a` relative to `b`, so `self.value.cmp(&secret)` is `Less` when the guess is
-too small. `secret.cmp(&self.value)` gives the opposite answer.
-
-In `parse_guess`, parse the trimmed text as an `i32` directly. `parse` accepts a leading `+` or `-`,
-and it rejects numbers that overflow `i32`. Parsing as `u32` would wrongly call `"-5"` "not a
-number" (and `u8` would do the same with `"300"`), while parsing as `i64` would call `"3000000000"`
-"out of range". The `?` operator cannot turn a `ParseIntError` into a `String` on its own (there is
-no such `From` impl), so `map_err` replaces the error with the message first.
-
 ### Alternatives
 
 `assert!` takes a condition followed by a message, formatted like `panic!`, so `new` can check the
@@ -46,21 +37,6 @@ fn try_from(value: i32) -> Result<Guess, GuessError> {
         ..=0 => Err(GuessError::TooSmall(value)),
         1..=100 => Ok(Guess { value }),
         101.. => Err(GuessError::TooLarge(value)),
-    }
-}
-```
-
-`parse_guess` can also be written with `match` and an early `return`.
-
-```rust
-pub fn parse_guess(input: &str) -> Result<Guess, String> {
-    let number = match input.trim().parse::<i32>() {
-        Ok(number) => number,
-        Err(_) => return Err(String::from("not a number")),
-    };
-    match Guess::try_from(number) {
-        Ok(guess) => Ok(guess),
-        Err(_) => Err(String::from("out of range")),
     }
 }
 ```

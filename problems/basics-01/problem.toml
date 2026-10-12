@@ -1,12 +1,10 @@
 id = "basics-01"
-title = { en = "Five classic slips", ja = "5 つのうっかり" }
+title = { en = "Three classic slips", ja = "3 つのうっかり" }
 difficulty = 1
 concepts = [
     "const items need a type",
     "immutable bindings vs shadowing",
     "statements vs expressions (tail expression)",
-    "if as an expression (same arm types)",
-    "break with a value from loop",
 ]
 kind = "repair"
 

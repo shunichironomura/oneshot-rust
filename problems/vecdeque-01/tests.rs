@@ -1,8 +1,7 @@
 use crate::judge::{case, check_eq};
-use crate::user::{History, josephus};
+use crate::user::History;
 
 const NO_ACTIONS: [&str; 0] = [];
-const NOBODY: [usize; 0] = [];
 
 fn history(capacity: usize, actions: &[&str]) -> History {
     let mut h = History::new(capacity);
@@ -22,7 +21,6 @@ pub fn run() {
         check_eq(h.undo().as_deref(), Some("delete"))?;
         check_eq(h.recent(10), ["paste", "bold"])
     });
-    case("sample-2", || check_eq(josephus(7, 3), [3, 6, 2, 7, 5, 1, 4]));
     case("hidden-1", || {
         // A capacity of 0 keeps nothing.
         let mut h = History::new(0);
@@ -96,20 +94,5 @@ pub fn run() {
         check_eq(h.len(), 3)?;
         check_eq(h.recent(5), ["y", "x", "x"])?;
         check_eq(h.oldest(), Some("x"))
-    });
-    case("hidden-7", || {
-        check_eq(josephus(0, 3), NOBODY)?;
-        check_eq(josephus(5, 1), [1, 2, 3, 4, 5])?;
-        check_eq(josephus(2, 2), [2, 1])?;
-        check_eq(josephus(5, 5), [5, 1, 3, 4, 2])?;
-        check_eq(josephus(10, 2), [2, 4, 6, 8, 10, 3, 7, 1, 9, 5])
-    });
-    case("hidden-8", || {
-        // k larger than the circle, up to usize::MAX.
-        check_eq(josephus(3, 10), [1, 3, 2])?;
-        check_eq(josephus(9, 4), [4, 8, 3, 9, 6, 5, 7, 2, 1])?;
-        check_eq(josephus(8, 1_000_000_000), [8, 6, 3, 2, 1, 4, 7, 5])?;
-        check_eq(josephus(6, usize::MAX), [3, 2, 6, 5, 1, 4])?;
-        check_eq(josephus(1, usize::MAX), [1])
     });
 }

@@ -4,7 +4,7 @@ difficulty = 1
 concepts = [
     "moving out of borrowed content (E0507)",
     "Option::as_deref / as_ref",
-    "Option::take / replace",
+    "Option::take",
     "? on Option",
     "returning references to locals (E0515)",
 ]

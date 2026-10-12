@@ -17,12 +17,6 @@
 渡されたとおりの文字列を入れられます。`&str` は先に所有権のある `String` にする必要があるので、
 `DayError::Unknown(s.to_string())` と書きます。
 
-`Result` は `FromIterator` を実装しています。`Result<Weekday, DayError>` のイテレータを
-`Result<Vec<Weekday>, DayError>` に `collect` すると、すべての曜日を持つ `Ok` になるか、最初の `Err` で
-止まります。返り値の型から `collect` が作るものが決まり、そこから `parse` が `Weekday` を作ることも
-決まります。`"".split(',')` は 0 個ではなく空の部分を 1 個返すので、空や空白だけの入力には先頭のチェックが
-必要です。チェックがないと、結果は `Err(Unknown(""))` になってしまいます。
-
 ### 別解
 
 表を使った変換です。曜日の配列を 1 つ用意し、`try_from` ではインデックス `n - 1` で引き、`from_str` では
@@ -47,7 +41,7 @@ impl Weekday {
         // 1..=6 は 2..=7 に、7（Sun）は 0 + 1 = 1（Mon）になる
         Weekday::try_from(self.number() % 7 + 1).unwrap()
     }
-    // number と is_weekend は模範解答と同じ
+    // number は模範解答と同じ
 }
 
 impl TryFrom<u8> for Weekday {
@@ -72,20 +66,5 @@ impl FromStr for Weekday {
         }
         Err(DayError::Unknown(s.to_string()))
     }
-}
-```
-
-`parse_schedule` は `?` を使ったループでも書けます。`collect` と同じく、最初のエラーを返します。
-
-```rust
-pub fn parse_schedule(s: &str) -> Result<Vec<Weekday>, DayError> {
-    let mut days = Vec::new();
-    if s.trim().is_empty() {
-        return Ok(days);
-    }
-    for piece in s.split(',') {
-        days.push(piece.trim().parse()?);
-    }
-    Ok(days)
 }
 ```

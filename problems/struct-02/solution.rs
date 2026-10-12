@@ -39,8 +39,3 @@ pub fn with_tags(tags: &[&str]) -> Config {
         ..Default::default()
     }
 }
-
-pub fn describe(cfg: &Config) -> String {
-    let Config { name, retries, verbose, tags } = cfg;
-    format!("{name}: retries={retries}, verbose={verbose}, tags={}", tags.join(","))
-}

@@ -1,4 +1,4 @@
-In all four methods, `self` is a reference, so the fields are only borrowed. The template uses
+In all three methods, `self` is a reference, so the fields are only borrowed. The template uses
 `self.nickname` and `self.email` as values in three ways: as the scrutinee of a `match` whose pattern
 `Some(nick)` binds by value, as the operand of `?`, and on the right of `let`. Each of them moves a
 value out of the struct (the `match` moves the `String` inside `Some`, the other two the whole
@@ -18,9 +18,9 @@ reference, or swap a new value in and take the old one out in a single step.
   `self.email.clone()?` gets past the move, but then `email` is a local `String` and the returned
   slice would point into it (E0515 again). `self.email.as_deref()?` gives a `&str` that borrows from
   `self`, as the return type requires.
-- `take_nickname` and `set_nickname`: `Option::take` puts `None` in place and returns the old value,
-  and `Option::replace` puts `Some(value)` in place and returns the old value. Both move the old value
-  out through `&mut` without ever leaving the field empty.
+- `take_nickname`: `Option::take` puts `None` in place and returns the old value. It moves the old
+  value out through `&mut` without ever leaving the field empty. `Option::replace` does the same with
+  `Some(value)` in place of `None`.
 
 A habit from older editions is a trap here too: `match &self.nickname { Some(ref nick) => ... }` is
 an error in edition 2024. When the scrutinee is a reference, the bindings are already references,
@@ -56,19 +56,15 @@ pub fn email_domain(&self) -> Option<&str> {
 }
 ```
 
-`std::mem::replace` does the same swap for any type, not only for `Option`, and `std::mem::take`
-for any type with a default value (`None` for an `Option`).
+`std::mem::take` does the same swap for any type with a default value (`None` for an `Option`), and
+`std::mem::replace` for any type at all.
 
 ```rust
 pub fn take_nickname(&mut self) -> Option<String> {
     std::mem::take(&mut self.nickname)
 }
-
-pub fn set_nickname(&mut self, nick: &str) -> Option<String> {
-    std::mem::replace(&mut self.nickname, Some(nick.to_string()))
-}
 ```
 
 Copying with `let old = self.nickname.clone();` and keeping the rest of the template also compiles
-and passes, but it allocates a second `String` just to drop the original one line later. `take` and
-`replace` hand over the existing `String` instead.
+and passes, but it allocates a second `String` just to drop the original one line later. `take`
+hands over the existing `String` instead.

@@ -12,8 +12,7 @@ fn profile(username: &str, nickname: Option<&str>, email: Option<&str>) -> Profi
 pub fn run() {
     case("sample-1", || check_eq(profile("alice", None, Some("a@b.c")).email_domain(), Some("b.c")));
     case("sample-2", || {
-        let mut p = profile("alice", None, None);
-        check_eq(p.set_nickname("ace"), None)?;
+        let mut p = profile("alice", Some("ace"), None);
         check_eq(p.display_name(), "ace")?;
         check_eq(p.take_nickname().as_deref(), Some("ace"))?;
         check_eq(p.display_name(), "alice")
@@ -46,18 +45,8 @@ pub fn run() {
         check_eq(p.display_name(), "carol")
     });
     case("hidden-5", || {
-        // Each call returns the nickname it replaces.
-        let mut p = profile("dave", Some("D"), Some("d@x"));
-        check_eq(p.set_nickname("Davy").as_deref(), Some("D"))?;
-        check_eq(p.set_nickname("ダイ").as_deref(), Some("Davy"))?;
-        check_eq(&p, &profile("dave", Some("ダイ"), Some("d@x")))?;
-        check_eq(p.display_name(), "ダイ")
-    });
-    case("hidden-6", || {
-        // An empty nickname can be set and taken like any other.
-        let mut p = profile("eve", None, None);
-        check_eq(p.set_nickname(""), None)?;
-        check_eq(p.display_name(), "")?;
+        // An empty nickname can be taken like any other.
+        let mut p = profile("eve", Some(""), None);
         check_eq(p.take_nickname().as_deref(), Some(""))?;
         check_eq(p.take_nickname(), None)?;
         check_eq(p.display_name(), "eve")

@@ -23,7 +23,3 @@ pub fn quiet(base: Config) -> Config {
 pub fn with_tags(tags: &[&str]) -> Config {
     todo!()
 }
-
-pub fn describe(cfg: &Config) -> String {
-    todo!()
-}

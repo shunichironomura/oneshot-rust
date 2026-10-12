@@ -1,5 +1,5 @@
-use crate::judge::{case, check_eq};
-use crate::user::{Overlap, first_repeat, overlap};
+use crate::judge::case;
+use crate::user::{Overlap, overlap};
 
 /// Compares the fields with `[both, only_left, only_right, exactly_one, all]`.
 fn check_overlap(got: Overlap, want: [&[&str]; 5]) -> Result<(), String> {
@@ -25,7 +25,6 @@ pub fn run() {
             [&["b", "c"], &["a"], &["d"], &["a", "d"], &["a", "b", "c", "d"]],
         )
     });
-    case("sample-2", || check_eq(first_repeat(&["a", "b", "c", "b", "a"]), Some("b")));
     case("hidden-1", || {
         // Empty lists, and a word repeated within a list counts once.
         check_overlap(overlap(&[], &[]), [&[], &[], &[], &[], &[]])?;
@@ -49,13 +48,5 @@ pub fn run() {
                 &["B", "Z", "a", "app", "apple", "b", "é"],
             ],
         )
-    });
-    case("hidden-4", || {
-        check_eq(first_repeat(&["x", "x"]), Some("x"))?;
-        check_eq(first_repeat(&["b", "A", "a", "c", "c", "b"]), Some("c"))
-    });
-    case("hidden-5", || {
-        check_eq(first_repeat(&[]), None)?;
-        check_eq(first_repeat(&["a", "A", "b"]), None)
     });
 }

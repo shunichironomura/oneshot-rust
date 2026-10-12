@@ -13,11 +13,6 @@ pub fn title_or_default(title: Option<String>) -> (bool, String) {
     (given, title.unwrap_or(String::from("Untitled")))
 }
 
-pub fn first_middle_last(t: (i32, i32, i32, i32, i32)) -> (i32, i32, i32) {
-    let (first, _, middle, _, last) = t;
-    (first, middle, last)
-}
-
 pub fn filled_slots(slots: &[Option<u8>]) -> Vec<(usize, u8)> {
     let mut filled = Vec::new();
     for (i, slot) in slots.iter().enumerate() {

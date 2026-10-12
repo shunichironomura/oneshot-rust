@@ -11,18 +11,13 @@ scope after the statement, so each check adds one line instead of one level of n
 `Vec<(u32, &&str)>`, which does not match the return type, and you need `*item`.
 
 The returned `&str`s borrow `text`, not the local `Vec`. By lifetime elision, the output borrows
-from the only reference parameter, and `lines`, `split_once` and `split_whitespace` all return
+from the only reference parameter, and `lines` and `split_whitespace` both return
 slices of the string they are given. So the vector of words can be dropped at the end of each
 iteration while the items live on. No `String` is needed (and returning slices of a `String` created
 inside the function would not compile).
 
 `str::parse::<u32>` accepts a leading `+` and leading zeros, and rejects `-` and numbers above
 `u32::MAX`. It parses `0` without complaint, so zero needs its own check.
-
-`total_quantity` reuses `parse_orders`. With `.iter().filter(|(_, name)| name == item)`, `name` is a
-`&&str`, and comparing it with the `&str` `item` does not compile (`&str == str` is not
-implemented). Write `*name == item`, or take the pairs by value as the solution and the alternative
-below do.
 
 ### Alternatives
 
@@ -35,8 +30,7 @@ evaluated from left to right). The range pattern `count @ 1..` rejects `0` in th
 pub fn parse_orders(text: &str) -> Vec<(u32, &str)> {
     text.lines()
         .filter_map(|line| {
-            let code = line.split_once('#').map_or(line, |(code, _)| code);
-            let mut words = code.split_whitespace();
+            let mut words = line.split_whitespace();
             let (Some(count), Some(item), None) = (words.next(), words.next(), words.next()) else {
                 return None;
             };
@@ -47,14 +41,6 @@ pub fn parse_orders(text: &str) -> Vec<(u32, &str)> {
         })
         .collect()
 }
-
-pub fn total_quantity(text: &str, item: &str) -> u32 {
-    parse_orders(text)
-        .into_iter()
-        .filter(|&(_, name)| name == item)
-        .map(|(count, _)| count)
-        .sum()
-}
 ```
 
 With let chains (Rust 2024), the checks can be joined with `&&` in a single `if let`.
@@ -63,8 +49,7 @@ With let chains (Rust 2024), the checks can be joined with `&&` in a single `if 
 pub fn parse_orders(text: &str) -> Vec<(u32, &str)> {
     let mut orders = Vec::new();
     for line in text.lines() {
-        let code = line.split_once('#').map_or(line, |(code, _)| code);
-        let words: Vec<&str> = code.split_whitespace().collect();
+        let words: Vec<&str> = line.split_whitespace().collect();
         if let [count, item] = words[..]
             && let Ok(count) = count.parse::<u32>()
             && count > 0

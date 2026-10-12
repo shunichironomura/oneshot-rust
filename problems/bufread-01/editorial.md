@@ -13,17 +13,9 @@ compared with `"HTTP/1.1"` directly.
 The loop stops at the first empty line, so the body is never read, let alone decoded. Converting
 all of `raw` with `str::from_utf8` first would reject a request whose body is binary.
 
-`split(' ')` keeps empty parts, so a double space produces an extra, empty part, while
-`split_whitespace` would accept `"GET  / HTTP/1.1"`. The slice pattern
-`let [method, path, version] = parts[..] else { ... }` checks the count and names the parts in one
-step. `split_once(": ")` splits at the first separator and returns `None` when there is none, and
-`?` passes that on.
-
-In `respond`, `str::len` is the length in **bytes**, which is what `Content-Length` counts:
-`"こんにちは"` has 5 characters (`chars().count()`) but 15 bytes. `Vec<u8>` implements `io::Write`,
-so `write!` can format straight into it once `std::io::Write` is in scope. It returns an
-`io::Result`, which must be used or the compiler warns; writing to a `Vec` never fails, hence the
-`expect`.
+The slice pattern `let [method, path, "HTTP/1.1"] = parts[..] else { ... }` checks the count,
+checks the version and names the other two parts in one step. `split_once(": ")` splits at the
+first separator and returns `None` when there is none, and `?` passes that on.
 
 ### Alternatives
 
@@ -46,7 +38,7 @@ pub fn parse_request(raw: &[u8]) -> Option<Request> {
     let [method, path, version] = parts[..] else {
         return None;
     };
-    if method.is_empty() || path.is_empty() || version != "HTTP/1.1" {
+    if version != "HTTP/1.1" {
         return None;
     }
 
@@ -76,7 +68,7 @@ pub fn parse_request(mut raw: &[u8]) -> Option<Request> {
     let [method, path, version] = parts[..] else {
         return None;
     };
-    if method.is_empty() || path.is_empty() || version != "HTTP/1.1" {
+    if version != "HTTP/1.1" {
         return None;
     }
     let (method, path) = (method.to_string(), path.to_string());
@@ -115,7 +107,7 @@ pub fn parse_request(raw: &[u8]) -> Option<Request> {
     let [method, path, version] = parts[..] else {
         return None;
     };
-    if method.is_empty() || path.is_empty() || version != "HTTP/1.1" {
+    if version != "HTTP/1.1" {
         return None;
     }
 
@@ -130,19 +122,5 @@ pub fn parse_request(raw: &[u8]) -> Option<Request> {
     }
 
     Some(Request { method: method.to_string(), path: path.to_string(), headers })
-}
-```
-
-`format!` builds a `String`, and `into_bytes` turns it into a `Vec<u8>` without copying. This needs
-no `Write` import.
-
-```rust
-pub fn respond(req: &Request) -> Vec<u8> {
-    let (status, body) = match (req.method.as_str(), req.path.as_str()) {
-        ("GET", "/") => ("200 OK", "<h1>Hello!</h1>"),
-        ("GET", "/greet") => ("200 OK", "こんにちは"),
-        _ => ("404 NOT FOUND", "Oops!"),
-    };
-    format!("HTTP/1.1 {status}\r\nContent-Length: {}\r\n\r\n{body}", body.len()).into_bytes()
 }
 ```

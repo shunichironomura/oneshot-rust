@@ -12,16 +12,12 @@
 `orders` が `Vec<(u32, &&str)>` になって返り値の型と合わなくなり、`*item` と書く必要があります。
 
 返す `&str` が借用しているのは、ローカルな `Vec` ではなく `text` です。ライフタイムの省略規則により、
-返り値は唯一の参照引数から借用したものになります。`lines`、`split_once`、`split_whitespace` はどれも
+返り値は唯一の参照引数から借用したものになります。`lines` も `split_whitespace` も
 渡された文字列のスライスを返すので、単語のベクタを各反復の終わりに破棄しても、商品名は生き続けます。
 `String` は必要ありません（関数の中で作った `String` のスライスを返そうとするとコンパイルが通りません）。
 
 `str::parse::<u32>` は先頭の `+` や 0 を受け付け、`-` や `u32::MAX` より大きい数は拒否します。
 `0` は問題なく解釈されるので、0 は別にチェックする必要があります。
-
-`total_quantity` は `parse_orders` を再利用します。`.iter().filter(|(_, name)| name == item)` と書くと
-`name` は `&&str` になり、`&str` の `item` と比べるとコンパイルが通りません（`&str == str` は
-実装されていません）。`*name == item` と書くか、模範解答や下の別解のように組を値で受け取ってください。
 
 ### 別解
 
@@ -34,8 +30,7 @@
 pub fn parse_orders(text: &str) -> Vec<(u32, &str)> {
     text.lines()
         .filter_map(|line| {
-            let code = line.split_once('#').map_or(line, |(code, _)| code);
-            let mut words = code.split_whitespace();
+            let mut words = line.split_whitespace();
             let (Some(count), Some(item), None) = (words.next(), words.next(), words.next()) else {
                 return None;
             };
@@ -46,14 +41,6 @@ pub fn parse_orders(text: &str) -> Vec<(u32, &str)> {
         })
         .collect()
 }
-
-pub fn total_quantity(text: &str, item: &str) -> u32 {
-    parse_orders(text)
-        .into_iter()
-        .filter(|&(_, name)| name == item)
-        .map(|(count, _)| count)
-        .sum()
-}
 ```
 
 let チェーン（Rust 2024）を使えば、チェックを `&&` でつないで 1 つの `if let` にまとめられます。
@@ -62,8 +49,7 @@ let チェーン（Rust 2024）を使えば、チェックを `&&` でつない�
 pub fn parse_orders(text: &str) -> Vec<(u32, &str)> {
     let mut orders = Vec::new();
     for line in text.lines() {
-        let code = line.split_once('#').map_or(line, |(code, _)| code);
-        let words: Vec<&str> = code.split_whitespace().collect();
+        let words: Vec<&str> = line.split_whitespace().collect();
         if let [count, item] = words[..]
             && let Ok(count) = count.parse::<u32>()
             && count > 0
