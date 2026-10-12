@@ -18,8 +18,4 @@ impl Profile {
     pub fn take_nickname(&mut self) -> Option<String> {
         self.nickname.take()
     }
-
-    pub fn set_nickname(&mut self, nick: &str) -> Option<String> {
-        self.nickname.replace(nick.to_string())
-    }
 }

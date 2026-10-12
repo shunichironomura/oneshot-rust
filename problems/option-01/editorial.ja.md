@@ -1,4 +1,4 @@
-4 つのメソッドのどれでも `self` は参照なので、フィールドは借用しているだけです。テンプレートは
+3 つのメソッドのどれでも `self` は参照なので、フィールドは借用しているだけです。テンプレートは
 `self.nickname` と `self.email` を 3 通りの形で値として使っています。値で束縛するパターン `Some(nick)` を
 持つ `match` の対象、`?` のオペランド、`let` の右辺です。どれも構造体から値をムーブします（`match` は
 `Some` の中の `String` を、残りの 2 つは `Option<String>` 全体を）が、参照の先からムーブすることは
@@ -17,9 +17,8 @@
   コンパイラが提案する `self.email.clone()?` ならムーブのエラーは消えますが、今度は `email` がローカルな
   `String` になり、返すスライスがそれを指してしまいます（やはり E0515）。`self.email.as_deref()?` なら
   `self` から借用した `&str` が得られ、返り値の型の要求どおりになります。
-- `take_nickname` と `set_nickname`：`Option::take` は `None` を入れて古い値を返し、`Option::replace` は
-  `Some(value)` を入れて古い値を返します。どちらも、フィールドを一度も空にせずに、`&mut` を通して古い値を
-  取り出せます。
+- `take_nickname`：`Option::take` は `None` を入れて古い値を返します。フィールドを一度も空にせずに、
+  `&mut` を通して古い値を取り出せます。`None` の代わりに `Some(value)` を入れるなら `Option::replace` です。
 
 古いエディションの習慣もここでは罠になります。`match &self.nickname { Some(ref nick) => ... }` は
 edition 2024 ではエラーです。対象が参照のときは束縛がすでに参照になるので、そこに `ref` を書くことは
@@ -55,19 +54,15 @@ pub fn email_domain(&self) -> Option<&str> {
 }
 ```
 
-`std::mem::replace` を使うと、`Option` に限らずどの型でも同じ入れ替えができます。`std::mem::take` は
-既定値を持つ型（`Option` なら `None`）で使えます。
+`std::mem::take` を使うと、既定値を持つ型（`Option` なら `None`）なら何でも同じ入れ替えができます。
+`std::mem::replace` はどの型でも使えます。
 
 ```rust
 pub fn take_nickname(&mut self) -> Option<String> {
     std::mem::take(&mut self.nickname)
 }
-
-pub fn set_nickname(&mut self, nick: &str) -> Option<String> {
-    std::mem::replace(&mut self.nickname, Some(nick.to_string()))
-}
 ```
 
 `let old = self.nickname.clone();` でコピーし、残りはテンプレートのままにしてもコンパイルが通り、
 テストにも合格します。ただし、元の `String` を 1 行後に捨てるためだけに、もう 1 つ `String` を確保する
-ことになります。`take` と `replace` なら、今ある `String` をそのまま渡せます。
+ことになります。`take` なら、今ある `String` をそのまま渡せます。

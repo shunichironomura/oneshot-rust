@@ -23,10 +23,4 @@ impl Profile {
         self.nickname = None;
         old
     }
-
-    pub fn set_nickname(&mut self, nick: &str) -> Option<String> {
-        let old = self.nickname;
-        self.nickname = Some(nick.to_string());
-        old
-    }
 }
