@@ -164,9 +164,12 @@ export function HistoryPage({ problemId }: { problemId: string }) {
         <details
           key={run.id}
           class="run"
+          name="runs"
           open={run.id === openRun}
           onToggle={(e) => {
-            if ((e.currentTarget as HTMLDetailsElement).open) setOpenRun(run.id);
+            // The browser keeps one run open at a time; this only follows it.
+            const open = (e.currentTarget as HTMLDetailsElement).open;
+            setOpenRun((current) => (open ? run.id : current === run.id ? undefined : current));
           }}
         >
           <summary>
