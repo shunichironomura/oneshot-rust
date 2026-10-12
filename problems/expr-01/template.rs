@@ -15,7 +15,3 @@ pub enum Expr {
 pub fn simplify(e: Expr) -> Expr {
     todo!()
 }
-
-pub fn eval(e: &Expr, x: i64) -> Option<i64> {
-    todo!()
-}

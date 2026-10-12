@@ -15,56 +15,12 @@ Details that are easy to get wrong:
 - In `(e, Expr::Neg(f))`, `f` is a `Box<Expr>`. `e == f` compares an `Expr` with a `Box<Expr>` and
   does not compile; `e == *f` does. A guard only borrows the bindings, so nothing is moved by the
   comparison. If the guard fails for one alternative of an or-pattern, the next alternative is tried.
-- `a + b`, `a * b` and `-a` panic on overflow in the judge (as in any debug build), so use
-  `checked_add`, `checked_mul` and `checked_neg`. With an `if let` guard (stable since Rust 1.95),
-  an overflow just makes the arm not match. No later arm matches two such numbers either, so the
-  last arm rebuilds the node unchanged.
 - `Expr::Neg(e) => *e`: the inner `e` is a box, and the result must be the `Expr` inside it.
 - Rules are applied after the children are simplified. Checking the rules first and simplifying the
   children afterwards misses `Add(Mul(Var, Num(0)), Num(7))`, whose product only becomes `Num(0)`
   during simplification.
 
-In `eval`, `?` returns `None` as soon as an operand fails, and each `checked_*` call returns `None`
-when the operation itself overflows. Returning `Some(0)` early for a factor `0` would be wrong,
-because the other factor may overflow.
-
 ### Alternatives
-
-Without `if let` guards, handle the overflow inside the arm and rebuild the node by hand.
-
-```rust
-pub fn simplify(e: Expr) -> Expr {
-    match e {
-        Expr::Add(l, r) => match (simplify(*l), simplify(*r)) {
-            (Expr::Num(a), Expr::Num(b)) => match a.checked_add(b) {
-                Some(sum) => Expr::Num(sum),
-                None => Expr::Add(Box::new(Expr::Num(a)), Box::new(Expr::Num(b))),
-            },
-            (e, Expr::Num(0)) | (Expr::Num(0), e) => e,
-            (e, Expr::Neg(f)) | (Expr::Neg(f), e) if e == *f => Expr::Num(0),
-            (l, r) => Expr::Add(Box::new(l), Box::new(r)),
-        },
-        Expr::Mul(l, r) => match (simplify(*l), simplify(*r)) {
-            (Expr::Num(a), Expr::Num(b)) => match a.checked_mul(b) {
-                Some(product) => Expr::Num(product),
-                None => Expr::Mul(Box::new(Expr::Num(a)), Box::new(Expr::Num(b))),
-            },
-            (_, Expr::Num(0)) | (Expr::Num(0), _) => Expr::Num(0),
-            (e, Expr::Num(1)) | (Expr::Num(1), e) => e,
-            (l, r) => Expr::Mul(Box::new(l), Box::new(r)),
-        },
-        Expr::Neg(inner) => match simplify(*inner) {
-            Expr::Num(a) => match a.checked_neg() {
-                Some(negated) => Expr::Num(negated),
-                None => Expr::Neg(Box::new(Expr::Num(a))),
-            },
-            Expr::Neg(e) => *e,
-            e => Expr::Neg(Box::new(e)),
-        },
-        leaf => leaf,
-    }
-}
-```
 
 The boxes can also be reused. `*l = simplify(*l)` moves the child out of its box and puts the
 simplified child back in. The match then looks at the children only through references, and
@@ -77,9 +33,6 @@ Expr::Add(mut l, mut r) => {
     *l = simplify(*l);
     *r = simplify(*r);
     match (&*l, &*r) {
-        (Expr::Num(a), Expr::Num(b)) if let Some(sum) = a.checked_add(*b) => {
-            Expr::Num(sum)
-        }
         (_, Expr::Num(0)) => *l,
         (Expr::Num(0), _) => *r,
         (e, Expr::Neg(f)) | (Expr::Neg(f), e) if *e == **f => Expr::Num(0),

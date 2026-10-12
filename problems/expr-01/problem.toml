@@ -6,7 +6,6 @@ concepts = [
     "moving out of a Box with *",
     "or-patterns with bindings",
     "match guards",
-    "checked arithmetic",
     "recursion",
 ]
 kind = "implement"
