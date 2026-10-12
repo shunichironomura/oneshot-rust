@@ -19,6 +19,7 @@ import { ModelSolution } from "./ModelSolution.tsx";
 import { ResultPanel } from "./ResultPanel.tsx";
 import { RoundProgress } from "./RoundProgress.tsx";
 import { ShotChip } from "./ShotMeter.tsx";
+import { Tabs } from "./Tabs.tsx";
 import { usePlay } from "./usePlay.ts";
 
 const NO_MARKERS: EditorMarker[] = [];
@@ -45,35 +46,28 @@ function Statement({ problem, tab, onTab, solution }: StatementProps) {
     ...(solution === null ? [] : [{ id: "solution" as const, label: t.tabSolution }]),
   ];
   const shown = tabs.some(({ id }) => id === tab) ? tab : "statement";
+  const body =
+    shown === "solution" ? (
+      <div class="solution">{solution}</div>
+    ) : shown === "statement" ? (
+      <div
+        class="markdown"
+        // statementHtml is rendered at build time from the repository's own Markdown.
+        dangerouslySetInnerHTML={{ __html: localize(problem.statementHtml, locale) }}
+      />
+    ) : (
+      <Copyable class="harness" text={problem.tests}>
+        <CodeView code={problem.tests} />
+      </Copyable>
+    );
   return (
     <aside class="statement">
-      {tabs.length > 1 && (
-        <div class="tabs" role="tablist">
-          {tabs.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={shown === id}
-              onClick={() => onTab(id)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
-      {shown === "solution" ? (
-        <div class="solution">{solution}</div>
-      ) : shown === "statement" ? (
-        <div
-          class="markdown"
-          // statementHtml is rendered at build time from the repository's own Markdown.
-          dangerouslySetInnerHTML={{ __html: localize(problem.statementHtml, locale) }}
-        />
+      {tabs.length > 1 ? (
+        <Tabs tabs={tabs} selected={shown} onSelect={onTab}>
+          {body}
+        </Tabs>
       ) : (
-        <Copyable class="harness" text={problem.tests}>
-          <CodeView code={problem.tests} />
-        </Copyable>
+        body
       )}
     </aside>
   );

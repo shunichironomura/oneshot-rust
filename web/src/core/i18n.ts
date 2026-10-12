@@ -93,6 +93,8 @@ export interface Messages {
   solutionLoadError: (message: string) => string;
   solutionCode: string;
   solutionDiff: string;
+  /** Names the choice between the solution's code and its diff. */
+  solutionView: string;
   solutionDiffLegend: string;
 
   // Result panel
@@ -137,6 +139,8 @@ export interface Messages {
   practice: string;
   noSubmissions: string;
   runPlaying: string;
+  /** Names the list of a run's submissions. */
+  attemptsLabel: string;
   attemptHeading: (i: number, verdict: string) => string;
   changesFromTemplate: string;
   changesFrom: (i: number) => string;
@@ -219,6 +223,7 @@ const en: Messages = {
   solutionLoadError: (m) => `Could not load the solution: ${m}`,
   solutionCode: "Code",
   solutionDiff: "Diff from your code",
+  solutionView: "View",
   solutionDiffLegend: "- your code   + model solution",
 
   compiling: "Compiling…",
@@ -286,6 +291,7 @@ const en: Messages = {
   practice: "Practice",
   noSubmissions: "No submissions yet.",
   runPlaying: "In progress",
+  attemptsLabel: "Submissions",
   attemptHeading: (i, v) => `Submission #${i} — ${v}`,
   changesFromTemplate: "Changes from the template",
   changesFrom: (i) => `Changes from submission #${i}`,
@@ -375,6 +381,7 @@ const ja: Messages = {
   solutionLoadError: (m) => `模範解答を読み込めませんでした: ${m}`,
   solutionCode: "コード",
   solutionDiff: "自分のコードとの差分",
+  solutionView: "表示",
   solutionDiffLegend: "- 自分のコード   + 模範解答",
 
   compiling: "コンパイル中…",
@@ -442,6 +449,7 @@ const ja: Messages = {
   practice: "練習する",
   noSubmissions: "まだ提出がありません。",
   runPlaying: "挑戦中",
+  attemptsLabel: "提出",
   attemptHeading: (i, v) => `${i} 回目の提出 — ${v}`,
   changesFromTemplate: "テンプレートからの変更",
   changesFrom: (i) => `${i} 回目からの変更`,
