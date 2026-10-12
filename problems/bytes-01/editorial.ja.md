@@ -20,16 +20,10 @@
 `9 + declared` を `u32` で計算するのも避けてください。長さが `u32::MAX` に近いとオーバーフローし、
 ジャッジのようなデバッグビルドではパニックします。
 
-`decode_all` で `split_at(n)` を使うと、`n` がスライスより大きいときにパニックします。
-`split_at_checked` は代わりに `None` を返すので、`ok_or` で `LengthMismatch` にできます。
-各ステップでは `rest` の範囲を前に進めるだけで、バイト列はコピーしません。
-
 ペイロードは入力の一部なので、`Packet<'a>` は入力を借用します。
 `impl<'a> TryFrom<&'a [u8]> for Packet<'a>` が 2 つのライフタイムを結び付けているので、
 `try_from` の引数は `bytes: &'a [u8]` になります。ここを `bytes: &[u8]` と書くと
-「lifetime may not live long enough」というエラーになります。ヘルパーの
-`split_header(bytes: &[u8]) -> Result<(Header, &[u8]), PacketError>` には注釈が要りません。
-参照の引数が 1 つだけなので、省略規則によって返すスライスが `bytes` に結び付きます。
+「lifetime may not live long enough」というエラーになります。
 最後に、`Kind` の判別値はバイト列での値と同じなので、`self.kind as u8` で種類のバイトになります。
 
 ### 別解
@@ -62,17 +56,6 @@ impl<'a> TryFrom<&'a [u8]> for Packet<'a> {
 }
 ```
 
-`Kind::try_from` は、数値を繰り返し書く代わりに、判別値でバリアントを探すこともできます。
-
-```rust
-fn try_from(b: u8) -> Result<Self, Self::Error> {
-    [Kind::Ping, Kind::Data, Kind::Ack]
-        .into_iter()
-        .find(|&kind| kind as u8 == b)
-        .ok_or(PacketError::UnknownKind(b))
-}
-```
-
 `encode` は `concat` で各部分をつなげても書けます。型注釈によって、指す配列の長さに関係なく、
 どの要素も `&[u8]` になります。
 
@@ -87,30 +70,5 @@ pub fn encode(&self) -> Vec<u8> {
         self.payload,
     ];
     parts.concat()
-}
-```
-
-`decode_all` では `try_from` を再利用できます。ペイロード長だけを読んでパケットの終わりを求め、
-ちょうどその部分に対して `try_from` にすべてのチェックをさせます。ペイロードが途中で切れていれば、
-その部分は残り全体になり、`try_from` が同じ `LengthMismatch` を返します。
-
-```rust
-pub fn decode_all(stream: &[u8]) -> Result<Vec<Packet<'_>>, PacketError> {
-    let mut packets = Vec::new();
-    let mut rest = stream;
-    while !rest.is_empty() {
-        // このパケットの終わりを求め、ちょうどその部分を `try_from` でチェックする
-        let end = match rest.first_chunk::<HEADER_LEN>() {
-            Some(header) => {
-                let declared = u32::from_be_bytes([header[5], header[6], header[7], header[8]]);
-                rest.len().min((declared as usize).saturating_add(HEADER_LEN))
-            }
-            None => rest.len(), // 短すぎる：`try_from` が TooShort を返す
-        };
-        let (packet, next) = rest.split_at(end);
-        packets.push(Packet::try_from(packet)?);
-        rest = next;
-    }
-    Ok(packets)
 }
 ```

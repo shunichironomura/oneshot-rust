@@ -1,0 +1,17 @@
+id = "bytes-02"
+title = { en = "Packet stream", ja = "パケットのストリーム" }
+difficulty = 2
+concepts = [
+    "split_at_checked",
+    "walking a byte stream with sub-slices, without copying",
+    "u32 vs usize lengths, overflow",
+    "lifetime elision in Vec<Packet<'_>>",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

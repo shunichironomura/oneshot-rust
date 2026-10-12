@@ -5,8 +5,6 @@ concepts = [
     "TryFrom<&'a [u8]> with lifetimes",
     "u16::from_le_bytes / u32::from_be_bytes / to_le_bytes / to_be_bytes",
     "slice to array: split_first_chunk, array patterns, try_into",
-    "split_at_checked",
-    "TryFrom<u8> for enum",
     "u32 vs usize lengths, overflow",
     "check order of errors",
 ]
