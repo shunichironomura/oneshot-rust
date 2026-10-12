@@ -10,14 +10,6 @@ impl Point {
         Point { x, y }
     }
 
-    pub fn mixup(self, other: Point) -> Point {
-        Point { x: self.x, y: other.y }
-    }
-
-    pub fn swap(self) -> Point {
-        Point { x: self.y, y: self.x }
-    }
-
     pub fn convert(self) -> Point {
         Point { x: self.x.into(), y: self.y.into() }
     }
