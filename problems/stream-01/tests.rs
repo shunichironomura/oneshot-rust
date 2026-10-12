@@ -7,7 +7,7 @@ use std::task::Poll::{Pending, Ready};
 use std::task::{Context, Poll, Wake, Waker};
 
 use crate::judge::{case, check_eq};
-use crate::user::{Stream, StreamExt, collect, iter, zip};
+use crate::user::{Stream, StreamExt, iter, zip};
 
 /// Counts how many times it was woken.
 struct CountingWaker(AtomicUsize);
@@ -44,6 +44,15 @@ fn drive<T>(mut poll: impl FnMut(&mut Context<'_>) -> Poll<T>) -> Result<(T, usi
 fn block_on<F: Future>(fut: F) -> Result<(F::Output, usize), String> {
     let mut fut = pin!(fut);
     drive(|cx| fut.as_mut().poll(cx))
+}
+
+/// All the items of `s`, read with `next`.
+async fn collect<S: Stream + Unpin>(mut s: S) -> Vec<S::Item> {
+    let mut items = Vec::new();
+    while let Some(item) = s.next().await {
+        items.push(item);
+    }
+    items
 }
 
 /// Polls a stream until it ends, and returns the result of every poll.
@@ -140,9 +149,10 @@ impl Iterator for PinnedCountdown {
 
 pub fn run() {
     case("sample-1", || {
-        let polls = Cell::new(0);
-        check_eq(block_on(collect(counted(iter(vec![1, 2, 3]), &polls)))?, (vec![1, 2, 3], 1))?;
-        check_eq(polls.get(), 4)?;
+        check_eq(
+            trace(iter(vec![1, 2, 3]))?,
+            vec![Ready(Some(1)), Ready(Some(2)), Ready(Some(3)), Ready(None)],
+        )?;
         let mut s = iter(["x"]);
         check_eq(block_on(s.next())?, (Some("x"), 1))?;
         check_eq(block_on(s.next())?, (None, 1))
@@ -231,16 +241,7 @@ pub fn run() {
                 Ready(None),
             ],
         )?;
-        check_eq((a_polls.get(), b_polls.get()), (8, 6))
-    });
-    case("hidden-6", || {
-        // `collect` polls its stream until it is `Pending` or has ended.
-        let polls = Cell::new(0);
-        check_eq(block_on(collect(slow(&[1, 2, 3], &polls)))?, (vec![1, 2, 3], 5))?;
-        check_eq(polls.get(), 8)?;
-        let polls = Cell::new(0);
-        check_eq(block_on(collect(slow::<u8>(&[], &polls)))?, (vec![], 2))?;
-        check_eq(polls.get(), 2)?;
+        check_eq((a_polls.get(), b_polls.get()), (8, 6))?;
         // Nested `zip`s.
         let (a_polls, b_polls, c_polls) = (Cell::new(0), Cell::new(0), Cell::new(0));
         let ab = zip(counted(iter(1..=3), &a_polls), slow(&['a', 'b', 'c'], &b_polls));
@@ -248,7 +249,7 @@ pub fn run() {
         check_eq(block_on(collect(z))?, (vec![((1, 'a'), "x"), ((2, 'b'), "y")], 7))?;
         check_eq((a_polls.get(), b_polls.get(), c_polls.get()), (3, 6, 6))
     });
-    case("hidden-7", || {
+    case("hidden-6", || {
         // An iterator that is not `Unpin`, and items that are not `Unpin` (`async` blocks).
         check_eq(
             trace(iter(PinnedCountdown { n: 3, _pinned: PhantomPinned }))?,

@@ -12,16 +12,10 @@
 - 空の `MyVec` は `NonNull::dangling()` を持ちます。null ではなくアラインメントも正しいので、長さ 0 の
   スライスにはこれで十分ですが、どの確保領域も指していません。`cap == 0` のとき、`Drop` でこれを
   `dealloc` してはいけません。
-- サイズ 0 の `T` では `Layout::array::<T>(4)` のサイズが 0 になり、グローバルアロケータに 0 バイトを
-  要求するのは未定義動作です（Miri の報告は "creating allocation with size 0"）。最初から
-  `cap = usize::MAX` にしておけば `push` で容量を増やすことはなく、ダングリングポインタがそのまま
-  バッファ全体の代わりになります。サイズ 0 の値のオフセットは何もしないのと同じで、それを通した
-  `write` や `read` も問題ありません。ただし値は存在しています。`Drop` の実装には副作用があり得るので、
-  `Drop` では `len` 個すべてを破棄し、`dealloc` だけを省きます。
 - `Drop` では、初期化済みの部分を `ptr::drop_in_place` で 1 つのスライスとして破棄してから、
   バッファを解放します。
 
-`get` には専用の `unsafe` は要りません。`as_slice` が `slice::from_raw_parts` でスライスを作るので、
+用意されている `get` には専用の `unsafe` は要りません。`as_slice` が `slice::from_raw_parts` でスライスを作るので、
 範囲のチェックはスライスの `get` に任せられます。
 
 ### 別解
@@ -33,7 +27,6 @@
 
 ```rust
 fn grow(&mut self) {
-    assert!(size_of::<T>() != 0, "capacity overflow");
     let new_cap = if self.cap == 0 { 4 } else { 2 * self.cap };
     let new_layout = Layout::array::<T>(new_cap).expect("capacity overflow");
     // SAFETY: T is not zero-sized and new_cap > 0.
@@ -59,24 +52,11 @@ fn grow(&mut self) {
 impl<T> Drop for MyVec<T> {
     fn drop(&mut self) {
         while self.pop().is_some() {}
-        if size_of::<T>() != 0 && self.cap > 0 {
+        if self.cap > 0 {
             let layout = Layout::array::<T>(self.cap).unwrap();
             // SAFETY: `ptr` was allocated with exactly this layout.
             unsafe { alloc::dealloc(self.ptr.as_ptr().cast(), layout) };
         }
-    }
-}
-```
-
-`get` でスロットを直接読むこともできます。
-
-```rust
-pub fn get(&self, i: usize) -> Option<&T> {
-    if i < self.len {
-        // SAFETY: slot `i` is initialized, and the reference borrows `self`.
-        Some(unsafe { self.ptr.add(i).as_ref() })
-    } else {
-        None
     }
 }
 ```

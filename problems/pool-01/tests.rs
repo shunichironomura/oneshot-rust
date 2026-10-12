@@ -49,7 +49,7 @@ pub fn run() {
                 total.fetch_add(i, SeqCst);
             });
         }
-        check_eq(pool.shutdown(), 3)?;
+        pool.shutdown();
         check_eq(total.load(SeqCst), 6)
     });
     case("sample-2", || {
@@ -63,9 +63,10 @@ pub fn run() {
         check_eq(log.lock().unwrap().clone(), vec!["a", "b", "c"])
     });
     case("hidden-1", || {
-        // new(0) panics, and a pool without jobs has run 0 jobs.
+        // new(0) panics, and a pool without jobs shuts down.
         check(panic::catch_unwind(|| ThreadPool::new(0)).is_err(), "new(0) did not panic")?;
-        check_eq(ThreadPool::new(1).shutdown(), 0)
+        ThreadPool::new(1).shutdown();
+        Ok(())
     });
     case("hidden-2", || {
         // execute returns before the job runs, even while the only worker is busy: the first job
@@ -100,7 +101,7 @@ pub fn run() {
         thread::scope(|s| {
             s.spawn(|| pool.execute(meet(&barrier, &log, "last")));
         });
-        check_eq(pool.shutdown(), 3)?;
+        pool.shutdown();
         let log = log.lock().unwrap().clone();
         check_eq(log.len(), 3)?;
         check_eq(log[0].0, "short")?;

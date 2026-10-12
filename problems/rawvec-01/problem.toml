@@ -1,7 +1,7 @@
 id = "rawvec-01"
 title = { en = "Vec from scratch", ja = "ゼロから作る Vec" }
 difficulty = 3
-concepts = ["std::alloc", "Layout::array", "NonNull::dangling", "ptr::write vs assignment", "ptr::read", "zero-sized types", "Drop of the remaining elements", "realloc with the old layout"]
+concepts = ["std::alloc", "Layout::array", "NonNull::dangling", "ptr::write vs assignment", "ptr::read", "Drop of the remaining elements", "realloc with the old layout"]
 kind = "implement"
 
 [judge]

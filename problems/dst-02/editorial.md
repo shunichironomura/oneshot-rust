@@ -21,14 +21,13 @@ work unchanged:
 - `checksum` takes `&Packet<[u8]>`. A `&Box<Packet<[u8]>>` reaches it by deref coercion, and
   `&Packet { id: 7, payload: [5u8, 6] }` by an unsizing coercion at the call. A const generic
   `checksum` taking `&Packet<[u8; N]>` would accept only the second kind.
-- `longest` takes `&[Box<Packet<[u8]>>]`, a slice of the boxes that the `Vec` holds. The elements of
-  a slice must be sized, so `&[Packet<[u8]>]` is not a valid type.
 - `label` coerces `Box<Packet<T>>` to `Box<Packet<dyn Display>>` in the same way. In a signature,
   `Box<Packet<dyn Display>>` means `Box<Packet<dyn Display + 'static>>`, so `T: Display` alone is
   rejected with "the parameter type `T` may not live long enough" (E0310). `T: Display + 'static`
   fixes it: payloads such as `5`, `"x"` or a `String` borrow nothing short-lived.
-- `describe` takes `&[Box<Packet<dyn Display>>]`. `{}` formats `&p.payload` through the vtable of
-  each payload.
+- `describe` takes `&[Box<Packet<dyn Display>>]`, a slice of the boxes that the `Vec` holds. The
+  elements of a slice must be sized, so `&[Packet<dyn Display>]` is not a valid type. `{}` formats
+  `&p.payload` through the vtable of each payload.
 
 ### Alternatives
 
@@ -41,13 +40,9 @@ pub fn label<'a, T: Display + 'a>(id: u32, payload: T) -> Box<Packet<dyn Display
 pub fn describe(ps: &[Box<Packet<dyn Display + '_>>]) -> Vec<String>
 ```
 
-`describe` and `longest` can also be generic. `describe` needs `T: ?Sized`, because the harness calls
-it with `T = dyn Display`. With `P: Deref`, `longest` accepts slices of boxes as well as slices of
-references or `Rc`s. The path `std::ops::Deref` is written in full, so that only the `fn` line
-changes.
+`describe` can also be generic. It needs `T: ?Sized`, because the harness calls it with
+`T = dyn Display`.
 
 ```rust
 pub fn describe<T: Display + ?Sized>(ps: &[Box<Packet<T>>]) -> Vec<String>
-
-pub fn longest<P: std::ops::Deref<Target = Packet<[u8]>>>(ps: &[P]) -> Option<u32>
 ```

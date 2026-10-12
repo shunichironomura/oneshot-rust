@@ -8,7 +8,6 @@ concepts = [
     "JoinHandle::join takes self: Vec::drain / Option::take (E0507)",
     "no moving fields out of a Drop type in shutdown(self) (E0509): share a &mut self helper",
     "lock guard temporaries in while let / match keep the lock while the job runs",
-    "Sync pool: counting with AtomicUsize or JoinHandle<usize>, not Cell",
 ]
 kind = "implement"
 

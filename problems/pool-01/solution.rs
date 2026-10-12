@@ -5,8 +5,7 @@ use std::thread::{self, JoinHandle};
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
 pub struct ThreadPool {
-    /// Each worker returns the number of jobs it ran.
-    workers: Vec<JoinHandle<usize>>,
+    workers: Vec<JoinHandle<()>>,
     /// `None` once the pool has been stopped.
     sender: Option<Sender<Job>>,
 }
@@ -33,17 +32,19 @@ impl ThreadPool {
         sender.send(Box::new(f)).expect("the workers are running");
     }
 
-    pub fn shutdown(mut self) -> usize {
-        self.stop()
+    pub fn shutdown(mut self) {
+        self.stop();
         // `self` is dropped here; `drop` finds nothing left to stop.
     }
 
-    /// Closes the queue, waits for every worker to end and returns how many jobs they ran.
-    fn stop(&mut self) -> usize {
+    /// Closes the queue and waits for every worker to end.
+    fn stop(&mut self) {
         // Dropping the only `Sender` closes the channel: once the queue is empty, `recv` fails
         // and every worker leaves its loop.
         drop(self.sender.take());
-        self.workers.drain(..).map(|worker| worker.join().unwrap()).sum()
+        for worker in self.workers.drain(..) {
+            worker.join().unwrap();
+        }
     }
 }
 
@@ -53,18 +54,14 @@ impl Drop for ThreadPool {
     }
 }
 
-fn run_worker(receiver: &Mutex<Receiver<Job>>) -> usize {
-    let mut ran = 0;
+fn run_worker(receiver: &Mutex<Receiver<Job>>) {
     loop {
         // The guard is a temporary of this `let` statement, so the lock is released before the
         // job runs and the other workers can take jobs meanwhile.
         let message = receiver.lock().unwrap().recv();
         match message {
-            Ok(job) => {
-                job();
-                ran += 1;
-            }
-            Err(_) => return ran,
+            Ok(job) => job(),
+            Err(_) => return,
         }
     }
 }

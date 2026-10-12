@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::task::{Context, Poll, Wake, Waker};
 
 use crate::judge::{case, check, check_eq};
-use crate::user::{join, join_all};
+use crate::user::join_all;
 
 type Log = Rc<RefCell<Vec<&'static str>>>;
 
@@ -107,8 +107,8 @@ fn poll_with<F: Future>(fut: Pin<&mut F>, waker: &Waker) -> Poll<F::Output> {
 pub fn run() {
     case("sample-1", || {
         let log = Log::default();
-        let fut = join(steps(&log, &["a0", "a1"]), steps(&log, &["b0", "b1", "b2"]));
-        check_eq(block_on(fut), ((2, 3), 3))?;
+        let fut = join_all(vec![steps(&log, &["a0", "a1"]), steps(&log, &["b0", "b1", "b2"])]);
+        check_eq(block_on(fut), (vec![2, 3], 3))?;
         check_eq(log.take(), ["a0", "b0", "a1", "b1", "b2"])
     });
     case("sample-2", || {
@@ -124,7 +124,8 @@ pub fn run() {
     case("hidden-1", || {
         // No inputs, or only inputs that are ready at once: ready on the first poll.
         check_eq(block_on(join_all(Vec::<Ready<Ticket>>::new())), (Vec::new(), 1))?;
-        check_eq(block_on(join(async { ticket(1) }, ready("two"))), ((ticket(1), "two"), 1))
+        let fut = join_all(vec![ready(ticket(1)), ready(ticket(2))]);
+        check_eq(block_on(fut), (vec![ticket(1), ticket(2)], 1))
     });
     case("hidden-2", || {
         // The inputs get the waker of the current poll; the joined future wakes nothing itself.
@@ -133,12 +134,13 @@ pub fn run() {
         let waker_a = Waker::from(Arc::clone(&a));
         let waker_b = Waker::from(Arc::clone(&b));
         let log = Log::default();
-        let mut fut = pin!(join(steps(&log, &["a0", "a1"]), steps(&log, &["b0", "b1", "b2"])));
+        let mut fut =
+            pin!(join_all(vec![steps(&log, &["a0", "a1"]), steps(&log, &["b0", "b1", "b2"])]));
         check(poll_with(fut.as_mut(), &waker_a).is_pending(), "expected Pending")?;
         check_eq((a.get(), b.get()), (2, 0))?;
         check(poll_with(fut.as_mut(), &waker_b).is_pending(), "expected Pending")?;
         check_eq((a.get(), b.get()), (2, 1))?;
-        check_eq(poll_with(fut.as_mut(), &waker_a), Poll::Ready((2, 3)))?;
+        check_eq(poll_with(fut.as_mut(), &waker_a), Poll::Ready(vec![2, 3]))?;
         check_eq((a.get(), b.get()), (2, 1))?;
         let mut fut = pin!(join_all(vec![steps(&log, &["x0", "x1", "x2"]), steps(&log, &["y0"])]));
         check(poll_with(fut.as_mut(), &waker_b).is_pending(), "expected Pending")?;
@@ -161,9 +163,7 @@ pub fn run() {
                 ticket(w.len())
             })
             .collect();
-        check_eq(block_on(join_all(futs)), (vec![ticket(2), ticket(1), ticket(0)], 3))?;
-        let fut = join(async { ticket(words.len()) }, async { words[0].as_str() });
-        check_eq(block_on(fut), ((ticket(3), "ab"), 1))
+        check_eq(block_on(join_all(futs)), (vec![ticket(2), ticket(1), ticket(0)], 3))
     });
     case("hidden-4", || {
         // Outputs in input order, whatever the order in which the inputs complete; nothing runs
@@ -177,12 +177,12 @@ pub fn run() {
         ]);
         check_eq(block_on(fut), (vec![3, 1, 2, 3], 3))?;
         check_eq(log.take(), ["p0", "q0", "r0", "s0", "p1", "r1", "s1", "p2", "s2"])?;
-        let fut = join(
-            join(steps(&log, &["a0", "a1"]), steps(&log, &["b0"])),
+        let fut = join_all(vec![
+            join_all(vec![steps(&log, &["a0", "a1"]), steps(&log, &["b0"])]),
             join_all(vec![steps(&log, &["c0", "c1"]), steps(&log, &[])]),
-        );
+        ]);
         check(log.borrow().is_empty(), "an input ran before the joined future was polled")?;
-        check_eq(block_on(fut), (((2, 1), vec![2, 0]), 2))?;
+        check_eq(block_on(fut), (vec![vec![2, 1], vec![2, 0]], 2))?;
         check_eq(log.take(), ["a0", "b0", "c0", "a1", "c1"])
     });
 }

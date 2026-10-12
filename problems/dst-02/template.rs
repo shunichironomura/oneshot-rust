@@ -16,17 +16,6 @@ pub fn checksum(p: &Packet<Vec<u8>>) -> u32 {
     p.id + p.payload.iter().map(|&b| u32::from(b)).sum::<u32>()
 }
 
-/// The id of the packet with the longest payload (the first one on ties).
-pub fn longest(ps: &[Box<Packet<Vec<u8>>>]) -> Option<u32> {
-    let mut best = ps.first()?;
-    for p in ps {
-        if p.payload.len() > best.payload.len() {
-            best = p;
-        }
-    }
-    Some(best.id)
-}
-
 /// Puts a value that can be displayed into a new boxed packet.
 pub fn label(id: u32, payload: String) -> Box<Packet<String>> {
     Box::new(Packet { id, payload })

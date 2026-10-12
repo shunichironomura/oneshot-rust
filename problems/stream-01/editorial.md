@@ -10,10 +10,6 @@ it compile:
   reborrows it for one call instead. The future keeps borrowing the stream, as the `+ '_` of the
   return type says.
 
-`collect` then needs `mut s` and loops with `while let Some(item) = s.next().await`. When `next`
-is ready at once, the loop moves on to the next item within the same poll, so the future of
-`collect` returns `Pending` only when `s` does.
-
 **`Unpin` of `Iter` and `Zip`.** To modify the fields of `self: Pin<&mut Self>`, you need
 `get_mut` (or `DerefMut`, with `mut self`), and both require `Self: Unpin`. `Unpin` is an auto
 trait: `Iter<I>` is `Unpin` only if `I` is, and `Zip<A, B>` only if `A`, `B` *and* `A::Item` are,
