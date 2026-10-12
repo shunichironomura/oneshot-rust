@@ -2,8 +2,8 @@ No concrete type fits every call, and deref coercion does not help. It can turn 
 `&str` when the parameter is `&str`, but a `String` passed by value is not a reference at all, and
 coercion never changes the elements inside a slice, an array or a `Vec`: `&Vec<String>` can become
 `&[String]`, never `&[&str]`. So each function gets a type parameter, bounded by the trait its body
-uses: `as_ref()` comes from `AsRef<str>`, `as_mut()` from `AsMut<u32>`, `into_iter()` from
-`IntoIterator`, and `Into::into` from `Into<i64>`.
+uses: `as_ref()` comes from `AsRef<str>`, `as_mut()` from `AsMut<u32>`, and `into_iter()` from
+`IntoIterator`.
 
 - `char_len` takes `S` **by value**. `&str` and `String` implement `AsRef<str>`, and so does
   `&String`, through the blanket impl `impl<T: ?Sized + AsRef<U>, U: ?Sized> AsRef<U> for &T`. With
@@ -21,9 +21,6 @@ uses: `as_ref()` comes from `AsRef<str>`, `as_mut()` from `AsMut<u32>`, `into_it
   `&[Vec<String>; 1]` yields `&Vec<String>`, whose items are `&String`, which is `AsRef<str>` again.
 - `square_in_place` takes `&mut T` with `T: AsMut<u32>`. `Box<u32>` implements `AsMut<u32>`, and so
   does `Score`.
-- `widen` takes any `IntoIterator` whose items are `Into<i64>`. Every `u8`, `u16`, `i32` and `u32`
-  fits in an `i64`, and `i64` converts to itself through `impl<T> From<T> for T`. (`u64` does not
-  implement `Into<i64>`, because large values would not fit.)
 
 The bound is also what makes `s.as_ref()` unambiguous. In the template, `s: &str` gives `as_ref`
 several candidates (`str` implements `AsRef<str>`, `AsRef<[u8]>`, `AsRef<OsStr>` and
@@ -39,7 +36,6 @@ need to name the type parameter.
 pub fn char_len(s: impl AsRef<str>) -> usize
 pub fn total_chars(groups: impl IntoIterator<Item = impl IntoIterator<Item = impl AsRef<str>>>) -> usize
 pub fn square_in_place(n: &mut impl AsMut<u32>)
-pub fn widen(values: impl IntoIterator<Item = impl Into<i64>>) -> Vec<i64>
 ```
 
 Without associated type bounds, write one bound per level in a `where` clause. The inner item type

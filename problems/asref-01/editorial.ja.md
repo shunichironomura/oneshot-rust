@@ -3,7 +3,7 @@
 ありません。また、型強制はスライスや配列、`Vec` の中の要素を変えることはありません。
 `&Vec<String>` は `&[String]` にはなっても、`&[&str]` にはなりません。そこで、どの関数にも型引数を
 導入し、本体が使っているトレイトで境界を付けます。`as_ref()` は `AsRef<str>`、`as_mut()` は
-`AsMut<u32>`、`into_iter()` は `IntoIterator`、`Into::into` は `Into<i64>` のメソッドです。
+`AsMut<u32>`、`into_iter()` は `IntoIterator` のメソッドです。
 
 - `char_len` は `S` を**値で**受け取ります。`&str` と `String` は `AsRef<str>` を実装しており、
   `&String` も包括実装 `impl<T: ?Sized + AsRef<U>, U: ?Sized> AsRef<U> for &T` によって実装しています。
@@ -20,9 +20,6 @@
   `&Vec<String>` が得られ、その要素は `&String` で、これもやはり `AsRef<str>` です。
 - `square_in_place` は `T: AsMut<u32>` として `&mut T` を受け取ります。`Box<u32>` は `AsMut<u32>` を
   実装しており、`Score` も実装しています。
-- `widen` は、要素が `Into<i64>` である任意の `IntoIterator` を受け取ります。`u8`、`u16`、`i32`、
-  `u32` の値はどれも `i64` に収まり、`i64` 自身も `impl<T> From<T> for T` によって `i64` に変換
-  できます（`u64` は大きな値が収まらないので、`Into<i64>` を実装していません）。
 
 `s.as_ref()` があいまいにならないのも境界のおかげです。テンプレートの `s: &str` では `as_ref` の
 候補が複数あり（`str` は `AsRef<str>`、`AsRef<[u8]>`、`AsRef<OsStr>`、`AsRef<Path>` を実装しています）、
@@ -38,7 +35,6 @@
 pub fn char_len(s: impl AsRef<str>) -> usize
 pub fn total_chars(groups: impl IntoIterator<Item = impl IntoIterator<Item = impl AsRef<str>>>) -> usize
 pub fn square_in_place(n: &mut impl AsMut<u32>)
-pub fn widen(values: impl IntoIterator<Item = impl Into<i64>>) -> Vec<i64>
 ```
 
 関連型境界を使わない場合は、`where` 節に段ごとの境界を書きます。内側の要素の型は

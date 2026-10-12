@@ -27,10 +27,3 @@ pub fn square_in_place<T: AsMut<u32>>(n: &mut T) {
     let v = n.as_mut();
     *v = *v * *v;
 }
-
-pub fn widen<I>(values: I) -> Vec<i64>
-where
-    I: IntoIterator<Item: Into<i64>>,
-{
-    values.into_iter().map(Into::into).collect()
-}
