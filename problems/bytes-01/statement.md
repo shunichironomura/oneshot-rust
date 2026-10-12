@@ -1,6 +1,5 @@
 A small network protocol sends packets as raw bytes. Implement the conversions between bytes and
-the types below (they are already in the editor), and a function that splits a stream into
-packets.
+the types below (they are already in the editor).
 
 ```rust
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,14 +24,12 @@ pub struct Packet<'a> {
     pub payload: &'a [u8],
 }
 
-impl TryFrom<u8> for Kind { /* type Error = PacketError; */ }
+impl TryFrom<u8> for Kind { /* already implemented */ }
 impl<'a> TryFrom<&'a [u8]> for Packet<'a> { /* type Error = PacketError; */ }
 
 impl Packet<'_> {
     pub fn encode(&self) -> Vec<u8>;
 }
-
-pub fn decode_all(stream: &[u8]) -> Result<Vec<Packet<'_>>, PacketError>
 ```
 
 A packet is a 9-byte header followed by the payload:
@@ -45,8 +42,8 @@ A packet is a 9-byte header followed by the payload:
 | `5..9` | payload length | `u32`, **big-endian** |
 | `9..` | `payload` | the payload bytes |
 
-- `Kind::try_from(b)` converts `1`, `2` and `3` to `Ping`, `Data` and `Ack`. Any other `b` gives
-  `Err(PacketError::UnknownKind(b))`.
+- `Kind::try_from(b)` is already implemented: it converts `1`, `2` and `3` to `Ping`, `Data` and
+  `Ack`, and any other `b` to `Err(PacketError::UnknownKind(b))`.
 - `Packet::try_from(bytes)` decodes a slice that holds exactly one packet. It runs the following
   checks in this order and returns the error of the first check that fails:
   1. `bytes` is shorter than 9 bytes: `TooShort`.
@@ -61,18 +58,6 @@ A packet is a 9-byte header followed by the payload:
 - `encode` does the reverse: it returns the header followed by the payload, so that
   `Packet::try_from(&p.encode()[..])` gives back `Ok(p)`. You may assume that the payload is at
   most `u32::MAX` bytes long.
-- `decode_all(stream)` decodes packets that are stored back to back: the first packet starts at
-  the beginning of `stream`, and each following packet starts right after the payload of the
-  previous one. When no bytes are left after a packet, decoding stops and the function returns
-  all the packets in order. An empty `stream` gives `Ok(vec![])`.
-  - Each packet is checked like in `Packet::try_from`, except for check 4. The payload is the
-    next `declared` bytes after the header, and the bytes after it belong to the next packet. If
-    fewer than `declared` bytes are left after the header, the error is
-    `LengthMismatch { declared, actual }`, where `actual` is the number of bytes left after the
-    header.
-  - In particular, if fewer than 9 bytes are left where a packet should start, the error is
-    `TooShort`.
-  - If any packet is invalid, the result is the error of the first invalid packet.
 - No function may panic, whatever the input.
 
 ### Examples
@@ -83,18 +68,7 @@ Packet::try_from(&bytes[..])
 // Ok(Packet { kind: Kind::Data, seq: 0x1234, payload: &[0xAA, 0xBB] })
 Packet::try_from(&bytes[..10])  // Err(LengthMismatch { declared: 2, actual: 1 })
 Packet::try_from(&bytes[..5])   // Err(TooShort)
-Kind::try_from(4)               // Err(UnknownKind(4))
 
 Packet { kind: Kind::Ack, seq: 7, payload: b"hi" }.encode()
 // vec![b'O', b'S', 3, 7, 0, 0, 0, 0, 2, b'h', b'i']
-
-let stream = [
-    b'O', b'S', 1, 1, 0, 0, 0, 0, 0,       // Ping, seq 1, empty payload
-    b'O', b'S', 2, 2, 0, 0, 0, 0, 1, b'!', // Data, seq 2, payload b"!"
-];
-decode_all(&stream)
-// Ok(vec![
-//     Packet { kind: Kind::Ping, seq: 1, payload: &[] },
-//     Packet { kind: Kind::Data, seq: 2, payload: b"!" },
-// ])
 ```

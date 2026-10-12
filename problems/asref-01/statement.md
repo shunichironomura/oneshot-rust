@@ -1,4 +1,4 @@
-The bodies of the five functions below are already written, but each signature is tied to a single
+The bodies of the four functions below are already written, but each signature is tied to a single
 concrete type, so the test harness (the `tests.rs` tab) does not compile. Change **only the
 signatures** so that the harness compiles and passes. Do not change the bodies.
 
@@ -7,7 +7,6 @@ pub fn char_len(s: &str) -> usize
 pub fn join_upper(words: &[String], sep: &str) -> String
 pub fn total_chars(groups: Vec<Vec<String>>) -> usize
 pub fn square_in_place(n: &mut u32)
-pub fn widen(values: Vec<i32>) -> Vec<i64>
 ```
 
 - `char_len` returns the number of characters (`char`s) in a string. The harness passes `&str`,
@@ -21,8 +20,6 @@ pub fn widen(values: Vec<i32>) -> Vec<i64>
   `text.lines().map(|l| l.split(' '))`).
 - `square_in_place` replaces a `u32` with its square. The harness passes a `&mut Box<u32>` and a
   mutable reference to its own type `Score`, which implements `AsMut<u32>`.
-- `widen` converts integers to `i64`, keeping their order. The harness passes `Vec`s, arrays and
-  iterators of `u8`, `u16`, `i32`, `u32` or `i64` values.
 
 ### Examples
 
@@ -36,5 +33,4 @@ total_chars(&[vec![String::from("é")]])    // 1
 
 let mut b = Box::new(3u32);
 square_in_place(&mut b);                   // *b is now 9
-widen(vec![1u8, 2])                        // vec![1, 2] (a Vec<i64>)
 ```

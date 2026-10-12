@@ -1,4 +1,4 @@
-次の 5 つの関数の本体はすでに書かれていますが、どのシグネチャも 1 つの具体的な型に決め打ちされて
+次の 4 つの関数の本体はすでに書かれていますが、どのシグネチャも 1 つの具体的な型に決め打ちされて
 いるので、ハーネス（`tests.rs` タブ）がコンパイルできません。**シグネチャだけ**を書き換えて、
 ハーネスがコンパイルでき、テストに合格するようにしてください。本体は変更しないでください。
 
@@ -7,7 +7,6 @@ pub fn char_len(s: &str) -> usize
 pub fn join_upper(words: &[String], sep: &str) -> String
 pub fn total_chars(groups: Vec<Vec<String>>) -> usize
 pub fn square_in_place(n: &mut u32)
-pub fn widen(values: Vec<i32>) -> Vec<i64>
 ```
 
 - `char_len` は文字列に含まれる文字（`char`）の数を返します。ハーネスは `&str`、`String`、
@@ -21,8 +20,6 @@ pub fn widen(values: Vec<i32>) -> Vec<i64>
   渡します。
 - `square_in_place` は `u32` の値をその 2 乗で置き換えます。ハーネスは `&mut Box<u32>` と、
   ハーネス自身の型 `Score`（`AsMut<u32>` を実装しています）への可変参照を渡します。
-- `widen` は整数を、順番を保ったまま `i64` に変換します。ハーネスは `u8`、`u16`、`i32`、
-  `u32`、`i64` の値の `Vec`、配列、イテレータを渡します。
 
 ### 例
 
@@ -36,5 +33,4 @@ total_chars(&[vec![String::from("é")]])    // 1
 
 let mut b = Box::new(3u32);
 square_in_place(&mut b);                   // *b は 9 になる
-widen(vec![1u8, 2])                        // vec![1, 2]（Vec<i64>）
 ```

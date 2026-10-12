@@ -1,4 +1,4 @@
-A tokenizer must look at the next character **without consuming it**: the run of digits in `42+y`
+A tokenizer must look at the next character **without consuming it**: the run of digits in `42+3`
 ends at `+`, and that `+` is the next token. `chars().peekable()` provides this. `peek` shows the
 next item, and `next_if(pred)` takes it only when `pred` returns `true`, so
 `while let Some((_, d)) = chars.next_if(...)` reads a run of digits and stops right in front of the
@@ -9,31 +9,26 @@ manual counting. `char_indices` would give **byte** offsets instead, which diffe
 positions after a non-ASCII character such as U+3000.
 
 The digits are collected into a `String` and parsed with `parse::<u64>()`. The string is never
-empty and holds only ASCII digits, so the only possible error is a value that is too large.
-If you compute the value yourself, `value * 10 + digit` panics on overflow in debug builds (and
-under Miri); use `checked_mul` and `checked_add` instead, as the first alternative does. A wider
-type such as `u128` does not fix it, because a number can have any number of digits.
+empty, holds only ASCII digits, and its value fits in a `u64`, so the parse cannot fail.
 
-Returning as soon as an error is found (`?` or `return Err(...)`) gives the first error for free.
+Returning as soon as an error is found (`return Err(...)`) gives the first error for free.
 
 Pitfalls:
 
 - `chars.by_ref().take_while(...)` looks like the right tool, but it consumes the first character
-  that fails the test and throws it away: `42+y` loses its `+`.
+  that fails the test and throws it away: `42+3` loses its `+`.
 - `peek` takes `&mut self` and returns a reference into the iterator. In
-  `while let Some(d) = chars.peek() { chars.next(); name.push(*d); }`, `d` is still in use when
+  `while let Some(d) = chars.peek() { chars.next(); digits.push(*d); }`, `d` is still in use when
   `next` is called, so the borrow checker rejects it (E0499). Copy the value out with the pattern
   `Some(&d)` (or use `next_if`, which needs no separate `next`).
 - `next_if_eq` takes a reference: `next_if_eq(&'>')`, not `next_if_eq('>')`.
-- `is_alphanumeric`, `is_alphabetic` and `is_numeric` accept non-ASCII letters and digits, and
-  `is_ascii_whitespace` rejects U+3000. Use the `is_ascii_*` methods for tokens and
-  `is_whitespace` for whitespace.
+- `is_numeric` accepts non-ASCII digits such as `٣`, and `is_ascii_whitespace` rejects U+3000. Use
+  `is_ascii_digit` for numbers and `is_whitespace` for whitespace.
 
 ### Alternatives
 
-`peek` with a manual position counter, and the value computed with `checked_mul` and
-`checked_add`. Every `next` must be matched by `pos += 1`, which is easy to forget; this is what
-`enumerate` saves.
+`peek` with a manual position counter, and the value computed digit by digit. Every `next` must be
+matched by `pos += 1`, which is easy to forget; this is what `enumerate` saves.
 
 ```rust
 pub fn tokenize(src: &str) -> Result<Vec<Token>, LexError> {
@@ -54,24 +49,9 @@ pub fn tokenize(src: &str) -> Result<Vec<Token>, LexError> {
                     let Some(digit) = d.to_digit(10) else { break };
                     chars.next();
                     pos += 1;
-                    value = value
-                        .checked_mul(10)
-                        .and_then(|v| v.checked_add(u64::from(digit)))
-                        .ok_or(LexError::Overflow { pos: start })?;
+                    value = value * 10 + u64::from(digit);
                 }
                 Token::Num(value)
-            }
-            'a'..='z' | 'A'..='Z' | '_' => {
-                let mut name = String::from(c);
-                while let Some(&d) = chars.peek() {
-                    if !(d.is_ascii_alphanumeric() || d == '_') {
-                        break;
-                    }
-                    name.push(d);
-                    chars.next();
-                    pos += 1;
-                }
-                Token::Ident(name)
             }
             '-' => {
                 if chars.next_if_eq(&'>').is_some() {
@@ -109,14 +89,7 @@ pub fn tokenize(src: &str) -> Result<Vec<Token>, LexError> {
                     i += 1;
                 }
                 let digits: String = chars[start..i].iter().collect();
-                let value = digits.parse().map_err(|_| LexError::Overflow { pos: start })?;
-                Token::Num(value)
-            }
-            'a'..='z' | 'A'..='Z' | '_' => {
-                while i < chars.len() && (chars[i].is_ascii_alphanumeric() || chars[i] == '_') {
-                    i += 1;
-                }
-                Token::Ident(chars[start..i].iter().collect())
+                Token::Num(digits.parse().expect("a run of digits that fits in a u64"))
             }
             '-' if chars.get(i) == Some(&'>') => {
                 i += 1;

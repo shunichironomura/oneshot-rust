@@ -12,14 +12,6 @@ impl<X, Y> Point<X, Y> {
         Point { x, y }
     }
 
-    pub fn mixup<X2, Y2>(self, other: Point<X2, Y2>) -> Point<X, Y2> {
-        Point { x: self.x, y: other.y }
-    }
-
-    pub fn swap(self) -> Point<Y, X> {
-        Point { x: self.y, y: self.x }
-    }
-
     pub fn convert<X2, Y2>(self) -> Point<X2, Y2>
     where
         X: Into<X2>,

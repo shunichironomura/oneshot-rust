@@ -18,15 +18,12 @@ impl Doc {
     pub fn line(&self, i: usize) -> Option<&str>;
     pub fn set_line(&mut self, i: usize, text: &str);
     pub fn shares_storage(&self, other: &Doc) -> bool;
-    pub fn storage_id(&self) -> usize;
 }
 ```
 
 `normalize_ws` は `s` の空白を整えます。
 
-- 空白とは、ASCII の空白文字 `' '`、`'\t'`、`'\n'`、`'\r'` と改ページ `'\x0C'` のことです
-  （`char::is_ascii_whitespace` が真になる文字そのものです）。それ以外の文字は空白ではありません。
-  垂直タブ `'\x0B'` や、U+3000 のような ASCII 以外の空白も空白として扱いません。
+- 空白とは、`char::is_ascii_whitespace` が真になる文字のことです。
 - 結果は、`s` の両端の空白を取り除き、空白でない 2 文字の間にある空白の連なりをそれぞれ 1 つの `' '` に
   置き換えた文字列です。
 - 置き換える連なりが 1 つもない（内側の連なりがどれもちょうど 1 つの `' '` である）ときは、結果は `s` の一部
@@ -50,12 +47,8 @@ impl Doc {
 - `set_line(i, text)` は `i` 行目を `text` に置き換えます。ほかの `Doc` は決して変わりません。
   記憶領域をまだ存在するほかの `Doc` と共有しているときは、先にこの `Doc` 専用のコピーを作ります。
   共有していなければ、コピーせずにその場で行を置き換えます。
-- `i` が範囲外なら、`set_line` はパニックし、`Doc` は元のままです。特に、記憶領域のコピーは作りません。
 - `shares_storage` は、2 つの `Doc` が同じ記憶領域を使っているかどうかを返します（行が等しいだけでは
   共有ではありません）。
-- `storage_id` は、`lines` が指している `Vec<String>` のアドレスを `usize` で返します。したがって
-  `a.storage_id() == b.storage_id()` と `a.shares_storage(&b)` の真偽は常に一致し、`Doc` をその場で
-  書き換えている間は値が変わりません。
 
 ### 例
 

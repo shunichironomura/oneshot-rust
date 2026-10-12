@@ -18,15 +18,12 @@ impl Doc {
     pub fn line(&self, i: usize) -> Option<&str>;
     pub fn set_line(&mut self, i: usize, text: &str);
     pub fn shares_storage(&self, other: &Doc) -> bool;
-    pub fn storage_id(&self) -> usize;
 }
 ```
 
 `normalize_ws` cleans up the whitespace in `s`.
 
-- Whitespace means the ASCII whitespace characters `' '`, `'\t'`, `'\n'`, `'\r'` and form feed
-  `'\x0C'` (exactly those for which `char::is_ascii_whitespace` is true). Every other character is
-  not whitespace, including vertical tab `'\x0B'` and non-ASCII spaces such as U+3000.
+- Whitespace means the characters for which `char::is_ascii_whitespace` is true.
 - The result is `s` with the whitespace at both ends removed and every run of whitespace between
   two non-whitespace characters replaced by a single `' '`.
 - If no run has to be replaced (every run inside is already exactly one `' '`), the result is a part
@@ -50,12 +47,7 @@ impl Doc {
 - `set_line(i, text)` replaces line `i` with `text`, and never changes any other `Doc`. If the
   storage is shared with another `Doc` that still exists, this `Doc` first gets a copy of its own.
   If it is not shared, the line is replaced in place, without copying.
-- If `i` is out of range, `set_line` panics and leaves the `Doc` as it was. In particular, it does
-  not copy the storage.
 - `shares_storage` tells whether two `Doc`s use the same storage (not just equal lines).
-- `storage_id` returns the address of the `Vec<String>` that `lines` points to, as a `usize`. So
-  `a.storage_id() == b.storage_id()` exactly when `a.shares_storage(&b)`, and the id of a `Doc` does
-  not change while it is edited in place.
 
 ### Examples
 

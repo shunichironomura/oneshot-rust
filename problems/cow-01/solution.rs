@@ -39,16 +39,10 @@ impl Doc {
     }
 
     pub fn set_line(&mut self, i: usize, text: &str) {
-        // Check before `make_mut`, which would already have copied a shared Vec.
-        assert!(i < self.lines.len(), "line {i} is out of range");
         Rc::make_mut(&mut self.lines)[i] = text.to_string();
     }
 
     pub fn shares_storage(&self, other: &Doc) -> bool {
         Rc::ptr_eq(&self.lines, &other.lines)
-    }
-
-    pub fn storage_id(&self) -> usize {
-        Rc::as_ptr(&self.lines) as usize
     }
 }

@@ -14,32 +14,18 @@ pub struct Version {
 #[derive(Debug, PartialEq, Eq)]
 pub struct ParseVersionError;
 
-fn parse_number(s: &str) -> Result<u64, ParseVersionError> {
-    // `parse::<u64>()` alone would also accept a leading `+`.
-    if s.is_empty() || !s.bytes().all(|b| b.is_ascii_digit()) {
-        return Err(ParseVersionError);
-    }
-    // Only digits are left, so the only possible error is an overflow.
-    s.parse().map_err(|_| ParseVersionError)
-}
-
-fn is_valid_pre(pre: &str) -> bool {
-    !pre.is_empty() && pre.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'.')
-}
-
+// Already implemented: parses `MAJOR[.MINOR[.PATCH]][-PRE]`.
 impl FromStr for Version {
     type Err = ParseVersionError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        // The label may contain dots, so split it off before splitting at `.`.
         let (numbers, pre) = match s.split_once('-') {
-            Some((numbers, pre)) if is_valid_pre(pre) => (numbers, Some(pre.to_string())),
-            Some(_) => return Err(ParseVersionError),
+            Some((numbers, pre)) => (numbers, Some(pre.to_string())),
             None => (s, None),
         };
         let parts = numbers
             .split('.')
-            .map(parse_number)
+            .map(|part| part.parse().map_err(|_| ParseVersionError))
             .collect::<Result<Vec<u64>, _>>()?;
         let (major, minor, patch) = match parts[..] {
             [major] => (major, 0, 0),
@@ -51,6 +37,7 @@ impl FromStr for Version {
     }
 }
 
+// Already implemented: prints `MAJOR.MINOR.PATCH`, followed by `-PRE` if there is one.
 impl fmt::Display for Version {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}.{}.{}", self.major, self.minor, self.patch)?;

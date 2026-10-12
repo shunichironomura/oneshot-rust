@@ -30,8 +30,4 @@ impl Doc {
     pub fn shares_storage(&self, other: &Doc) -> bool {
         todo!()
     }
-
-    pub fn storage_id(&self) -> usize {
-        todo!()
-    }
 }

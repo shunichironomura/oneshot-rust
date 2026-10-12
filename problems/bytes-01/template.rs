@@ -24,7 +24,12 @@ impl TryFrom<u8> for Kind {
     type Error = PacketError;
 
     fn try_from(b: u8) -> Result<Self, Self::Error> {
-        todo!()
+        match b {
+            1 => Ok(Kind::Ping),
+            2 => Ok(Kind::Data),
+            3 => Ok(Kind::Ack),
+            other => Err(PacketError::UnknownKind(other)),
+        }
     }
 }
 
@@ -40,8 +45,4 @@ impl Packet<'_> {
     pub fn encode(&self) -> Vec<u8> {
         todo!()
     }
-}
-
-pub fn decode_all(stream: &[u8]) -> Result<Vec<Packet<'_>>, PacketError> {
-    todo!()
 }

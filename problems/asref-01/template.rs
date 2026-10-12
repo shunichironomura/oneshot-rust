@@ -24,7 +24,3 @@ pub fn square_in_place(n: &mut u32) {
     let v = n.as_mut();
     *v = *v * *v;
 }
-
-pub fn widen(values: Vec<i32>) -> Vec<i64> {
-    values.into_iter().map(Into::into).collect()
-}

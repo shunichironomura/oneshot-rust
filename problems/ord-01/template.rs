@@ -14,17 +14,37 @@ pub struct Version {
 #[derive(Debug, PartialEq, Eq)]
 pub struct ParseVersionError;
 
+// Already implemented: parses `MAJOR[.MINOR[.PATCH]][-PRE]`.
 impl FromStr for Version {
     type Err = ParseVersionError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+        let (numbers, pre) = match s.split_once('-') {
+            Some((numbers, pre)) => (numbers, Some(pre.to_string())),
+            None => (s, None),
+        };
+        let parts = numbers
+            .split('.')
+            .map(|part| part.parse().map_err(|_| ParseVersionError))
+            .collect::<Result<Vec<u64>, _>>()?;
+        let (major, minor, patch) = match parts[..] {
+            [major] => (major, 0, 0),
+            [major, minor] => (major, minor, 0),
+            [major, minor, patch] => (major, minor, patch),
+            _ => return Err(ParseVersionError),
+        };
+        Ok(Version { major, minor, patch, pre })
     }
 }
 
+// Already implemented: prints `MAJOR.MINOR.PATCH`, followed by `-PRE` if there is one.
 impl fmt::Display for Version {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        todo!()
+        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)?;
+        if let Some(pre) = &self.pre {
+            write!(f, "-{pre}")?;
+        }
+        Ok(())
     }
 }
 

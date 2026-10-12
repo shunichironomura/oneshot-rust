@@ -1,7 +1,7 @@
 id = "asref-01"
 title = { en = "Anything string-like", ja = "文字列っぽいものなら何でも" }
 difficulty = 2
-concepts = ["AsRef<str> / AsMut<T> bounds", "generic slices &[S]", "IntoIterator bounds", "associated type bounds (Item: Trait)", "Into<i64>", "deref coercion does not apply to generic types", "turbofish vs argument-position impl Trait"]
+concepts = ["AsRef<str> / AsMut<T> bounds", "generic slices &[S]", "IntoIterator bounds", "associated type bounds (Item: Trait)", "deref coercion does not apply to generic types", "turbofish vs argument-position impl Trait"]
 kind = "signature"
 
 [judge]

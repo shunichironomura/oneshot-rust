@@ -4,7 +4,7 @@ All three parts follow the same rule: look first, and copy only when something r
 `s`. `s.trim_ascii()` is already a slice of `s`, so when nothing inside has to change it can be
 returned as `Cow::Borrowed` without allocating anything. A `String` is built only when some run is
 longer than one character or is not a plain space. Beware that `str::trim` and `split_whitespace`
-use the Unicode definition of whitespace, which includes U+3000 and `'\x0B'`. Their ASCII versions
+use the Unicode definition of whitespace, which is wider than the ASCII one. Their ASCII versions
 are `trim_ascii` and `split_ascii_whitespace`.
 
 The owned form of `[i32]` is `Vec<i32>` (through `ToOwned`), so `Cow<'_, [i32]>` holds either a
@@ -17,14 +17,10 @@ because the loop still borrows `v`.
 `Rc` only gives shared access, so `self.lines[i] = ...` does not compile. `Rc::make_mut` is
 clone-on-write for `Rc`: if other `Rc`s point to the same value, it clones the value into a new
 allocation owned by this `Rc` alone; otherwise it returns `&mut` to the value in place. `Rc::get_mut`
-is the strict version that returns `None` when the value is shared. Check the index before calling
-`make_mut`: written as `Rc::make_mut(&mut self.lines)[i] = ...`, a shared `Vec` is copied before the
-indexing panics.
+is the strict version that returns `None` when the value is shared.
 
 `==` on two `Rc`s compares the values, so two separately created `Doc`s with equal lines would look
-shared. `Rc::ptr_eq` compares the pointers, and `Rc::as_ptr` gives the address of the value. Note that
-`self.lines.as_ptr()` is the address of the `Vec`'s element buffer instead, and that is the same
-dangling pointer for every empty `Vec`.
+shared. `Rc::ptr_eq` compares the pointers instead.
 
 ### Alternatives
 
@@ -69,7 +65,6 @@ to clone the `Vec`: `self.lines.clone()` would only clone the `Rc`.
 
 ```rust
 pub fn set_line(&mut self, i: usize, text: &str) {
-    assert!(i < self.lines.len(), "line {i} is out of range");
     if Rc::strong_count(&self.lines) > 1 {
         self.lines = Rc::new(Vec::clone(&self.lines));
     }

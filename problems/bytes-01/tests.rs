@@ -1,5 +1,5 @@
 use crate::judge::{case, check_eq};
-use crate::user::{Kind, Packet, PacketError, decode_all};
+use crate::user::{Kind, Packet, PacketError};
 
 const O: u8 = b'O';
 const S: u8 = b'S';
@@ -29,38 +29,13 @@ pub fn run() {
             Ok(Packet { kind: Kind::Data, seq: 0x1234, payload: &[0xAA, 0xBB] }),
         )?;
         check_eq(Packet::try_from(&bytes[..10]), Err(mismatch(2, 1)))?;
-        check_eq(Packet::try_from(&bytes[..5]), Err(PacketError::TooShort))?;
-        check_eq(Kind::try_from(4), Err(PacketError::UnknownKind(4)))
+        check_eq(Packet::try_from(&bytes[..5]), Err(PacketError::TooShort))
     });
     case("sample-2", || {
         let packet = Packet { kind: Kind::Ack, seq: 7, payload: b"hi" };
         check_eq(packet.encode(), vec![O, S, 3, 7, 0, 0, 0, 0, 2, b'h', b'i'])
     });
-    case("sample-3", || {
-        let stream = [
-            O, S, 1, 1, 0, 0, 0, 0, 0, // Ping, seq 1, empty payload
-            O, S, 2, 2, 0, 0, 0, 0, 1, b'!', // Data, seq 2, payload "!"
-        ];
-        check_eq(
-            decode_all(&stream),
-            Ok(vec![
-                Packet { kind: Kind::Ping, seq: 1, payload: &[] },
-                Packet { kind: Kind::Data, seq: 2, payload: b"!" },
-            ]),
-        )
-    });
     case("hidden-1", || {
-        check_eq(Kind::try_from(1), Ok(Kind::Ping))?;
-        check_eq(Kind::try_from(2), Ok(Kind::Data))?;
-        check_eq(Kind::try_from(3), Ok(Kind::Ack))?;
-        let via_into: Result<Kind, PacketError> = 3u8.try_into();
-        check_eq(via_into, Ok(Kind::Ack))?;
-        for b in [0, 5, 0x31, 0x7F, 0x80, 0x81, 0x83, 0xFF] {
-            check_eq(Kind::try_from(b), Err(PacketError::UnknownKind(b)))?;
-        }
-        Ok(())
-    });
-    case("hidden-2", || {
         // seq is little-endian, the length big-endian.
         check_eq(
             decode(&[O, S, 1, 0xFF, 0x00, 0, 0, 0, 0]),
@@ -79,7 +54,7 @@ pub fn run() {
         let via_into: Result<Packet<'_>, PacketError> = bytes.as_slice().try_into();
         check_eq(via_into.map(|p| p.payload.len()), Ok(256))
     });
-    case("hidden-3", || {
+    case("hidden-2", || {
         // Fewer than 9 bytes is TooShort, whatever the bytes are.
         let header = [O, S, 1, 0, 0, 0, 0, 0, 0];
         for n in 0..9 {
@@ -89,7 +64,7 @@ pub fn run() {
         check_eq(decode(&[0xFF; 8]), Err(PacketError::TooShort))?;
         check_eq(decode(&[O, S, 9, 0, 0, 0, 0, 9]), Err(PacketError::TooShort))
     });
-    case("hidden-4", || {
+    case("hidden-3", || {
         // The magic is checked before the kind, and the kind before the length.
         check_eq(decode(&[b'o', b's', 1, 0, 0, 0, 0, 0, 0]), Err(PacketError::BadMagic))?;
         check_eq(decode(&[S, O, 1, 0, 0, 0, 0, 0, 0]), Err(PacketError::BadMagic))?;
@@ -102,7 +77,7 @@ pub fn run() {
             Err(PacketError::UnknownKind(0xFF)),
         )
     });
-    case("hidden-5", || {
+    case("hidden-4", || {
         // The payload must be exactly as long as declared.
         check_eq(decode(&raw(2, 0, 1, &[1, 2, 3])), Err(mismatch(1, 3)))?;
         check_eq(decode(&raw(1, 0, 0, &[9])), Err(mismatch(0, 1)))?;
@@ -112,7 +87,7 @@ pub fn run() {
         check_eq(decode(&raw(3, 0, u32::MAX, &[1, 2])), Err(mismatch(u32::MAX, 2)))?;
         check_eq(decode(&raw(3, 0, u32::MAX - 8, &[])), Err(mismatch(u32::MAX - 8, 0)))
     });
-    case("hidden-6", || {
+    case("hidden-5", || {
         let empty = Packet { kind: Kind::Ping, seq: 0xABCD, payload: &[] };
         check_eq(empty.encode(), vec![O, S, 1, 0xCD, 0xAB, 0, 0, 0, 0])?;
         // 300 = 0x012C
@@ -134,51 +109,5 @@ pub fn run() {
             check_eq(decode(&p.encode()), Ok(p))?;
         }
         Ok(())
-    });
-    case("hidden-7", || {
-        check_eq(decode_all(&[]), Ok(vec![]))?;
-        let mut stream = raw(3, 0x0102, 3, b"OS\x02");
-        stream.extend(raw(1, 0, 0, &[]));
-        stream.extend(raw(2, 0xFFFF, 9, &[0; 9]));
-        stream.extend(raw(2, 0x8000, 1, &[0xEE]));
-        check_eq(
-            decode_all(&stream),
-            Ok(vec![
-                Packet { kind: Kind::Ack, seq: 0x0102, payload: b"OS\x02" },
-                Packet { kind: Kind::Ping, seq: 0, payload: &[] },
-                Packet { kind: Kind::Data, seq: 0xFFFF, payload: &[0; 9] },
-                Packet { kind: Kind::Data, seq: 0x8000, payload: &[0xEE] },
-            ]),
-        )?;
-        let single = raw(2, 5, 2, b"ok");
-        check_eq(decode_all(&single), Ok(vec![decode(&single).unwrap()]))
-    });
-    case("hidden-8", || {
-        let good = raw(1, 5, 3, b"abc");
-        // Fewer than 9 bytes left over: TooShort.
-        for n in [1, 2, 5, 8] {
-            let mut stream = good.clone();
-            stream.extend_from_slice(&good[..n]);
-            check_eq(decode_all(&stream), Err(PacketError::TooShort))?;
-            check_eq(decode_all(&good[..n]), Err(PacketError::TooShort))?;
-        }
-        // A declared length shorter than the rest just ends the packet early.
-        check_eq(decode_all(&raw(1, 0, 1, b"abc")), Err(PacketError::TooShort))?;
-        // Not enough bytes for the payload: actual counts the bytes after the header.
-        let mut stream = good.clone();
-        stream.extend_from_slice(&good[..11]);
-        check_eq(decode_all(&stream), Err(mismatch(3, 2)))?;
-        let mut stream = good.clone();
-        stream.extend(raw(2, 0, u32::MAX, &[1, 2, 3]));
-        check_eq(decode_all(&stream), Err(mismatch(u32::MAX, 3)))?;
-        // The first error wins.
-        let mut stream = good.clone();
-        stream.extend([b'X', S, 1, 0, 0, 0, 0, 0, 0]);
-        stream.extend(raw(7, 0, 0, &[]));
-        check_eq(decode_all(&stream), Err(PacketError::BadMagic))?;
-        let mut stream = good.clone();
-        stream.extend(raw(0, 0, 50, &[1]));
-        stream.extend(&good[..3]);
-        check_eq(decode_all(&stream), Err(PacketError::UnknownKind(0)))
     });
 }

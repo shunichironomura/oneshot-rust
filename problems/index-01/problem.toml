@@ -4,10 +4,7 @@ difficulty = 2
 concepts = [
     "Index / IndexMut with a tuple index",
     "Output associated type",
-    "RangeBounds<usize> and Bound",
     "per-coordinate bounds checks",
-    "overflow-free bound arithmetic",
-    "i64 accumulation",
 ]
 kind = "implement"
 

@@ -6,7 +6,6 @@ concepts = [
     "<[u8]>::utf8_chunks",
     "String::from_utf8_lossy returns Cow<str>; U+FFFD",
     "maximal invalid subparts",
-    "decoding across chunk boundaries",
     "&str borrowed from &[u8] by elision",
 ]
 kind = "implement"

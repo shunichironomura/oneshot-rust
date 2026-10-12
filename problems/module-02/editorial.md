@@ -1,10 +1,10 @@
-Paths and visibility are both relative to modules, and the template makes six mistakes about them:
+Paths and visibility are both relative to modules, and the template makes five mistakes about them:
 
 - `crate` is the root of the crate, and your file is not the root: it is the module `crate::user`
   (the root is the judge's `main.rs`). So `crate::units` does not exist. In `shapes`, `super` is
-  `crate::user`, so write `super::units::Cm`, or the absolute path `crate::user::units::Cm`.
-- In `checks`, `super` is `shapes`, not `crate::user`, so `super::units` does not exist either. Go
-  up two levels with `super::super::units::Cm`, or use `crate::user::units::Cm`.
+  `crate::user`, so write `super::units::Cm`, or the absolute path `crate::user::units::Cm`. The
+  import in `checks` is already right: there `super` is `shapes`, so it goes up two levels with
+  `super::super::units::Cm`.
 - The field of a tuple struct is private unless it says otherwise: `pub struct Cm(u32)` makes the
   type public, but not the `u32` inside. Outside `units` you can neither build `Cm(width)`, nor read
   `.0`, nor match the pattern `Cm(w)`. `pub(super)` on the field makes it visible in `crate::user`
@@ -28,10 +28,10 @@ rejected, because a visibility can only be restricted to an ancestor module, and
 sibling of `units`. The closest you can get is their common parent, which is what `pub(super)`
 (the same as `pub(in crate::user)`) means.
 
-The errors do not show up all at once. The first compile reports the two unresolved imports, the
-private import of `is_square` and the private `new`. Only when the imports resolve does the compiler
-see that the field of `Cm` is private, and only when `pub use` is written does it check what may be
-re-exported. Fixing only the reported errors takes three compiles.
+The errors do not show up all at once. The first compile reports the unresolved import, the pattern
+on the private field of `Cm` in `checks`, the private import of `is_square` and the private `new`.
+Only when `pub use` is written does the compiler check what may be re-exported. Fixing only the
+reported errors takes two compiles.
 
 ### Alternatives
 

@@ -3,19 +3,13 @@ In `impl<X, Y> Point<X, Y>`, the `<X, Y>` right after `impl` **declares** two ty
 declares nothing, so `X` and `Y` in `new` are unknown names ("cannot find type `X` in this scope"),
 and a bare `Point` lacks its two type arguments. Each of the three blocks needs a different header.
 
-- `new`, `mixup`, `swap` and `convert` work for every point, so their block is
-  `impl<X, Y> Point<X, Y>` with no bounds. The first three bodies only move values around, `convert`
-  states its own requirements (see below), and a bound such as `X: Clone` would reject the
-  harness's `Grade`.
-- In `mixup`, `other` has coordinate types of its own, so the method declares its own parameters:
-  `mixup<X2, Y2>(self, other: Point<X2, Y2>) -> Point<X, Y2>`. The result mixes the two sets. With
-  `other: Self`, both points would need the same types, and
-  `Point::new(5, 10.4).mixup(Point::new("Hello", 'c'))` would not compile. The new names must differ
-  from `X` and `Y`: `mixup<X, Y2>` is rejected because the `impl` already uses the name `X`.
-- `swap` returns `Point<Y, X>`, not `Self`. Inside this block `Self` is `Point<X, Y>`, a different
-  type unless `X` and `Y` happen to be the same.
-- `convert` also declares `X2` and `Y2`, and its `.into()` calls need `X: Into<X2>` and
-  `Y: Into<Y2>`. These bounds mention `X2` and `Y2`, which exist only in the method, so they cannot
+- `new` and `convert` work for every point, so their block is `impl<X, Y> Point<X, Y>` with no
+  bounds. The body of `new` only moves values, `convert` states its own requirements (see below),
+  and a bound such as `X: Clone` would reject the harness's `Grade`.
+- The result type of `convert` is not `Self`, so the method declares its own parameters:
+  `convert<X2, Y2>(self) -> Point<X2, Y2>`. The new names must differ from `X` and `Y`:
+  `convert<X, Y2>` is rejected because the `impl` already uses the name `X`. The `.into()` calls
+  need `X: Into<X2>` and `Y: Into<Y2>`. These bounds mention `X2` and `Y2`, which exist only in the method, so they cannot
   go on the `impl` line; they go in the method's `where` clause. A method's `where` clause may
   constrain the `impl`'s parameters too, and then only that method carries the requirement. The
   order `<X2, Y2>` matters for the harness's turbofish `convert::<String, u32>()`.

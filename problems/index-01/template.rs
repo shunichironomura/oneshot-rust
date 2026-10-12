@@ -1,4 +1,4 @@
-use std::ops::{Index, IndexMut, RangeBounds};
+use std::ops::{Index, IndexMut};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Grid<T> {
@@ -19,8 +19,11 @@ impl<T> Grid<T> {
         todo!()
     }
 
+    /// Row `y` as a slice of `width` cells. Panics if `y >= height`.
     pub fn row(&self, y: usize) -> &[T] {
-        todo!()
+        assert!(y < self.height, "row {y} is outside a grid of height {}", self.height);
+        let start = y * self.width;
+        &self.cells[start..start + self.width]
     }
 }
 
@@ -34,12 +37,6 @@ impl<T> Index<(usize, usize)> for Grid<T> {
 
 impl<T> IndexMut<(usize, usize)> for Grid<T> {
     fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut T {
-        todo!()
-    }
-}
-
-impl Grid<i32> {
-    pub fn row_sum<R: RangeBounds<usize>>(&self, y: usize, cols: R) -> Option<i64> {
         todo!()
     }
 }

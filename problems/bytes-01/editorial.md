@@ -18,17 +18,11 @@ The declared length is a `u32` and slice lengths are `usize`, so they cannot be 
 `9 + declared` as a `u32`: for a length near `u32::MAX` it overflows, which panics in debug builds
 such as the judge's.
 
-In `decode_all`, `split_at(n)` panics if `n` is larger than the slice. `split_at_checked` returns
-`None` instead, which `ok_or` turns into the `LengthMismatch`. Each step only moves the `rest`
-window forward; no bytes are copied.
-
 The payload is a part of the input, so a `Packet<'a>` borrows from it.
 `impl<'a> TryFrom<&'a [u8]> for Packet<'a>` ties the two lifetimes together, which is why
 `try_from` takes `bytes: &'a [u8]`. Writing `bytes: &[u8]` there gives "lifetime may not live long
-enough". The helper `split_header(bytes: &[u8]) -> Result<(Header, &[u8]), PacketError>` needs no
-annotation: with a single reference parameter, elision ties the returned slice to `bytes`.
-Finally, the discriminants of `Kind` are the wire values, so `self.kind as u8` gives the kind
-byte.
+enough". Finally, the discriminants of `Kind` are the wire values, so `self.kind as u8` gives
+the kind byte.
 
 ### Alternatives
 
@@ -60,17 +54,6 @@ impl<'a> TryFrom<&'a [u8]> for Packet<'a> {
 }
 ```
 
-`Kind::try_from` can search the variants by their discriminants instead of repeating the numbers.
-
-```rust
-fn try_from(b: u8) -> Result<Self, Self::Error> {
-    [Kind::Ping, Kind::Data, Kind::Ack]
-        .into_iter()
-        .find(|&kind| kind as u8 == b)
-        .ok_or(PacketError::UnknownKind(b))
-}
-```
-
 `encode` can join the parts with `concat`. The type annotation makes every element a `&[u8]`,
 whatever the length of the array it points to.
 
@@ -85,30 +68,5 @@ pub fn encode(&self) -> Vec<u8> {
         self.payload,
     ];
     parts.concat()
-}
-```
-
-`decode_all` can reuse `try_from`: read only the declared length to find where the packet ends,
-and let `try_from` run all the checks on exactly that part. If the payload is cut short, the part
-is everything that is left, and `try_from` reports the same `LengthMismatch`.
-
-```rust
-pub fn decode_all(stream: &[u8]) -> Result<Vec<Packet<'_>>, PacketError> {
-    let mut packets = Vec::new();
-    let mut rest = stream;
-    while !rest.is_empty() {
-        // Find where this packet ends, then let `try_from` check exactly that part.
-        let end = match rest.first_chunk::<HEADER_LEN>() {
-            Some(header) => {
-                let declared = u32::from_be_bytes([header[5], header[6], header[7], header[8]]);
-                rest.len().min((declared as usize).saturating_add(HEADER_LEN))
-            }
-            None => rest.len(), // too short: `try_from` reports TooShort
-        };
-        let (packet, next) = rest.split_at(end);
-        packets.push(Packet::try_from(packet)?);
-        rest = next;
-    }
-    Ok(packets)
 }
 ```

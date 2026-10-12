@@ -1,7 +1,6 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token {
     Num(u64),
-    Ident(String),
     Op(char),
     Arrow,
 }
@@ -10,12 +9,6 @@ pub enum Token {
 pub enum LexError {
     /// A character that cannot start a token, and its position.
     Unexpected { ch: char, pos: usize },
-    /// A number greater than `u64::MAX`, and the position of its first digit.
-    Overflow { pos: usize },
-}
-
-fn is_ident_char(c: char) -> bool {
-    c.is_ascii_alphanumeric() || c == '_'
 }
 
 pub fn tokenize(src: &str) -> Result<Vec<Token>, LexError> {
@@ -33,16 +26,8 @@ pub fn tokenize(src: &str) -> Result<Vec<Token>, LexError> {
                 while let Some((_, d)) = chars.next_if(|&(_, d)| d.is_ascii_digit()) {
                     digits.push(d);
                 }
-                // Only digits, at least one: the only possible error is overflow.
-                let value = digits.parse::<u64>().map_err(|_| LexError::Overflow { pos })?;
-                Token::Num(value)
-            }
-            'a'..='z' | 'A'..='Z' | '_' => {
-                let mut name = String::from(c);
-                while let Some((_, d)) = chars.next_if(|&(_, d)| is_ident_char(d)) {
-                    name.push(d);
-                }
-                Token::Ident(name)
+                // Only ASCII digits, and the statement says the value fits in a `u64`.
+                Token::Num(digits.parse().expect("a run of digits that fits in a u64"))
             }
             '-' => match chars.next_if(|&(_, d)| d == '>') {
                 Some(_) => Token::Arrow,

@@ -2,13 +2,11 @@ id = "module-02"
 title = { en = "Lost in modules", ja = "モジュールで迷子" }
 difficulty = 2
 concepts = [
-    "module privacy",
+    "module privacy and paths",
     "crate:: is the crate root, not the player's file",
-    "super:: is relative to the current module",
-    "tuple struct fields are private by default (constructor, .0 and patterns)",
-    "private use vs pub use re-exports",
-    "a re-export cannot be more visible than the item (E0364)",
-    "pub(super) / pub(crate) / pub(in path) only for ancestors",
+    "tuple struct fields are private by default",
+    "pub use re-exports, which cannot be more visible than the item (E0364)",
+    "pub(super) / pub(crate)",
 ]
 kind = "repair"
 
