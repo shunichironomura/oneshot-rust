@@ -5,7 +5,6 @@ use std::num::ParseIntError;
 #[derive(Debug, PartialEq)]
 pub enum ConfigError {
     MissingEquals { line: usize },
-    EmptyKey { line: usize },
     BadNumber(ParseIntError),
     Duplicate(String),
 }
