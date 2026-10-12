@@ -1,4 +1,4 @@
-With the right helper methods of `Option` and `bool`, each function takes one to three lines. But
+With the right helper methods of `Option` and `bool`, each function takes one line. But
 each helper has a detail that is easy to get wrong when you write it from memory.
 
 - `is_admin`: `Option::is_some_and(f)` is `true` only for a `Some(x)` where `f(x)` is `true`.
@@ -22,10 +22,6 @@ each helper has a detail that is easy to get wrong when you write it from memory
   - `slot.take().filter(...)` compiles, but `take` always empties the slot first, so a session that
     is still valid is dropped instead of being put back.
   - `slot.as_ref().filter(...).cloned()` returns a copy and leaves the expired session in the slot.
-- `authorize`: `Option::ok_or(e)` turns `None` into `Err(e)`, and `bool::ok_or(e)` (Rust 1.98) turns
-  `false` into `Err(e)` and `true` into `Ok(())`. With `?`, each check becomes one line, and the
-  order of the lines is the order of the checks. The last check needs no `?`: its
-  `Result<(), AuthError>` is already the return value.
 
 ### Alternatives
 
@@ -55,19 +51,6 @@ pub fn evict_expired(slot: &mut Option<Session>, now: u64) -> Option<Session> {
     match slot {
         Some(session) if session.expires_at <= now => slot.take(),
         _ => None,
-    }
-}
-
-pub fn authorize(s: Option<&Session>, now: u64) -> Result<(), AuthError> {
-    let Some(s) = s else {
-        return Err(AuthError::NoSession);
-    };
-    if s.expires_at <= now {
-        Err(AuthError::Expired)
-    } else if !s.admin {
-        Err(AuthError::NotAdmin)
-    } else {
-        Ok(())
     }
 }
 ```

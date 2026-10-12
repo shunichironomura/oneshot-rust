@@ -6,13 +6,6 @@ pub struct Session {
     pub admin: bool,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum AuthError {
-    NoSession,
-    Expired,
-    NotAdmin,
-}
-
 pub fn is_admin(s: Option<&Session>) -> bool {
     todo!()
 }
@@ -26,9 +19,5 @@ pub fn time_left(s: &Session, now: u64) -> Option<u64> {
 }
 
 pub fn evict_expired(slot: &mut Option<Session>, now: u64) -> Option<Session> {
-    todo!()
-}
-
-pub fn authorize(s: Option<&Session>, now: u64) -> Result<(), AuthError> {
     todo!()
 }

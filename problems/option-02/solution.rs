@@ -6,13 +6,6 @@ pub struct Session {
     pub admin: bool,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum AuthError {
-    NoSession,
-    Expired,
-    NotAdmin,
-}
-
 pub fn is_admin(s: Option<&Session>) -> bool {
     s.is_some_and(|session| session.admin)
 }
@@ -27,10 +20,4 @@ pub fn time_left(s: &Session, now: u64) -> Option<u64> {
 
 pub fn evict_expired(slot: &mut Option<Session>, now: u64) -> Option<Session> {
     slot.take_if(|session| session.expires_at <= now)
-}
-
-pub fn authorize(s: Option<&Session>, now: u64) -> Result<(), AuthError> {
-    let s = s.ok_or(AuthError::NoSession)?;
-    (now < s.expires_at).ok_or(AuthError::Expired)?;
-    s.admin.ok_or(AuthError::NotAdmin)
 }
