@@ -5,9 +5,7 @@ concepts = [
     "manual Ord / PartialOrd consistent with Eq",
     "derived Option ordering (None < Some) is wrong here",
     "Ordering::then_with",
-    "FromStr with a strict grammar",
-    "u64::from_str accepts '+'",
-    "char::is_alphanumeric is not ASCII-only",
+    "Iterator::max with a custom Ord",
 ]
 kind = "implement"
 

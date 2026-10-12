@@ -1,0 +1,17 @@
+id = "ord-02"
+title = { en = "Strict version parsing", ja = "厳密なバージョンの解析" }
+difficulty = 2
+concepts = [
+    "FromStr with a strict grammar",
+    "u64::from_str accepts '+'",
+    "char::is_alphanumeric is not ASCII-only",
+    "collect into Result and slice patterns",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
