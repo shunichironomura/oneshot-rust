@@ -79,4 +79,24 @@ export const baseTheme = EditorView.theme({
     outline: "none",
   },
   "&.cm-focused": { outline: "none" },
+  // The error tooltip (hover over an underlined range). CodeMirror's defaults assume a
+  // light editor; this theme follows the page's color scheme instead, so the colors
+  // must come from the same variables as the rest of the page.
+  ".cm-tooltip": {
+    backgroundColor: "var(--panel)",
+    color: "var(--fg)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius)",
+    boxShadow: "0 4px 16px rgb(0 0 0 / 0.25)",
+    fontFamily: "var(--mono)",
+    fontSize: "0.9em",
+    lineHeight: "1.45",
+    maxWidth: "min(60ch, 90vw)",
+  },
+  ".cm-tooltip-section:not(:first-child)": { borderTop: "1px solid var(--border)" },
+  ".cm-tooltip.cm-tooltip-lint": { padding: "4px 0" },
+  ".cm-diagnostic": { padding: "4px 10px 4px 10px" },
+  ".cm-diagnostic-error": { borderLeftColor: "var(--ce)" },
+  ".cm-diagnostic-warning": { borderLeftColor: "var(--wa)" },
+  ".cm-diagnostic-info, .cm-diagnostic-hint": { borderLeftColor: "var(--muted)" },
 });
