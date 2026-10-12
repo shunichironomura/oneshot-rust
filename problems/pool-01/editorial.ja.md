@@ -34,23 +34,16 @@
 デッドロックになります。（エディション 2024 では、`if let` の一時値は `else` ブロックの前に
 破棄されますが、パターンにマッチしたときに実行されるブロックの中ではまだ生きています。）
 
-**数え方。** 各ワーカーは実行したジョブを数え、その数をスレッドから返します。そのためハンドルは
-`JoinHandle<usize>` で、`stop` は `join` の結果を合計します。`execute` で数えることもできますが、
-`execute` は `&self` を受け取り、プールはスレッド間で共有されます。`Cell<usize>` を使うと
-`ThreadPool` が `Sync` でなくなり、ハーネスのコンパイルが通りません。代わりに `AtomicUsize` を
-使います（1 つ目の別解）。`Sender` は（Rust 1.72 から）`Sync` なので、模範解答ではミューテックスで
-囲む必要はありません。ワーカーが共有のカウンタに足していく場合は、ワーカーを `join` してから
-読んでください。そうしないと、キューに残っていたジョブが数に入りません。
+**プールの共有。** ハーネスは `&ThreadPool` を複数のスレッドで共有するので、`ThreadPool` は `Sync` で
+なければなりません。`Sender` は（Rust 1.72 から）`Sync` なので、模範解答ではミューテックスで囲む
+必要はありません。
 
 ### 別解
 
-`execute` で `AtomicUsize` を使って数え、`drain` の代わりに `std::mem::take` を使う方法です。
-`shutdown` は `self` を所有しているので、カウンタはアトミック操作なしで `get_mut` で読めます。
-`let ... else` のガードも文の終わりで破棄されます。
+`drain` の代わりに `std::mem::take` を使う方法です。`let ... else` のガードも文の終わりで破棄されます。
 
 ```rust
 use std::mem;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::{self, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
@@ -60,7 +53,6 @@ type Job = Box<dyn FnOnce() + Send + 'static>;
 pub struct ThreadPool {
     workers: Vec<JoinHandle<()>>,
     sender: Option<Sender<Job>>,
-    added: AtomicUsize,
 }
 
 impl ThreadPool {
@@ -81,20 +73,18 @@ impl ThreadPool {
                 }
             }));
         }
-        ThreadPool { workers, sender: Some(sender), added: AtomicUsize::new(0) }
+        ThreadPool { workers, sender: Some(sender) }
     }
 
     pub fn execute<F>(&self, f: F)
     where
         F: FnOnce() + Send + 'static,
     {
-        self.added.fetch_add(1, Ordering::Relaxed);
         self.sender.as_ref().unwrap().send(Box::new(f)).unwrap();
     }
 
-    pub fn shutdown(mut self) -> usize {
+    pub fn shutdown(mut self) {
         self.stop();
-        *self.added.get_mut()
     }
 
     fn stop(&mut self) {
@@ -116,13 +106,10 @@ impl Drop for ThreadPool {
 ガードが破棄されるので、ジョブの実行中は何もロックしていません。
 
 ```rust
-fn run_worker(receiver: &Mutex<Receiver<Job>>) -> usize {
-    let mut ran = 0;
+fn run_worker(receiver: &Mutex<Receiver<Job>>) {
     while let Some(job) = next_job(receiver) {
         job();
-        ran += 1;
     }
-    ran
 }
 
 /// Waits for the next job. The guard is dropped when this function returns.
@@ -136,10 +123,12 @@ fn next_job(receiver: &Mutex<Receiver<Job>>) -> Option<Job> {
 `self.sender.send(...)` を直接呼びます。
 
 ```rust
-fn stop(&mut self) -> usize {
+fn stop(&mut self) {
     let (closed, _) = mpsc::channel();
     drop(mem::replace(&mut self.sender, closed));
-    self.workers.drain(..).map(|worker| worker.join().unwrap()).sum()
+    for worker in self.workers.drain(..) {
+        worker.join().unwrap();
+    }
 }
 ```
 
@@ -179,7 +168,7 @@ impl Shared {
 
 pub struct ThreadPool {
     shared: Arc<Shared>,
-    workers: Vec<JoinHandle<usize>>,
+    workers: Vec<JoinHandle<()>>,
 }
 
 impl ThreadPool {
@@ -193,13 +182,10 @@ impl ThreadPool {
             .map(|_| {
                 let shared = Arc::clone(&shared);
                 thread::spawn(move || {
-                    let mut ran = 0;
                     // `next_job` releases the lock before it returns.
                     while let Some(job) = shared.next_job() {
                         job();
-                        ran += 1;
                     }
-                    ran
                 })
             })
             .collect();
@@ -214,14 +200,16 @@ impl ThreadPool {
         self.shared.changed.notify_one();
     }
 
-    pub fn shutdown(mut self) -> usize {
-        self.stop()
+    pub fn shutdown(mut self) {
+        self.stop();
     }
 
-    fn stop(&mut self) -> usize {
+    fn stop(&mut self) {
         self.shared.queue.lock().unwrap().closed = true;
         self.shared.changed.notify_all();
-        self.workers.drain(..).map(|worker| worker.join().unwrap()).sum()
+        for worker in self.workers.drain(..) {
+            worker.join().unwrap();
+        }
     }
 }
 

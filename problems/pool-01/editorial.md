@@ -35,23 +35,16 @@ job, and the pool runs one job at a time. When jobs wait for each other, as in t
 that is a deadlock. (Since edition 2024, the temporaries of an `if let` are dropped before its
 `else` block, but they are still alive in the block that runs when the pattern matches.)
 
-**Counting.** Each worker counts the jobs it ran and returns the number from its thread, so the
-handles are `JoinHandle<usize>` and `stop` adds up what `join` returns. Counting in `execute` works
-too, but `execute` takes `&self` and the pool is shared between threads: a `Cell<usize>` makes
-`ThreadPool` not `Sync`, and the harness does not compile. Use an `AtomicUsize` instead (first
-alternative). `Sender` is `Sync` (since Rust 1.72), so the model solution needs no mutex around
-it. If the workers add to a shared counter, read it only after joining them, or the jobs still
-in the queue are missing from the count.
+**Sharing the pool.** The harness shares a `&ThreadPool` between threads, so `ThreadPool` must be
+`Sync`. `Sender` is `Sync` (since Rust 1.72), so the model solution needs no mutex around it.
 
 ### Alternatives
 
-Count in `execute` with an `AtomicUsize`, and use `std::mem::take` instead of `drain`. `shutdown`
-owns `self`, so it reads the counter with `get_mut`, without an atomic operation. The guard of a
-`let ... else` is also dropped at the end of the statement.
+Use `std::mem::take` instead of `drain`. The guard of a `let ... else` is also dropped at the end
+of the statement.
 
 ```rust
 use std::mem;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::{self, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
@@ -61,7 +54,6 @@ type Job = Box<dyn FnOnce() + Send + 'static>;
 pub struct ThreadPool {
     workers: Vec<JoinHandle<()>>,
     sender: Option<Sender<Job>>,
-    added: AtomicUsize,
 }
 
 impl ThreadPool {
@@ -82,20 +74,18 @@ impl ThreadPool {
                 }
             }));
         }
-        ThreadPool { workers, sender: Some(sender), added: AtomicUsize::new(0) }
+        ThreadPool { workers, sender: Some(sender) }
     }
 
     pub fn execute<F>(&self, f: F)
     where
         F: FnOnce() + Send + 'static,
     {
-        self.added.fetch_add(1, Ordering::Relaxed);
         self.sender.as_ref().unwrap().send(Box::new(f)).unwrap();
     }
 
-    pub fn shutdown(mut self) -> usize {
+    pub fn shutdown(mut self) {
         self.stop();
-        *self.added.get_mut()
     }
 
     fn stop(&mut self) {
@@ -117,13 +107,10 @@ Keep `while let`, but lock inside a function that returns an `Option<Job>`. The 
 when the function returns, so nothing is locked while the job runs.
 
 ```rust
-fn run_worker(receiver: &Mutex<Receiver<Job>>) -> usize {
-    let mut ran = 0;
+fn run_worker(receiver: &Mutex<Receiver<Job>>) {
     while let Some(job) = next_job(receiver) {
         job();
-        ran += 1;
     }
-    ran
 }
 
 /// Waits for the next job. The guard is dropped when this function returns.
@@ -137,10 +124,12 @@ already closed (its `Receiver` is dropped right away). The field is then a plain
 and `execute` calls `self.sender.send(...)` directly.
 
 ```rust
-fn stop(&mut self) -> usize {
+fn stop(&mut self) {
     let (closed, _) = mpsc::channel();
     drop(mem::replace(&mut self.sender, closed));
-    self.workers.drain(..).map(|worker| worker.join().unwrap()).sum()
+    for worker in self.workers.drain(..) {
+        worker.join().unwrap();
+    }
 }
 ```
 
@@ -179,7 +168,7 @@ impl Shared {
 
 pub struct ThreadPool {
     shared: Arc<Shared>,
-    workers: Vec<JoinHandle<usize>>,
+    workers: Vec<JoinHandle<()>>,
 }
 
 impl ThreadPool {
@@ -193,13 +182,10 @@ impl ThreadPool {
             .map(|_| {
                 let shared = Arc::clone(&shared);
                 thread::spawn(move || {
-                    let mut ran = 0;
                     // `next_job` releases the lock before it returns.
                     while let Some(job) = shared.next_job() {
                         job();
-                        ran += 1;
                     }
-                    ran
                 })
             })
             .collect();
@@ -214,14 +200,16 @@ impl ThreadPool {
         self.shared.changed.notify_one();
     }
 
-    pub fn shutdown(mut self) -> usize {
-        self.stop()
+    pub fn shutdown(mut self) {
+        self.stop();
     }
 
-    fn stop(&mut self) -> usize {
+    fn stop(&mut self) {
         self.shared.queue.lock().unwrap().closed = true;
         self.shared.changed.notify_all();
-        self.workers.drain(..).map(|worker| worker.join().unwrap()).sum()
+        for worker in self.workers.drain(..) {
+            worker.join().unwrap();
+        }
     }
 }
 

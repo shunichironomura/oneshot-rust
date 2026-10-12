@@ -11,7 +11,7 @@ impl ThreadPool {
     pub fn execute<F>(&self, f: F)
     where
         F: FnOnce() + Send + 'static;
-    pub fn shutdown(self) -> usize;
+    pub fn shutdown(self);
 }
 
 impl Drop for ThreadPool { /* ... */ }
@@ -29,10 +29,9 @@ impl Drop for ThreadPool { /* ... */ }
 - Several threads may call `execute` on the same pool at the same time: the harness shares a
   `&ThreadPool` between threads with `std::thread::scope`.
 - `shutdown()` waits until every job added to the pool has finished, including the jobs that are
-  still waiting in the queue. Then it stops the worker threads, waits for them to end, and returns
-  the number of jobs the pool has run. Every job runs, so this is the number of `execute` calls.
-- Dropping the pool without calling `shutdown` does the same, except that there is no count to
-  return: when the drop is over, every job has finished and every worker thread has ended.
+  still waiting in the queue. Then it stops the worker threads and waits for them to end.
+- Dropping the pool without calling `shutdown` does the same: when the drop is over, every job has
+  finished and every worker thread has ended.
 - Jobs never panic. A job may wait for another thread, even for another job of the same pool (for
   example at a `Barrier`), but the harness never makes a thread wait for something that cannot
   happen. (When every thread waits forever, Miri reports a deadlock.)
@@ -50,8 +49,8 @@ for i in 1..=3 {
         total.fetch_add(i, SeqCst);
     });
 }
-pool.shutdown()       // 3: the pool has run 3 jobs
-total.load(SeqCst)    // 6 = 1 + 2 + 3
+pool.shutdown();
+total.load(SeqCst)    // 6 = 1 + 2 + 3: every job has run
 ```
 
 A pool of size 1 gets three jobs that push `"a"`, `"b"` and `"c"` to a shared `Vec`, and is then

@@ -18,7 +18,7 @@ impl ThreadPool {
         todo!()
     }
 
-    pub fn shutdown(self) -> usize {
+    pub fn shutdown(self) {
         todo!()
     }
 }
