@@ -16,7 +16,6 @@ pub struct Packet<T> {
 
 pub fn make(id: u32, bytes: Vec<u8>) -> Box<Packet<Vec<u8>>>
 pub fn checksum(p: &Packet<Vec<u8>>) -> u32
-pub fn longest(ps: &[Box<Packet<Vec<u8>>>]) -> Option<u32>
 pub fn label(id: u32, payload: String) -> Box<Packet<String>>
 pub fn describe(ps: &[Box<Packet<String>>]) -> Vec<String>
 ```
@@ -27,15 +26,12 @@ pub fn describe(ps: &[Box<Packet<String>>]) -> Vec<String>
 - `checksum(p)` returns the id plus the sum of the payload bytes. The harness passes packets made by
   `make`, and also packets with a byte array as payload that it creates itself, such as
   `&Packet { id: 7, payload: [5u8, 6] }`.
-- `longest(ps)` returns the id of the packet with the longest payload. If several packets tie, the
-  first of them wins. It returns `None` if `ps` is empty. The harness passes a `Vec` of packets made
-  by `make`, or a part of one, such as `&ps[1..]`.
 - `label(id, payload)` moves a value into a new boxed packet. The harness passes integers,
   floating-point numbers, characters, `bool`s, string literals and `String`s. Packets made by
   `label` all have the same type, whatever the type of their payload.
 - `describe(ps)` formats each packet as `#<id>: <payload>`, with the payload formatted by `{}`
-  (`Display`). The harness passes a `Vec` of packets made by `label`, or a part of one. The `Vec`
-  may also contain a packet that the harness boxes itself, such as
+  (`Display`). The harness passes a `Vec` of packets made by `label`, or a part of one, such as
+  `&ls[1..]`. The `Vec` may also contain a packet that the harness boxes itself, such as
   `Box::new(Packet { id: 3, payload: 'q' })`.
 
 The harness also reads the fields `id` and `payload` of the packets.
@@ -48,7 +44,7 @@ checksum(&a)                                    // 7 (1 + 1 + 2 + 3)
 checksum(&Packet { id: 7, payload: [5u8, 6] })  // 18
 
 let ps = vec![make(1, [1, 2, 3]), make(2, [9; 5]), make(3, [])];
-longest(&ps)                                    // Some(2)
+ps.iter().map(|p| checksum(p)).collect::<Vec<_>>()  // [7, 47, 3]
 
 let ls = vec![label(1, 5), label(2, "x")];
 describe(&ls)                                   // ["#1: 5", "#2: x"]

@@ -8,7 +8,7 @@ concepts = [
     "&Packet<[u8; N]> -> &Packet<[u8]> and deref coercion at call sites",
     "Packet<dyn Display> and the 'static default object lifetime",
     "const generic array parameter",
-    "slice elements must be Sized",
+    "slice elements must be Sized: &[Box<Packet<dyn Display>>]",
 ]
 kind = "signature"
 

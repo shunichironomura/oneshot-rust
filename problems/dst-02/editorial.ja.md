@@ -21,15 +21,14 @@
   （deref coercion）で、`&Packet { id: 7, payload: [5u8, 6] }` は呼び出し時のサイズ不定化の
   型強制で、この型になります。`&Packet<[u8; N]>` を受け取る const ジェネリックな `checksum` では、
   後者しか受け取れません。
-- `longest` は、`Vec` が持っているボックスのスライス `&[Box<Packet<[u8]>>]` を受け取ります。
-  スライスの要素は `Sized` でなければならないので、`&[Packet<[u8]>]` という型は使えません。
 - `label` も同じように、`Box<Packet<T>>` を `Box<Packet<dyn Display>>` に型強制します。
   シグネチャの中の `Box<Packet<dyn Display>>` は `Box<Packet<dyn Display + 'static>>` という意味なので、
   `T: Display` だけでは「the parameter type `T` may not live long enough」（E0310）になります。
   `T: Display + 'static` とすれば解決します。`5`、`"x"`、`String` のようなペイロードは、
   短命なものを何も借用していません。
-- `describe` は `&[Box<Packet<dyn Display>>]` を受け取ります。`{}` は、ペイロードごとの vtable を
-  通して `&p.payload` を書式化します。
+- `describe` は、`Vec` が持っているボックスのスライス `&[Box<Packet<dyn Display>>]` を受け取ります。
+  スライスの要素は `Sized` でなければならないので、`&[Packet<dyn Display>]` という型は使えません。
+  `{}` は、ペイロードごとの vtable を通して `&p.payload` を書式化します。
 
 ### 別解
 
@@ -42,13 +41,9 @@ pub fn label<'a, T: Display + 'a>(id: u32, payload: T) -> Box<Packet<dyn Display
 pub fn describe(ps: &[Box<Packet<dyn Display + '_>>]) -> Vec<String>
 ```
 
-`describe` と `longest` はジェネリックにもできます。ハーネスは `T = dyn Display` として `describe` を
-呼ぶので、`T: ?Sized` が必要です。`P: Deref` を使った `longest` は、ボックスのスライスのほか、
-参照や `Rc` のスライスも受け取れます。`fn` の行だけを変えれば済むように、`std::ops::Deref` は
-パスを省略せずに書いています。
+`describe` はジェネリックにもできます。ハーネスは `T = dyn Display` として `describe` を呼ぶので、
+`T: ?Sized` が必要です。
 
 ```rust
 pub fn describe<T: Display + ?Sized>(ps: &[Box<Packet<T>>]) -> Vec<String>
-
-pub fn longest<P: std::ops::Deref<Target = Packet<[u8]>>>(ps: &[P]) -> Option<u32>
 ```
