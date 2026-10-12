@@ -120,6 +120,11 @@ export interface Messages {
   /** Shares a result (or copies it, where there is no share sheet). */
   share: string;
   copied: string;
+  /** Copies a code block or a message to the clipboard. */
+  copy: string;
+  copyFailed: string;
+  /** Copies a submission's whole code (shown next to its diff). */
+  copyCode: string;
   seeSolution: string;
   assistedRun: string;
   tryAgain: string;
@@ -268,6 +273,9 @@ const en: Messages = {
   newBest: "New personal best!",
   share: "Share",
   copied: "Copied!",
+  copy: "Copy",
+  copyFailed: "Could not copy",
+  copyCode: "Copy code",
   seeSolution: "Model solution",
   assistedRun: "Solution seen: your best is not updated.",
   tryAgain: "Try again",
@@ -421,6 +429,9 @@ const ja: Messages = {
   newBest: "自己ベスト更新！",
   share: "シェア",
   copied: "コピーしました",
+  copy: "コピー",
+  copyFailed: "コピーできませんでした",
+  copyCode: "コードをコピー",
   seeSolution: "模範解答",
   assistedRun: "模範解答を閲覧済みのため、自己ベストは更新されません。",
   tryAgain: "もう一度",

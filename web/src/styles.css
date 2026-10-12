@@ -650,6 +650,24 @@ main > section.round-start {
   text-decoration: none;
 }
 
+/* A block with a copy button in its top-right corner, kept in place when the block scrolls. */
+.copyable {
+  position: relative;
+}
+
+.copyable > .copy-button {
+  position: absolute;
+  top: 0.3em;
+  right: 0.3em;
+  background: var(--panel);
+  border-color: var(--border);
+}
+
+.copyable > .copy-button:hover:not(:disabled) {
+  background: var(--code-bg);
+  border-color: var(--border);
+}
+
 .syn-keyword {
   color: var(--syn-keyword);
 }
@@ -1123,8 +1141,17 @@ main > section.round-start {
   font-size: 0.88em;
 }
 
-.diagnostic {
+.diagnostic-block {
   margin: 0.5em 0;
+}
+
+/* Diagnostics wrap: keep their text clear of the copy button. */
+.diagnostic-block > .diagnostic {
+  padding-right: 2.8em;
+}
+
+.diagnostic {
+  margin: 0;
   padding: 0.6em 0.9em;
   background: var(--code-bg);
   border-radius: var(--radius);
@@ -1400,8 +1427,16 @@ dialog .actions {
   margin: 0 0 0.3em;
 }
 
-.attempt h4 {
+.attempt-code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
   margin: 0.9em 0 0.3em;
+}
+
+.attempt h4 {
+  margin: 0;
   font-size: var(--step--1);
   color: var(--muted);
 }
