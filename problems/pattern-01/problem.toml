@@ -5,7 +5,6 @@ concepts = [
     "refutable vs irrefutable patterns",
     "let-else / if let",
     "_ vs _name bindings (moves)",
-    ".. used once per tuple pattern",
     "patterns in for loops",
 ]
 kind = "repair"

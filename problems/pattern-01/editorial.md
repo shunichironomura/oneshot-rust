@@ -1,4 +1,4 @@
-Each function has its own pattern mistake, and the compiler reports all four in one go.
+Each function has its own pattern mistake, and the compiler reports all three in one go.
 
 - `first_even`: a plain `let` needs an **irrefutable** pattern, one that matches every possible value.
   `find` returns an `Option<&i32>`, and `Some(x)` does not match `None` (E0005). The compiler will not
@@ -9,9 +9,6 @@ Each function has its own pattern mistake, and the compiler reports all four in 
   a variable, so `Some(_t)` **moves** the `String` out of `title`, and `title.unwrap_or(...)` then
   uses a partially moved value (E0382). The bare `_` is different: it is not a binding at all, so
   `Some(_)` checks the variant without moving anything, and `title` stays whole.
-- `first_middle_last`: `..` means "all the elements not named here", so a tuple pattern may contain
-  it **only once**. With two of them, nothing says how many elements each one skips. Name every
-  skipped element with `_` instead: `(first, _, middle, _, last)`.
 - `filled_slots`: the pattern of a `for` loop must be irrefutable too, just like a `let` (E0005). A
   `for` loop never skips items, so it cannot decide what to do with a `None`. Bind the whole slot and
   test it with `if let` in the body. `slot` is a `&Option<u8>`, so `Some(x)` binds `x` as a `&u8`,
@@ -22,7 +19,7 @@ irrefutable. Refutable patterns belong in `match`, `if let`, `while let` and let
 
 ### Alternatives
 
-The same functions written with `Option` methods and tuple fields instead of refutable patterns. In
+The same functions written with `Option` methods instead of refutable patterns. In
 `title_or_default`, the elements of a tuple are evaluated from left to right, so `is_some` borrows
 `title` and is done before `unwrap_or_else` moves it.
 
@@ -33,10 +30,6 @@ pub fn first_even(v: &[i32]) -> Option<i32> {
 
 pub fn title_or_default(title: Option<String>) -> (bool, String) {
     (title.is_some(), title.unwrap_or_else(|| String::from("Untitled")))
-}
-
-pub fn first_middle_last(t: (i32, i32, i32, i32, i32)) -> (i32, i32, i32) {
-    (t.0, t.2, t.4)
 }
 
 pub fn filled_slots(slots: &[Option<u8>]) -> Vec<(usize, u8)> {
@@ -50,8 +43,7 @@ pub fn filled_slots(slots: &[Option<u8>]) -> Vec<(usize, u8)> {
 
 Smaller fixes that keep the template's shape also work. `?` returns `None` early just like the
 let-else. Matching on `&title` (or writing `Some(ref _t)`) borrows the title instead of moving it.
-`(first, _, middle, .., last)` uses `..` only once. In the loop, let-else with `continue` skips the
-empty slots.
+In the loop, let-else with `continue` skips the empty slots.
 
 ```rust
 pub fn first_even(v: &[i32]) -> Option<i32> {
@@ -65,11 +57,6 @@ pub fn title_or_default(title: Option<String>) -> (bool, String) {
         given = true;
     }
     (given, title.unwrap_or(String::from("Untitled")))
-}
-
-pub fn first_middle_last(t: (i32, i32, i32, i32, i32)) -> (i32, i32, i32) {
-    let (first, _, middle, .., last) = t;
-    (first, middle, last)
 }
 
 pub fn filled_slots(slots: &[Option<u8>]) -> Vec<(usize, u8)> {

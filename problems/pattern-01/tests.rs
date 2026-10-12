@@ -1,5 +1,5 @@
 use crate::judge::{case, check_eq};
-use crate::user::{filled_slots, first_even, first_middle_last, title_or_default};
+use crate::user::{filled_slots, first_even, title_or_default};
 
 fn titled(given: bool, title: &str) -> (bool, String) {
     (given, title.to_string())
@@ -16,7 +16,6 @@ pub fn run() {
         check_eq(title_or_default(None), titled(false, "Untitled"))
     });
     case("sample-2", || {
-        check_eq(first_middle_last((10, 20, 30, 40, 50)), (10, 30, 50))?;
         check_eq(filled_slots(&[None, Some(4), Some(7)]), vec![(1, 4), (2, 7)])
     });
     case("hidden-1", || {
@@ -37,15 +36,11 @@ pub fn run() {
         check_eq(title_or_default(some(" Draft 2 ")), titled(true, " Draft 2 "))
     });
     case("hidden-4", || {
-        check_eq(first_middle_last((-1, -2, -3, -4, -5)), (-1, -3, -5))?;
-        check_eq(first_middle_last((i32::MIN, 0, 7, 0, i32::MAX)), (i32::MIN, 7, i32::MAX))
-    });
-    case("hidden-5", || {
         // Empty input and only empty slots.
         check_eq(filled_slots(&[]), Vec::new())?;
         check_eq(filled_slots(&[None, None, None]), Vec::new())
     });
-    case("hidden-6", || {
+    case("hidden-5", || {
         // Positions count the empty slots, and Some(0) is a filled slot.
         check_eq(
             filled_slots(&[Some(0), None, None, Some(255), Some(3), None]),
