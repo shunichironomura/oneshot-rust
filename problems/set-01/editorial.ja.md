@@ -12,11 +12,6 @@
 `HashSet` でも解けますが、要素を返す順序は決まっていないので、どのベクタも最後に並べ替える必要があります。
 並べ替えを忘れても、小さな例ではたまたま昇順になることがあり、間違いに気づきにくくなります。
 
-`first_repeat` では `insert` の返り値を使います。新しい値なら `true`、すでに集合にあれば `false` です。
-`insert` が初めて `false` を返した単語が答えです。`for &word in words` は各 `&&'a str` を分解して
-`&'a str` を取り出すので、その単語をそのまま返せます。この単語が借用しているのは元の文字列で、
-`words` や集合ではありません。
-
 ### 別解
 
 `HashSet` を使い、最後に各ベクタを並べ替えます。
@@ -63,15 +58,5 @@ pub fn overlap(left: &[&str], right: &[&str]) -> Overlap {
 
 fn owned(words: BTreeSet<&str>) -> Vec<String> {
     words.into_iter().map(String::from).collect()
-}
-```
-
-`first_repeat` は `Iterator::find` を使うと 1 つの式で書けます。`find` は `FnMut` のクロージャを受け取るので、
-クロージャの中で `seen` を変更できます。
-
-```rust
-pub fn first_repeat<'a>(words: &[&'a str]) -> Option<&'a str> {
-    let mut seen = HashSet::new();
-    words.iter().copied().find(|&word| !seen.insert(word))
 }
 ```

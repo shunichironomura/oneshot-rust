@@ -1,5 +1,5 @@
 Compare two lists of words as if they were sets: which words they share, which words only one of
-them has, and so on. Also find the first word that repeats within a list.
+them has, and so on.
 
 ```rust
 #[derive(Debug, PartialEq)]
@@ -12,7 +12,6 @@ pub struct Overlap {
 }
 
 pub fn overlap(left: &[&str], right: &[&str]) -> Overlap
-pub fn first_repeat<'a>(words: &[&'a str]) -> Option<&'a str>
 ```
 
 The struct `Overlap` is already in the editor.
@@ -30,8 +29,6 @@ The struct `Overlap` is already in the editor.
   lowercase ones (`"Z" < "a"`), a word comes before longer words that start with it
   (`"app" < "apple"`), and `"z" < "é"`.
 - Either list may be empty.
-- `first_repeat` reads `words` from the start and returns the first word it meets that already
-  appeared earlier in the list. It returns `None` if no word appears more than once.
 
 ### Examples
 
@@ -44,7 +41,4 @@ overlap(&["b", "a", "c", "a"], &["d", "c", "b"])
 //     exactly_one: ["a", "d"],
 //     all: ["a", "b", "c", "d"],
 // }
-
-first_repeat(&["a", "b", "c", "b", "a"])
-// Some("b"): the second "b" comes before the second "a"
 ```

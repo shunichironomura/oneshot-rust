@@ -1,0 +1,12 @@
+id = "set-02"
+title = { en = "Seen it before", ja = "前にも見た" }
+difficulty = 1
+concepts = ["HashSet::insert returns bool", "early return from a loop", "Iterator::all / find with FnMut", "returning &'a str from a slice"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

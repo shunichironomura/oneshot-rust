@@ -1,5 +1,4 @@
 2 つの単語のリストを集合として比べてください。両方にある単語や、片方にしかない単語などを求めます。
-また、1 つのリストの中で最初に繰り返される単語も求めてください。
 
 ```rust
 #[derive(Debug, PartialEq)]
@@ -12,7 +11,6 @@ pub struct Overlap {
 }
 
 pub fn overlap(left: &[&str], right: &[&str]) -> Overlap
-pub fn first_repeat<'a>(words: &[&'a str]) -> Option<&'a str>
 ```
 
 構造体 `Overlap` はエディタに入っています。
@@ -29,8 +27,6 @@ pub fn first_repeat<'a>(words: &[&'a str]) -> Option<&'a str>
   この比較はバイト単位なので、大文字は小文字より前になり（`"Z" < "a"`）、ある単語はそれで始まる
   もっと長い単語より前になり（`"app" < "apple"`）、`"z" < "é"` です。
 - どちらのリストも空のことがあります。
-- `first_repeat` は `words` を先頭から読んでいき、それより前にすでに出てきた単語に初めて出会ったら、
-  その単語を返します。2 回以上出てくる単語がなければ `None` を返します。
 
 ### 例
 
@@ -43,7 +39,4 @@ overlap(&["b", "a", "c", "a"], &["d", "c", "b"])
 //     exactly_one: ["a", "d"],
 //     all: ["a", "b", "c", "d"],
 // }
-
-first_repeat(&["a", "b", "c", "b", "a"])
-// Some("b")（2 つ目の "b" は 2 つ目の "a" より前にある）
 ```

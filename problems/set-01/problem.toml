@@ -1,7 +1,7 @@
 id = "set-01"
 title = { en = "Common ground", ja = "共通点さがし" }
 difficulty = 1
-concepts = ["HashSet / BTreeSet", "union, intersection, difference, symmetric_difference", "sorted output via BTreeSet", "insert returns bool", "iterators of &&str"]
+concepts = ["HashSet / BTreeSet", "union, intersection, difference, symmetric_difference", "sorted output via BTreeSet", "iterators of &&str"]
 kind = "implement"
 
 [judge]
