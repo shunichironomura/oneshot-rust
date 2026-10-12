@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 /// A guess in the guessing game. The field is private, so a `Guess` can only be created by
 /// `new` or `try_from`, and its value is always between 1 and 100.
 #[derive(Debug, PartialEq)]
@@ -29,10 +27,6 @@ impl Guess {
     pub fn value(&self) -> i32 {
         self.value
     }
-
-    pub fn compare(&self, secret: i32) -> Ordering {
-        self.value.cmp(&secret)
-    }
 }
 
 impl TryFrom<i32> for Guess {
@@ -47,12 +41,4 @@ impl TryFrom<i32> for Guess {
             Ok(Guess { value })
         }
     }
-}
-
-pub fn parse_guess(input: &str) -> Result<Guess, String> {
-    let number: i32 = input
-        .trim()
-        .parse()
-        .map_err(|_| "not a number".to_string())?;
-    Guess::try_from(number).map_err(|_| "out of range".to_string())
 }
