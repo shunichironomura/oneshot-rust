@@ -1,10 +1,9 @@
 次のコードはコンパイルが通りません。**エラーメッセージを見ずに**、どこで怒られるかを予想して直してください。
 
-スライスについての質問に答える小さな関数が 6 つあります。
+スライスについての質問に答える小さな関数が 5 つあります。
 
 ```rust
 pub fn first_negative(v: &[i32]) -> Option<i32>
-pub fn evens(v: &[i32]) -> Vec<i32>
 pub fn position_of_max(v: &[i32]) -> Option<usize>
 pub fn count_long(words: &[&str], min: usize) -> usize
 pub fn contains_word(words: &[String], w: &str) -> bool
@@ -12,7 +11,6 @@ pub fn total_len(words: &[String]) -> usize
 ```
 
 - `first_negative` は、`0` より小さい最初の要素を返します。そのような要素がなければ `None` を返します。
-- `evens` は、`v` の偶数の要素を元の順に並べて返します。負の数や `0` も偶数になりえます。
 - `position_of_max` は、最大の要素の添字を返します。最大値が複数回現れるときは、最初に現れた位置の添字を返します。
   空のスライスなら `None` を返します。
 - `count_long` は、長さが `min` バイト以上の単語がいくつあるかを返します。
@@ -26,7 +24,6 @@ pub fn total_len(words: &[String]) -> usize
 ### 例
 
 - `first_negative(&[3, -1, -5])` は `Some(-1)` を返します。
-- `evens(&[1, 2, 4, 5])` は `[2, 4]` を返します。
 - `position_of_max(&[1, 9, 9])` は `Some(1)` を返します。
 - `count_long(&["a", "abc", "de"], 2)` は `2` を返します。
 - `words = ["apple", "pie"]`（どれも `String`）のとき、`contains_word(&words, "pie")` は `true` を返します。
