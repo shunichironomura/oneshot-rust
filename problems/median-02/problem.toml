@@ -1,0 +1,12 @@
+id = "median-02"
+title = { en = "Mode", ja = "最頻値" }
+difficulty = 1
+concepts = ["HashMap counting (entry API)", "max_by_key tie semantics", "tuple keys with Reverse"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
