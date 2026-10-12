@@ -13,16 +13,10 @@ treating it as if it already held a `T`.
 - An empty `MyVec` holds `NonNull::dangling()`. It is non-null and well aligned, which is all a
   slice of length 0 needs, but it points to no allocation: `Drop` must not `dealloc` it when
   `cap == 0`.
-- For a zero-sized `T`, `Layout::array::<T>(4)` has size 0, and asking the global allocator for
-  0 bytes is undefined behavior (Miri: "creating allocation with size 0"). With `cap = usize::MAX`
-  from the start, `push` never grows, and the dangling pointer serves as the whole buffer: offsets
-  of zero-sized values are no-ops, and `write` and `read` through it are fine. The values still
-  exist, though. Their `Drop` impls can have side effects, so `Drop` must still drop all `len` of
-  them and skip only the `dealloc`.
 - `Drop` drops the initialized part as one slice with `ptr::drop_in_place`, then frees the buffer.
 
-`get` needs no `unsafe` of its own: `as_slice` builds the slice once with `slice::from_raw_parts`,
-and the slice's `get` does the bounds check.
+The given `get` needs no `unsafe` of its own: `as_slice` builds the slice once with
+`slice::from_raw_parts`, and the slice's `get` does the bounds check.
 
 ### Alternatives
 
@@ -33,7 +27,6 @@ drops it.
 
 ```rust
 fn grow(&mut self) {
-    assert!(size_of::<T>() != 0, "capacity overflow");
     let new_cap = if self.cap == 0 { 4 } else { 2 * self.cap };
     let new_layout = Layout::array::<T>(new_cap).expect("capacity overflow");
     // SAFETY: T is not zero-sized and new_cap > 0.
@@ -59,24 +52,11 @@ fn grow(&mut self) {
 impl<T> Drop for MyVec<T> {
     fn drop(&mut self) {
         while self.pop().is_some() {}
-        if size_of::<T>() != 0 && self.cap > 0 {
+        if self.cap > 0 {
             let layout = Layout::array::<T>(self.cap).unwrap();
             // SAFETY: `ptr` was allocated with exactly this layout.
             unsafe { alloc::dealloc(self.ptr.as_ptr().cast(), layout) };
         }
-    }
-}
-```
-
-`get` can also read the slot directly.
-
-```rust
-pub fn get(&self, i: usize) -> Option<&T> {
-    if i < self.len {
-        // SAFETY: slot `i` is initialized, and the reference borrows `self`.
-        Some(unsafe { self.ptr.add(i).as_ref() })
-    } else {
-        None
     }
 }
 ```

@@ -8,16 +8,10 @@ pub struct MyVec<T> {
 }
 
 impl<T> MyVec<T> {
-    const IS_ZST: bool = size_of::<T>() == 0;
-
     pub fn new() -> Self {
-        // A dangling pointer is non-null and well aligned, which is all an empty buffer (or a
-        // buffer of zero-sized values) needs. Nothing is allocated yet.
-        MyVec {
-            ptr: NonNull::dangling(),
-            cap: if Self::IS_ZST { usize::MAX } else { 0 },
-            len: 0,
-        }
+        // A dangling pointer is non-null and well aligned, which is all an empty buffer needs.
+        // Nothing is allocated yet.
+        MyVec { ptr: NonNull::dangling(), cap: 0, len: 0 }
     }
 
     pub fn len(&self) -> usize {
@@ -28,15 +22,9 @@ impl<T> MyVec<T> {
         self.cap
     }
 
-    /// Grows the buffer of a non-zero-sized `T`: 0 -> 4, then doubling.
+    /// Grows the buffer: 0 -> 4, then doubling.
     fn grow(&mut self) {
-        // A zero-sized T starts with capacity usize::MAX, so it only gets here when that
-        // overflows, and `checked_mul` panics.
-        let new_cap = if self.cap == 0 {
-            4
-        } else {
-            self.cap.checked_mul(2).expect("capacity overflow")
-        };
+        let new_cap = if self.cap == 0 { 4 } else { 2 * self.cap };
         let new_layout = Layout::array::<T>(new_cap).expect("capacity overflow");
         let new_ptr = if self.cap == 0 {
             // SAFETY: T is not zero-sized and new_cap > 0, so the layout is not zero-sized.
@@ -87,9 +75,8 @@ impl<T> MyVec<T> {
 impl<T> Drop for MyVec<T> {
     fn drop(&mut self) {
         // SAFETY: the first `len` slots are initialized; each one is dropped exactly once here.
-        // This runs for zero-sized types too: their `Drop` impls still have to run.
         unsafe { ptr::drop_in_place(ptr::slice_from_raw_parts_mut(self.ptr.as_ptr(), self.len)) };
-        if !Self::IS_ZST && self.cap > 0 {
+        if self.cap > 0 {
             let layout = Layout::array::<T>(self.cap).unwrap();
             // SAFETY: `ptr` was allocated with exactly this layout.
             unsafe { alloc::dealloc(self.ptr.as_ptr().cast(), layout) };

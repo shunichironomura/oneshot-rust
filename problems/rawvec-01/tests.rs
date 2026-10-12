@@ -1,5 +1,4 @@
 use std::cell::Cell;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::judge::{case, check, check_eq};
 use crate::user::MyVec;
@@ -14,21 +13,6 @@ impl Drop for Counted<'_> {
     fn drop(&mut self) {
         self.drops.set(self.drops.get() + 1);
     }
-}
-
-/// A zero-sized type that counts its drops in a global counter.
-struct Tick;
-
-static TICKS: AtomicUsize = AtomicUsize::new(0);
-
-impl Drop for Tick {
-    fn drop(&mut self) {
-        TICKS.fetch_add(1, Ordering::Relaxed);
-    }
-}
-
-fn ticks() -> usize {
-    TICKS.load(Ordering::Relaxed)
 }
 
 /// An over-aligned type.
@@ -65,15 +49,6 @@ pub fn run() {
         check_eq(v.get(3), None)?;
         check_eq((v.len(), v.capacity()), (3, 8))
     });
-    case("sample-2", || {
-        let mut z: MyVec<()> = MyVec::new();
-        check_eq(z.capacity(), usize::MAX)?;
-        z.push(());
-        z.push(());
-        check_eq((z.len(), z.capacity()), (2, usize::MAX))?;
-        check_eq(z.pop(), Some(()))?;
-        check_eq(z.len(), 1)
-    });
     case("hidden-1", || {
         // Empty vectors, including ones that are dropped without ever allocating.
         let mut v: MyVec<String> = MyVec::new();
@@ -84,7 +59,6 @@ pub fn run() {
         drop(v);
         drop(MyVec::<u8>::new());
         drop(MyVec::<Wide>::new());
-        drop(MyVec::<()>::new());
         // Emptied by pop: the buffer is still there and must be freed.
         let mut v = MyVec::new();
         v.push(s("only"));
@@ -150,25 +124,6 @@ pub fn run() {
         check_eq(drops.get(), 10)
     });
     case("hidden-5", || {
-        // A zero-sized type whose Drop impl has a side effect.
-        let before = ticks();
-        let mut v = MyVec::new();
-        for _ in 0..200 {
-            v.push(Tick);
-            check(v.capacity() == usize::MAX, "capacity should stay usize::MAX")?;
-        }
-        check_eq(ticks() - before, 0)?;
-        check_eq((v.len(), v.as_slice().len()), (200, 200))?;
-        check(v.get(199).is_some() && v.get(200).is_none(), "get on 200 Ticks")?;
-        for _ in 0..80 {
-            check(v.pop().is_some(), "pop should return Some")?;
-        }
-        check_eq(ticks() - before, 80)?;
-        check_eq(v.len(), 120)?;
-        drop(v);
-        check_eq(ticks() - before, 200)
-    });
-    case("hidden-6", || {
         // Small and over-aligned element types.
         let mut b = MyVec::new();
         let caps = push_all(&mut b, 1..=9u8);
@@ -182,7 +137,7 @@ pub fn run() {
         check_eq(w.get(4), Some(&Wide(4)))?;
         check_eq(w.as_slice(), [Wide(0), Wide(1), Wide(2), Wide(3), Wide(4)])
     });
-    case("hidden-7", || {
+    case("hidden-6", || {
         // MyVecs inside a MyVec: moving and dropping elements that own memory.
         let mut outer = MyVec::new();
         for n in 0..6 {

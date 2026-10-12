@@ -13,11 +13,11 @@ impl<T> MyVec<T> {
     }
 
     pub fn len(&self) -> usize {
-        todo!()
+        self.len
     }
 
     pub fn capacity(&self) -> usize {
-        todo!()
+        self.cap
     }
 
     pub fn push(&mut self, x: T) {
@@ -29,7 +29,7 @@ impl<T> MyVec<T> {
     }
 
     pub fn get(&self, i: usize) -> Option<&T> {
-        todo!()
+        self.as_slice().get(i)
     }
 
     pub fn as_slice(&self) -> &[T] {
