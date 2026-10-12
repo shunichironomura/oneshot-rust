@@ -20,7 +20,7 @@ pub mod shapes {
 
     mod checks {
         use super::Rect;
-        use super::units::Cm;
+        use super::super::units::Cm;
 
         pub(super) fn is_square(rect: &Rect) -> bool {
             let Rect { width: Cm(w), height: Cm(h) } = rect;
