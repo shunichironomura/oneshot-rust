@@ -1,5 +1,5 @@
 use crate::judge::{case, check_eq};
-use crate::user::{DayError, Weekday, parse_schedule};
+use crate::user::{DayError, Weekday};
 
 const ALL: [Weekday; 7] = [
     Weekday::Mon,
@@ -23,7 +23,6 @@ pub fn run() {
     case("sample-1", || {
         check_eq(Weekday::Thu.number(), 4)?;
         check_eq(Weekday::Fri.next(), Weekday::Sat)?;
-        check_eq(Weekday::Sat.is_weekend(), true)?;
         check_eq(Weekday::try_from(7), Ok(Weekday::Sun))?;
         let r: Result<Weekday, _> = 0u8.try_into();
         check_eq(r, Err(DayError::OutOfRange(0)))
@@ -31,10 +30,6 @@ pub fn run() {
     case("sample-2", || {
         check_eq("fri".parse::<Weekday>(), Ok(Weekday::Fri))?;
         check_eq("Funday".parse::<Weekday>(), Err(unknown("Funday")))
-    });
-    case("sample-3", || {
-        check_eq(parse_schedule("mon, FRI"), Ok(vec![Weekday::Mon, Weekday::Fri]))?;
-        check_eq(parse_schedule("mon,xyz"), Err(unknown("xyz")))
     });
     case("hidden-1", || {
         // Every number in 1..=7 maps to its day and back.
@@ -69,10 +64,6 @@ pub fn run() {
         check_eq(got, expected)
     });
     case("hidden-4", || {
-        let got: Vec<bool> = ALL.into_iter().map(Weekday::is_weekend).collect();
-        check_eq(got, [false, false, false, false, false, true, true])
-    });
-    case("hidden-5", || {
         // ASCII case-insensitive.
         check_eq(parse("MON"), Ok(Weekday::Mon))?;
         check_eq(parse("mOn"), Ok(Weekday::Mon))?;
@@ -83,7 +74,7 @@ pub fn run() {
         check_eq(parse("Sat"), Ok(Weekday::Sat))?;
         check_eq(parse("sUn"), Ok(Weekday::Sun))
     });
-    case("hidden-6", || {
+    case("hidden-5", || {
         // No trimming, no full names, and the error keeps the input unchanged.
         check_eq(parse(" mon"), Err(unknown(" mon")))?;
         check_eq(parse("sun\n"), Err(unknown("sun\n")))?;
@@ -93,22 +84,5 @@ pub fn run() {
         check_eq(parse(""), Err(unknown("")))?;
         check_eq(parse("é"), Err(unknown("é")))?;
         check_eq(parse("Mön"), Err(unknown("Mön")))
-    });
-    case("hidden-7", || {
-        check_eq(parse_schedule(""), Ok(vec![]))?;
-        check_eq(parse_schedule(" \t "), Ok(vec![]))?;
-        check_eq(parse_schedule("sun"), Ok(vec![Weekday::Sun]))?;
-        check_eq(
-            parse_schedule(" Sat ,sun,\tMON, mon "),
-            Ok(vec![Weekday::Sat, Weekday::Sun, Weekday::Mon, Weekday::Mon]),
-        )
-    });
-    case("hidden-8", || {
-        // An empty piece is an error, and the first error wins.
-        check_eq(parse_schedule("mon,,fri"), Err(unknown("")))?;
-        check_eq(parse_schedule("tue,"), Err(unknown("")))?;
-        check_eq(parse_schedule(" , "), Err(unknown("")))?;
-        check_eq(parse_schedule("abc, mon, xyz"), Err(unknown("abc")))?;
-        check_eq(parse_schedule("tue,  Wednesday , 8"), Err(unknown("Wednesday")))
     });
 }

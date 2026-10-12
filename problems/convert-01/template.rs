@@ -25,10 +25,6 @@ impl Weekday {
     pub fn next(self) -> Weekday {
         todo!()
     }
-
-    pub fn is_weekend(self) -> bool {
-        todo!()
-    }
 }
 
 impl TryFrom<u8> for Weekday {
@@ -45,8 +41,4 @@ impl FromStr for Weekday {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         todo!()
     }
-}
-
-pub fn parse_schedule(s: &str) -> Result<Vec<Weekday>, DayError> {
-    todo!()
 }
