@@ -69,6 +69,7 @@ export function ModelSolution({ problem, code }: { problem: Problem; code: strin
           dangerouslySetInnerHTML={{ __html: localize(solution.editorialHtml, locale) }}
         />
       )}
+      <p class="solution-note ai-notice">{t.solutionAiNotice}</p>
     </>
   );
 }

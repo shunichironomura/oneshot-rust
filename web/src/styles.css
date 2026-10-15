@@ -484,6 +484,18 @@ main > section.home {
   font-size: 0.85em;
 }
 
+.credit p {
+  margin: 0;
+}
+
+/* The AI notice is there for whoever looks for it, quieter than the text around it. */
+.credit .ai-notice {
+  max-width: 44em;
+  margin: 0.6em auto 0;
+  font-size: 0.9em;
+  text-wrap: pretty;
+}
+
 .credit a {
   color: inherit;
 }
@@ -1064,6 +1076,11 @@ main > section.round-start {
   margin: 0;
   color: var(--muted);
   font-size: 0.9em;
+}
+
+.solution-note.ai-notice {
+  margin-top: 1.5em;
+  font-size: 0.8em;
 }
 
 /* Result panel */
