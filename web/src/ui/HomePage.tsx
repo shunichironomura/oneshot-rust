@@ -23,7 +23,10 @@ export function HomePage() {
       </div>
 
       <footer class="credit">
-        {t.madeBy} <a href={AUTHOR.url}>{AUTHOR.name}</a>
+        <p>
+          {t.madeBy} <a href={AUTHOR.url}>{AUTHOR.name}</a>
+        </p>
+        <p class="ai-notice">{t.aiNotice}</p>
       </footer>
     </section>
   );

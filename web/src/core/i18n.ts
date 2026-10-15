@@ -52,6 +52,7 @@ export interface Messages {
   demoWrongAnswer: (passed: number, n: number) => string;
   demoSubmitHint: string;
   madeBy: string;
+  aiNotice: string;
 
   // Records
   recordsHeading: string;
@@ -96,6 +97,7 @@ export interface Messages {
   /** Names the choice between the solution's code and its diff. */
   solutionView: string;
   solutionDiffLegend: string;
+  solutionAiNotice: string;
 
   // Result panel
   compiling: string;
@@ -185,6 +187,8 @@ const en: Messages = {
   demoWrongAnswer: (passed, n) => `Wrong answer · ${passed}/${n} tests passed`,
   demoSubmitHint: "Submit",
   madeBy: "Made by",
+  aiNotice:
+    "Problems, model solutions and editorials were written with AI assistance. Every model solution is checked to compile and pass all tests under Miri, but the explanations may contain mistakes and the code may not be the most idiomatic.",
 
   recordsHeading: "Records",
   problemsHeading: "Problems",
@@ -225,6 +229,8 @@ const en: Messages = {
   solutionDiff: "Diff from your code",
   solutionView: "View",
   solutionDiffLegend: "- your code   + model solution",
+  solutionAiNotice:
+    "This solution and editorial were written with AI assistance. The explanation may contain mistakes.",
 
   compiling: "Compiling…",
   runningCase: (i, n) => `Running test ${i} of ${n}…`,
@@ -343,6 +349,8 @@ const ja: Messages = {
   demoWrongAnswer: (passed, n) => `不正解 · ${passed}/${n} テスト通過`,
   demoSubmitHint: "提出",
   madeBy: "作者：",
+  aiNotice:
+    "問題・模範解答・解説は AI の支援を受けて作成しています。模範解答はすべて Miri でコンパイルが通り、全テストに合格することを確認していますが、解説の説明に誤りがあったり、より慣用的な書き方があったりするかもしれません。",
 
   recordsHeading: "記録",
   problemsHeading: "問題",
@@ -383,6 +391,8 @@ const ja: Messages = {
   solutionDiff: "自分のコードとの差分",
   solutionView: "表示",
   solutionDiffLegend: "- 自分のコード   + 模範解答",
+  solutionAiNotice:
+    "この模範解答と解説は AI の支援を受けて作成しています。解説には誤りがあるかもしれません。",
 
   compiling: "コンパイル中…",
   runningCase: (i, n) => `実行中（ケース ${i}/${n}）`,
