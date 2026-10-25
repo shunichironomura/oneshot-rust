@@ -56,37 +56,33 @@ export async function abandonActiveRound(storage: Storage, round: Round): Promis
   await storage.saveRound(abandonRound(round, ended, now));
 }
 
-/**
- * Picks a problem of the given difficulty to play on its own, outside a round. The problems
- * of a round in progress are left out, so that its problems still to come are not met early.
- */
+/** Picks a problem of the given difficulty to play on its own, outside a round. */
 async function pickQuickProblem(
   storage: Storage,
   problems: readonly Problem[],
   difficulty: Difficulty,
 ): Promise<string | undefined> {
-  const rounds = await storage.rounds();
-  const inRound = new Set(activeRound(rounds)?.problemIds);
-  const played = await playedProblems(storage, rounds);
-  return pickProblem(
-    problems.filter((p) => !inRound.has(p.id)),
-    played,
-    difficulty,
-    Math.random,
-  );
+  const played = await playedProblems(storage, await storage.rounds());
+  return pickProblem(problems, played, difficulty, Math.random);
 }
 
-/** A single problem of a chosen difficulty, played on its own as practice. */
-function QuickPlay() {
+/**
+ * A single problem of a chosen difficulty, played on its own as practice. The problems of
+ * the round in progress, if any, are left out, so that its problems still to come are not
+ * met early.
+ */
+function QuickPlay({ round }: { round: Round | null }) {
   const { content, storage, t } = useApp();
   const [picking, setPicking] = useState(false);
+  const inRound = new Set(round?.problemIds);
+  const eligible = content.problems.filter((p) => !inRound.has(p.id));
   // Only the difficulties there are problems of.
-  const difficulties = DIFFICULTIES.filter((d) => content.problems.some((p) => p.difficulty === d));
+  const difficulties = DIFFICULTIES.filter((d) => eligible.some((p) => p.difficulty === d));
   if (difficulties.length === 0) return null;
 
   const play = (difficulty: Difficulty) => {
     setPicking(true);
-    void pickQuickProblem(storage, content.problems, difficulty)
+    void pickQuickProblem(storage, eligible, difficulty)
       .then((problemId) => {
         if (problemId !== undefined)
           window.location.hash = routeHref({ page: "practice", problemId });
@@ -155,7 +151,7 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
             void abandonActiveRound(storage, active).then(() => setActive(null));
           }}
         />
-        <QuickPlay />
+        <QuickPlay round={active} />
       </div>
     );
   }
@@ -187,7 +183,7 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
           </span>
         ))}
       </p>
-      <QuickPlay />
+      <QuickPlay round={null} />
     </div>
   );
 }
