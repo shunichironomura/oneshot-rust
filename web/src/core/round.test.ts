@@ -7,6 +7,7 @@ import {
   currentProblemId,
   isComplete,
   newRound,
+  pickProblem,
   pickRound,
   recordRun,
   type Round,
@@ -87,6 +88,40 @@ describe("pickRound", () => {
 
   test("returns every problem when there are fewer than a round needs", () => {
     expect(pickRound(problems(1), nothing, random)).toEqual(["1a", "2a", "3a"]);
+  });
+});
+
+describe("pickProblem", () => {
+  const problems = ([1, 2, 3] as const).flatMap((difficulty) =>
+    ["a", "b", "c"].map((name) => ({ id: `${difficulty}${name}`, difficulty })),
+  );
+
+  test("picks a problem of the given difficulty", () => {
+    const nothing = { solved: new Set<string>(), seen: new Set<string>() };
+    for (let i = 0; i < 10; i++) {
+      expect(["2a", "2b", "2c"]).toContain(pickProblem(problems, nothing, 2, random));
+    }
+  });
+
+  test("prefers problems not seen yet, then unsolved ones, then solved ones", () => {
+    for (let i = 0; i < 10; i++) {
+      expect(
+        pickProblem(problems, { solved: new Set(["1a"]), seen: new Set(["1a", "1b"]) }, 1, random),
+      ).toBe("1c");
+      expect(
+        pickProblem(
+          problems,
+          { solved: new Set(["1a", "1c"]), seen: new Set(["1a", "1b", "1c"]) },
+          1,
+          random,
+        ),
+      ).toBe("1b");
+    }
+  });
+
+  test("returns undefined when there is no problem of the difficulty", () => {
+    const easy = problems.filter((p) => p.difficulty === 1);
+    expect(pickProblem(easy, { solved: new Set(), seen: new Set() }, 3, random)).toBeUndefined();
   });
 });
 

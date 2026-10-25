@@ -46,7 +46,7 @@ export function ProblemsPage() {
   const [rounds, setRounds] = useState<Round[]>([]);
   /** `undefined` until loaded, `null` with no round in progress. */
   const [active, setActive] = useState<Round | null>();
-  /** Problems shown in any round, including the one being played. */
+  /** Problems shown in any round, including the one being played, or played on their own. */
   const [seen, setSeen] = useState<Set<string>>(new Set());
   const dateFormat = useMemo(
     () => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }),
@@ -60,8 +60,8 @@ export function ProblemsPage() {
       setBestRuns(await storage.runsById([...byProblem.values()].map((b) => b.runId)));
     });
     void storage.problemsInProgress().then(setInProgress);
-    void storage.rounds().then((all) => {
-      setSeen(seenProblemIds(all));
+    void Promise.all([storage.rounds(), storage.problemsPlayed()]).then(([all, played]) => {
+      setSeen(new Set([...seenProblemIds(all), ...played]));
       setActive(activeRound(all) ?? null);
       setRounds(all.filter((r) => r.finishedAt !== undefined));
     });

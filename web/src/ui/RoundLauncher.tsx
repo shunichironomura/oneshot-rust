@@ -1,11 +1,13 @@
 import { ArrowRight, Play } from "lucide-preact";
 import { useEffect, useState } from "preact/hooks";
-import type { Problem } from "../core/problem.ts";
+import { DIFFICULTIES, type Difficulty, type Problem } from "../core/problem.ts";
 import {
   abandonRound,
   activeRound,
   currentProblemId,
   newRound,
+  type PlayedProblems,
+  pickProblem,
   pickRound,
   ROUND_LADDER,
   type Round,
@@ -15,15 +17,24 @@ import { routeHref } from "../core/route.ts";
 import type { Storage } from "../storage/db.ts";
 import { useApp } from "./context.ts";
 import { Confirm } from "./Dialog.tsx";
-import { DifficultyBadge } from "./DifficultyBadge.tsx";
+import { DifficultyBadge, DifficultyMarks } from "./DifficultyBadge.tsx";
 import { RoundProgress } from "./RoundProgress.tsx";
+
+/** What the player has done so far: problems shown in rounds and problems played at all count as seen. */
+async function playedProblems(storage: Storage, rounds: readonly Round[]): Promise<PlayedProblems> {
+  const [bests, played] = await Promise.all([storage.allBests(), storage.problemsPlayed()]);
+  return {
+    solved: new Set(bests.map((b) => b.problemId)),
+    seen: new Set([...seenProblemIds(rounds), ...played]),
+  };
+}
 
 /** Starts a round, unless one is already in progress: then that one is returned. */
 export async function startRound(storage: Storage, problems: readonly Problem[]): Promise<Round> {
-  const [rounds, bests] = await Promise.all([storage.rounds(), storage.allBests()]);
+  const rounds = await storage.rounds();
   const active = activeRound(rounds);
   if (active !== undefined) return active;
-  const played = { solved: new Set(bests.map((b) => b.problemId)), seen: seenProblemIds(rounds) };
+  const played = await playedProblems(storage, rounds);
   const round = newRound({
     id: crypto.randomUUID(),
     problemIds: pickRound(problems, played, Math.random),
@@ -45,9 +56,56 @@ export async function abandonActiveRound(storage: Storage, round: Round): Promis
   await storage.saveRound(abandonRound(round, ended, now));
 }
 
+/** Picks a problem of the given difficulty to play on its own, outside a round. */
+async function pickQuickProblem(
+  storage: Storage,
+  problems: readonly Problem[],
+  difficulty: Difficulty,
+): Promise<string | undefined> {
+  const played = await playedProblems(storage, await storage.rounds());
+  return pickProblem(problems, played, difficulty, Math.random);
+}
+
+/**
+ * A single problem of a chosen difficulty, played on its own as practice. The problems of
+ * the round in progress, if any, are left out, so that its problems still to come are not
+ * met early.
+ */
+function QuickPlay({ round }: { round: Round | null }) {
+  const { content, storage, t } = useApp();
+  const [picking, setPicking] = useState(false);
+  const inRound = new Set(round?.problemIds);
+  const eligible = content.problems.filter((p) => !inRound.has(p.id));
+  // Only the difficulties there are problems of.
+  const difficulties = DIFFICULTIES.filter((d) => eligible.some((p) => p.difficulty === d));
+  if (difficulties.length === 0) return null;
+
+  const play = (difficulty: Difficulty) => {
+    setPicking(true);
+    void pickQuickProblem(storage, eligible, difficulty)
+      .then((problemId) => {
+        if (problemId !== undefined)
+          window.location.hash = routeHref({ page: "practice", problemId });
+      })
+      .finally(() => setPicking(false));
+  };
+  return (
+    <p class="quick-play">
+      {t.quickPlay}
+      {difficulties.map((d) => (
+        <button key={d} type="button" class="level" onClick={() => play(d)} disabled={picking}>
+          <DifficultyMarks difficulty={d} />
+          {t.difficulties[d]}
+        </button>
+      ))}
+    </p>
+  );
+}
+
 /**
  * The way into the game: "Play", or "Continue" with the progress of the round in progress
- * (which can also be abandoned).
+ * (which can also be abandoned). Either way, a single problem of a chosen difficulty can
+ * also be played on its own, as practice.
  */
 export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void }) {
   const { content, storage, t } = useApp();
@@ -93,6 +151,7 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
             void abandonActiveRound(storage, active).then(() => setActive(null));
           }}
         />
+        <QuickPlay round={active} />
       </div>
     );
   }
@@ -124,6 +183,7 @@ export function RoundLauncher({ onStarted }: { onStarted: (round: Round) => void
           </span>
         ))}
       </p>
+      <QuickPlay round={null} />
     </div>
   );
 }

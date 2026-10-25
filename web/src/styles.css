@@ -615,6 +615,31 @@ main > section.home {
   gap: 0.4em;
 }
 
+/* A way in for a quick game, kept quieter than the round: its own line, below. */
+.quick-play {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+/* Buttons, unlike the badges of the ladder above, which are only labels. */
+.quick-play button.level {
+  gap: 0.4em;
+  padding: 0.15em 0.6em;
+  font-family: var(--display);
+  font-weight: 600;
+}
+
+.quick-play button.level .marks i {
+  width: 3px;
+  height: 0.9em;
+}
+
 .link-button.abandon-round {
   color: var(--muted);
   font-size: 0.9em;
