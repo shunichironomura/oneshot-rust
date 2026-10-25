@@ -58,20 +58,31 @@ export interface PlayedProblems {
 type Candidate = Pick<Problem, "id" | "difficulty">;
 
 /**
- * Picks the problems of a new round, one per step of the ladder, ordered from easy to hard.
- * Within a difficulty, problems not seen yet come first, then those seen but not solved
+ * Orders problems for picking: those not seen yet first, then those seen but not solved
  * (the player may just have read their model solution), then solved ones, each group in
- * random order. A difficulty without enough problems is made up for from the others.
+ * random order.
+ */
+function rankByStaleness<C extends Candidate>(
+  candidates: readonly C[],
+  played: PlayedProblems,
+  random: () => number,
+): C[] {
+  const staleness = (p: C) => (played.solved.has(p.id) ? 2 : played.seen.has(p.id) ? 1 : 0);
+  // Sorting is stable, so the shuffled order remains within each group.
+  return shuffle(candidates, random).sort((a, b) => staleness(a) - staleness(b));
+}
+
+/**
+ * Picks the problems of a new round, one per step of the ladder, ordered from easy to hard.
+ * Within a difficulty, the stalest problems come last (see `rankByStaleness`). A difficulty
+ * without enough problems is made up for from the others.
  */
 export function pickRound(
   problems: readonly Candidate[],
   played: PlayedProblems,
   random: () => number,
 ): string[] {
-  const staleness = (p: Candidate) => (played.solved.has(p.id) ? 2 : played.seen.has(p.id) ? 1 : 0);
-  // Sorting is stable, so the shuffled order remains within each group.
-  const ranked = (candidates: readonly Candidate[]) =>
-    shuffle(candidates, random).sort((a, b) => staleness(a) - staleness(b));
+  const ranked = (candidates: readonly Candidate[]) => rankByStaleness(candidates, played, random);
   const steps = (d: Difficulty) => ROUND_LADDER.filter((step) => step === d).length;
   const picked = DIFFICULTIES.flatMap((d) =>
     ranked(problems.filter((p) => p.difficulty === d)).slice(0, steps(d)),
@@ -82,6 +93,23 @@ export function pickRound(
     ROUND_LENGTH - picked.length,
   );
   return [...picked, ...makeUp].sort((a, b) => a.difficulty - b.difficulty).map((p) => p.id);
+}
+
+/**
+ * Picks one problem of the given difficulty to play on its own, the stalest last as for
+ * rounds, or `undefined` when there is no problem of that difficulty.
+ */
+export function pickProblem(
+  problems: readonly Candidate[],
+  played: PlayedProblems,
+  difficulty: Difficulty,
+  random: () => number,
+): string | undefined {
+  return rankByStaleness(
+    problems.filter((p) => p.difficulty === difficulty),
+    played,
+    random,
+  )[0]?.id;
 }
 
 export function newRound(params: { id: string; problemIds: string[]; now: number }): Round {

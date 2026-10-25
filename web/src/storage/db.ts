@@ -114,6 +114,12 @@ export class Storage {
     );
   }
 
+  /** Problems with a run of any kind: in a round or practice, finished or not. */
+  async problemsPlayed(): Promise<Set<string>> {
+    const runs = await this.db.getAll("runs");
+    return new Set(runs.map((r) => r.problemId));
+  }
+
   async allBests(): Promise<Best[]> {
     return this.db.getAll("bests");
   }
