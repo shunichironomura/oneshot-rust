@@ -464,6 +464,9 @@ main > section.home {
   margin: 0 0 0.3em;
   font-size: calc(var(--step-5) * 1.2);
   line-height: 1;
+  /* Wrap only at spaces and zero-width spaces, so the Japanese title breaks after "、"
+     in every browser: `auto-phrase` below works in Chromium browsers only. */
+  word-break: keep-all;
 }
 
 .tagline {
