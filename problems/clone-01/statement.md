@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 `Handle<T>` is a handle to a value of type `T` that several owners share. The value lives in an
 `Rc<RefCell<T>>`, and every handle made from another one points at the same value.

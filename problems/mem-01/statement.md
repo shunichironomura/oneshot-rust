@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 A `Client` keeps a network connection up. Its state is a `Conn`, and messages sent while it is still
 connecting wait in a queue until the connection is up. A `Session` is one connection that came up:

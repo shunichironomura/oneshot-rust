@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 `Unit` is a trait for the members of a game party, implemented by `Knight` and `Archer`.
 `total_power` and `strongest` take a party with mixed kinds of units as `&[Box<dyn Unit>]`. They

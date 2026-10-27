@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 A `TempFile` is a temporary file kept in memory: when it is dropped, it is deleted, unless it has
 been persisted. Each file reports what happens to it in a shared log.

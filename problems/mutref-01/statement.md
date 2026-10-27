@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 `Labels` hands out the label `"item-<id>"` for an id. Building a label is assumed to be expensive, so
 each label is built **only once**, kept in a cache, and returned as a reference into the cache from

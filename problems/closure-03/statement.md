@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 `tally` goes through a list of events and keeps a log of them. `make_greeter` builds a function that
 greets people.

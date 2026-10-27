@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 The code was written for Rust 2021 and compiled there, but the judge compiles it as Rust 2024. It
 keeps a small scoreboard. `Player` is already in the editor.

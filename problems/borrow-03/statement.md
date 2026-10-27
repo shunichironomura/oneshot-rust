@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 A `Bank` keeps the balance of each account by name (the names given to `new` are all different).
 `balance` returns the balance of an account, or `None` for an unknown name. `transfer` moves

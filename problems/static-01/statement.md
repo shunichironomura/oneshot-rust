@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 It is a string interner shared by the whole program. It gives every distinct string a number (its
 id), so that the rest of the program can store and compare small numbers instead of strings and turn

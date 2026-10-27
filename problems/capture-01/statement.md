@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 `fill_squares` sets every element of `out` to the square of its index. The work is split across
 `workers` threads: worker `w` writes the elements at indices `w`, `w + workers`, `w + 2 * workers`,

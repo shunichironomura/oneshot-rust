@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 It defines two declarative macros that take patterns, and three functions that use them. Each
 macro is followed by a `pub(crate) use` line that lets other modules call it by path.

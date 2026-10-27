@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 Each line of a small data file holds a pair `a,b`: an integer `a` and a decimal number `b`.
 `parse_pair` reads one pair, and `sum_pairs` adds up all the pairs of a file. Errors are reported
