@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 A sign-up form has two widgets, one for the username and one for the age. Each widget is a trait,
 and both traits name their methods `get` and `kind`. `Form` implements both of them and a third

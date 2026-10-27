@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 A `Tracer` appends a line to a shared sink when it is created and another one when it is dropped.
 `trace` uses tracers to record a run of named steps.

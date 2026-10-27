@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 A `Post` is a blog post that has to be reviewed before it is published. It keeps its current state as
 a trait object (`Option<Box<dyn State>>`), and the state structs `Draft`, `PendingReview` and

@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 The code measures rectangles and is split into modules. `shapes` has the rectangle type `Rect`, and
 its private child module `shapes::checks` has the function `is_square`. The private module `units`

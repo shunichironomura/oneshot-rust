@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 Each of the three functions returns an `impl Trait`. The `Keep` enum is already in the editor.
 

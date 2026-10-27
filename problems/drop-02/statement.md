@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 A `Transaction` collects operations and records its outcome in a shared log: either it is committed,
 or it is rolled back. A transaction that is dropped without being committed is rolled back.

@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 The two functions below work with 26 buckets of words, one for each letter of the English
 alphabet.

@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 `moving_average` returns the average of every run of `window` consecutive values, from left to
 right. If `window` is `0` or larger than the number of values, it returns an empty vector. The values

@@ -1,5 +1,4 @@
-The code below does not compile. **Without looking at the error message**, predict where the compiler
-complains and fix it.
+The code below does not compile. Fix it.
 
 `Length<U>` is a length whose unit is part of its type: `Length<Mm>` and `Length<Inch>` are
 different types, so millimeters and inches cannot be mixed up by mistake. A unit type holds no data;
