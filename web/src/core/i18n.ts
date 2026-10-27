@@ -341,7 +341,8 @@ const ja: Messages = {
   toolchainMissing: "ツールチェーンが見つかりません。toolchain/build.nu でビルドしてください。",
   toolchainError: (m) => `コンパイラを読み込めませんでした: ${m}`,
 
-  heroTitle: "Rust を、一発で。",
+  // The zero-width space is the only place the title may wrap (see `.hero h1`).
+  heroTitle: "Rust を、\u200b一発で。",
   heroTagline:
     "補完なし、IDE なし。あなたとコンパイラだけ。コンパイルは 1 回ごとにカウントされます。",
   play: "プレイ",
