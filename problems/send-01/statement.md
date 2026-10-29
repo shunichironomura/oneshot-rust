@@ -1,15 +1,13 @@
-The bodies of the two functions in the editor are already written, but their signatures are wrong,
-so the code does not compile. Change **only the signatures** (the `pub fn` lines and their `where`
-clauses) so that the test harness (the `tests.rs` tab) compiles and passes. Do not change the
-bodies.
+The function in the editor maps a closure over a list of items, running each call on its own
+thread. Its body is already written, but its signature is wrong, so the code does not compile.
+Change **only the signature** (the `pub fn` line and its `where` clause) so that the test harness
+(the `tests.rs` tab) compiles and passes. Do not change the body.
 
 - `par_map(items, f)` calls `f` exactly once for every item, each call on its own scoped thread, and
   returns the results in the order of `items`. If `items` is empty, it returns an empty `Vec`.
-- `spawn_job(input, f)` starts a new thread that runs `f(input)` and returns its `JoinHandle` right
-  away, without waiting for the thread. Joining the handle gives the result of `f(input)`.
 
-The harness calls both functions with many different closures and inputs. Every one of these calls
-has to compile.
+The harness calls it with many different closures and items. Every one of these calls has to
+compile.
 
 ### Examples
 
@@ -22,8 +20,4 @@ par_map(names, |name| {
     format!("{prefix}{name}")
 })
 // ["item-a", "item-bb", "item-ccc"], and calls is now 3
-
-let name = String::from("Ferris");
-spawn_job(3, move |n: usize| name + &"!".repeat(n)).join().unwrap()
-// "Ferris!!!"
 ```
