@@ -1,7 +1,7 @@
 id = "string-02"
-title = { en = "Three string helpers", ja = "3 つの文字列ヘルパー" }
+title = { en = "Joining a path", ja = "パスをつなぐ" }
 difficulty = 1
-concepts = ["String + &str (Add<&str>)", "+ moves its left operand", "no integer indexing into str", "chars vs bytes", "to_uppercase"]
+concepts = ["String + &str (Add<&str>)", "+ moves its left operand", "deref coercion from &String to &str"]
 kind = "repair"
 
 [judge]
