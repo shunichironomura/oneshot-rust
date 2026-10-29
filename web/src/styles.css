@@ -101,6 +101,13 @@
   box-sizing: border-box;
 }
 
+/* Mobile Safari enlarges text in blocks it judges too wide to read, so code lines that
+   overflow the screen come out bigger than the ones that fit. Keep every size as written. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body {
   margin: 0;
