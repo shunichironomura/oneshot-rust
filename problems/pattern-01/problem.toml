@@ -3,9 +3,8 @@ title = { en = "Taking it apart", ja = "分解して取り出す" }
 difficulty = 1
 concepts = [
     "refutable vs irrefutable patterns",
-    "let-else / if let",
-    "_ vs _name bindings (moves)",
     "patterns in for loops",
+    "if let / let-else",
 ]
 kind = "repair"
 
