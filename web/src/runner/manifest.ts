@@ -7,6 +7,11 @@ export interface ToolchainManifest {
     miriWasm: ToolchainFile;
     sysroot: ToolchainFile;
   };
+  /**
+   * License texts of the toolchain's components, served uncompressed; paths are relative to
+   * the toolchain directory. Absent in toolchains built before they were collected.
+   */
+  licenses?: string[];
 }
 
 /**

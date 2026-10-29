@@ -15,6 +15,7 @@ web/public/toolchain/
   manifest.json                    ツールチェーン ID とファイル一覧（フロントエンドが最初に読む）
   <toolchainId>/miri.wasm.gz.<n>   wasm32-wasip1 向けの Miri（gzip 圧縮して分割）
   <toolchainId>/sysroot.tar.gz.<n> x86_64-unknown-linux-gnu 向けの std など（MIR 付き rlib、同上）
+  <toolchainId>/licenses/          上の 2 つに含まれるコンポーネントのライセンス文（圧縮なし）
 ```
 
 - `toolchainId` は 2 つのファイルの内容ハッシュです。ブラウザは展開後のファイルを、この ID を含むキーで Cache Storage に
@@ -32,7 +33,7 @@ web/public/toolchain/
   そのタグを `toolchain/RELEASE` に書き込みます。`RELEASE` はコミットしてください。
 - `web/` で `vp run fetch-toolchain`（`scripts/fetch-toolchain.ts`）：`toolchain/RELEASE` の Release をダウンロードし、
   `web/public/toolchain/` に配置します。CI と Cloudflare のビルドもこれを使います。同じ版が配置済みなら何もしません。
-  リポジトリが private なので、環境変数 `GITHUB_TOKEN`（または `GH_TOKEN`）か、`gh` のログインが必要です。
+  リポジトリが private の間は、環境変数 `GITHUB_TOKEN`（または `GH_TOKEN`）か、`gh` のログインが必要です。
 
 ## 必要なもの
 
@@ -48,7 +49,8 @@ web/public/toolchain/
 4. 同じソースツリーからネイティブ版の Miri と cargo-miri をビルドします。それを使い、
    `cargo miri setup` で解釈対象ターゲット（x86_64-unknown-linux-gnu）の sysroot を作ります。
    同じコミットからビルドするので、メタデータの互換性が保たれます。
-5. `miri.wasm` と sysroot の `.rlib` をまとめて配置します。
+5. ライセンス文を集めます（下の「ライセンス」を参照）。
+6. `miri.wasm` と sysroot の `.rlib`、ライセンス文をまとめて配置します。
 
 ## パッチ
 
@@ -60,6 +62,29 @@ web/public/toolchain/
   （isolation を有効にして動かすので、どちらも使われません）。
 
 [bjorn3 氏の rustc の Wasm 化の取り組み](https://github.com/rust-lang/miri/issues/722)を参考にしています。
+
+## ライセンス
+
+配信するバイナリには、次のライセンス文を `licenses/` として同梱します。`build.nu` が `toolchain/work/licenses/` に集め、
+`manifest.json` の `licenses` に列挙します。`publish.nu` はそれらを Release のアセットにも含めます。
+
+| ファイル | 内容 |
+| --- | --- |
+| `README.txt` | 各ファイルの説明 |
+| `rust-COPYRIGHT`、`rust-LICENSE-MIT`、`rust-LICENSE-APACHE` | Rust 本体のライセンス（MIT または Apache-2.0） |
+| `rust-COPYRIGHT.html` | rustc・Miri・標準ライブラリと、その依存クレートすべてのライセンス（`miri.wasm` 用） |
+| `rust-COPYRIGHT-library.html` | 標準ライブラリとその依存クレートだけのライセンス（sysroot 用） |
+| `wasi-libc-*` | `miri.wasm` にリンクされる wasi-libc（musl、cloudlibc、musl-fts を含む）のライセンス |
+| `compiler-rt-LICENSE.TXT` | `miri.wasm` にリンクされる compiler-rt builtins のライセンス |
+
+- `rust-COPYRIGHT*.html` は、Rust の公式リリースに同梱されるものと同じく、rust-lang/rust の
+  `./x.py run src/tools/generate-copyright` で生成します。依存クレートを `cargo vendor` するため、ネットワークが必要です。
+- wasi-libc と compiler-rt のライセンス文は、wasi-sdk の `VERSION` に書かれたコミット（LLVM はバージョンのタグ）から
+  ダウンロードします。
+
+licenses を集める前に作った Release を更新するには、`./toolchain/build.nu` を実行し直してから `./toolchain/publish.nu` を
+実行します。同じ ID の Release がすでにあれば、`manifest.json` とライセンス文だけをアップロードし直します
+（ビルドが再現せず ID が変わった場合は、新しい Release ができます）。
 
 ## `RUST_COMMIT` を更新するとき
 

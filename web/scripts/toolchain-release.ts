@@ -12,7 +12,10 @@ export function toolchainIdOfTag(tag: string): string {
 export function placements(manifest: ToolchainManifest): { asset: string; path: string }[] {
   const parts = Object.values(manifest.files).flatMap((f) => f.parts);
   return [
-    ...parts.map((path) => ({ asset: path.split("/").at(-1) ?? path, path })),
+    ...[...parts, ...(manifest.licenses ?? [])].map((path) => ({
+      asset: path.split("/").at(-1) ?? path,
+      path,
+    })),
     { asset: "manifest.json", path: "manifest.json" },
   ];
 }
