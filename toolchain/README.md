@@ -33,7 +33,7 @@ web/public/toolchain/
   そのタグを `toolchain/RELEASE` に書き込みます。`RELEASE` はコミットしてください。
 - `web/` で `vp run fetch-toolchain`（`scripts/fetch-toolchain.ts`）：`toolchain/RELEASE` の Release をダウンロードし、
   `web/public/toolchain/` に配置します。CI と Cloudflare のビルドもこれを使います。同じ版が配置済みなら何もしません。
-  リポジトリが private の間は、環境変数 `GITHUB_TOKEN`（または `GH_TOKEN`）か、`gh` のログインが必要です。
+  Release の公開ダウンロード URL から取得するので、トークンは要りません。
 
 ## 必要なもの
 
