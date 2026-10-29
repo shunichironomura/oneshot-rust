@@ -82,9 +82,7 @@ web/public/toolchain/
 - wasi-libc と compiler-rt のライセンス文は、wasi-sdk の `VERSION` に書かれたコミット（LLVM はバージョンのタグ）から
   ダウンロードします。
 
-licenses を集める前に作った Release を更新するには、`./toolchain/build.nu` を実行し直してから `./toolchain/publish.nu` を
-実行します。同じ ID の Release がすでにあれば、`manifest.json` とライセンス文だけをアップロードし直します
-（ビルドが再現せず ID が変わった場合は、新しい Release ができます）。
+Release は公開後に変更できない（immutable）ため、`publish.nu` は同じ ID の Release がすでにあれば何もしません。
 
 ## `RUST_COMMIT` を更新するとき
 
