@@ -1,0 +1,15 @@
+id = "slice-02"
+title = { en = "Local peaks", ja = "山の位置" }
+difficulty = 1
+concepts = [
+    "slice::windows",
+    "usize underflow in manual loops",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
