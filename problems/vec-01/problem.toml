@@ -1,7 +1,7 @@
 id = "vec-01"
-title = { en = "Moving items out of a Vec", ja = "Vec から取り出す" }
+title = { en = "Expiring jobs", ja = "期限切れのジョブ" }
 difficulty = 2
-concepts = ["Vec::extract_if", "moving elements out of &mut Vec", "retain / retain_mut", "non-adjacent dedup", "borrowed data escaping a closure", "rotate_right", "saturating_sub"]
+concepts = ["Vec::extract_if", "moving elements out of &mut Vec", "retain_mut", "saturating_sub"]
 kind = "implement"
 
 [judge]

@@ -1,0 +1,12 @@
+id = "vec-02"
+title = { en = "Duplicate titles", ja = "重複したタイトル" }
+difficulty = 2
+concepts = ["Vec::retain", "non-adjacent dedup", "borrowed data escaping a closure"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
