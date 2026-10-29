@@ -98,7 +98,7 @@ fn boxed_panic(order: &[usize], trap: usize) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut calls = Vec::new();
         let v = build(&[2, 0, 1], |i| {
             calls.push(i);
@@ -107,8 +107,8 @@ pub fn run() {
         check_eq(calls, [2, 0, 1])?;
         check_eq(v, ["0", "1", "2"])
     });
-    case("sample-2", || trial(&[3, 1, 0, 2], 0));
-    case("hidden-1", || {
+    case("example-2", || trial(&[3, 1, 0, 2], 0));
+    case("case-1", || {
         // An empty order, a single index, and the order 0, 1, 2, ...
         let empty: Vec<String> = build(&[], |_| fail());
         check(empty.is_empty(), "the vector for an empty order is not empty")?;
@@ -116,7 +116,7 @@ pub fn run() {
         check_eq(build(&[0, 1, 2, 3], |i| 10 * i as i32), [0, 10, 20, 30])?;
         trial(&[], NONE)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Other types, and each value goes to the index `f` was called with.
         check_eq(build(&[4, 2, 0, 3, 1], |i| (i * i) as u64), [0, 1, 4, 9, 16])?;
         let mut k = 0;
@@ -129,22 +129,22 @@ pub fn run() {
         check_eq(v, [Box::new(0), Box::new(1), Box::new(2)])?;
         check_eq(build(&[1, 0, 2], |_| ()), [(), (), ()])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Without a panic, every value is dropped once, when the vector is dropped.
         trial(&[3, 0, 2, 1], NONE)?;
         trial(&[4, 3, 2, 1, 0], NONE)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // f panics on its first call: nothing has been produced yet.
         trial(&[1, 0, 2], 1)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // f panics in the middle of the work, also when the slots filled so far are scattered.
         trial(&[5, 0, 3, 1, 4, 2], 4)?;
         trial(&[0, 1, 2, 3], 2)?;
         boxed_panic(&[2, 0, 3, 1], 3)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // f panics on its last call: every value but one has been produced.
         trial(&[2, 0, 1, 3], 3)
     });

@@ -12,7 +12,7 @@ fn history(capacity: usize, actions: &[&str]) -> History {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut h = history(3, &["type", "bold", "paste", "delete"]);
         check_eq(h.len(), 3)?;
         check_eq(h.oldest(), Some("bold"))?;
@@ -21,7 +21,7 @@ pub fn run() {
         check_eq(h.undo().as_deref(), Some("delete"))?;
         check_eq(h.recent(10), ["paste", "bold"])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // A capacity of 0 keeps nothing.
         let mut h = History::new(0);
         h.record("a");
@@ -31,7 +31,7 @@ pub fn run() {
         check_eq(h.recent(3), NO_ACTIONS)?;
         check_eq(h.undo(), None)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // An empty history, then a single action.
         let mut h = History::new(3);
         check_eq(h.len(), 0)?;
@@ -47,7 +47,7 @@ pub fn run() {
         check_eq(h.undo().as_deref(), Some("solo"))?;
         check_eq(h.undo(), None)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // A capacity of 1 keeps only the newest action.
         let mut h = history(1, &["a", "b", "c"]);
         check_eq(h.len(), 1)?;
@@ -58,7 +58,7 @@ pub fn run() {
         h.record("d");
         check_eq(h.recent(usize::MAX), ["d"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Newest first for every n, including n larger than the history.
         let h = history(10, &["1", "2", "3", "4", "5", "6"]);
         check_eq(h.len(), 6)?;
@@ -68,7 +68,7 @@ pub fn run() {
         check_eq(h.recent(6), ["6", "5", "4", "3", "2", "1"])?;
         check_eq(h.recent(usize::MAX), ["6", "5", "4", "3", "2", "1"])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Dropped actions never come back, and undo frees a slot.
         let mut h = history(3, &["a", "b", "c", "d", "e"]);
         check_eq(h.recent(10), ["e", "d", "c"])?;
@@ -85,7 +85,7 @@ pub fn run() {
         check_eq(h.len(), 0)?;
         check_eq(h.oldest(), None)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // The same text recorded several times is several actions.
         let mut h = history(4, &["x", "x", "y", "x"]);
         check_eq(h.len(), 4)?;

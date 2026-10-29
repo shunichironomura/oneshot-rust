@@ -26,16 +26,16 @@ fn panics(f: impl FnOnce()) -> bool {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(items(-10, 10, 7), [-10, -3, 4])?;
         check_eq(items_rev(-10, 10, 7), [4, -3, -10])?;
         let mut r = StepRange::new(-10, 10, 7);
         check_eq(r.next(), Some(-10))?;
         check_eq(r.len(), 2)
     });
-    case("sample-2", || check_eq(items(MAX - 5, MAX, 4), [MAX - 5, MAX - 1]));
-    case("sample-3", || check_eq(items(MIN, MAX, u64::MAX), [MIN]));
-    case("hidden-1", || {
+    case("example-2", || check_eq(items(MAX - 5, MAX, 4), [MAX - 5, MAX - 1]));
+    case("example-3", || check_eq(items(MIN, MAX, u64::MAX), [MIN]));
+    case("case-1", || {
         // Both ends in turn: they meet in the middle and never cross.
         let mut r = StepRange::new(0, 10, 3);
         check_len(&r, 4)?;
@@ -55,7 +55,7 @@ pub fn run() {
         check_len(&r, 0)?;
         check_eq([r.next_back(), r.next(), r.next_back()], [None; 3])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Empty ranges, also when `end - start` does not fit in an i64.
         for (start, end) in [(5, 5), (6, 5), (MAX, MAX), (MAX, MIN), (0, MIN)] {
             let mut r = StepRange::new(start, end, 1);
@@ -70,7 +70,7 @@ pub fn run() {
         check_eq(r.next_back(), Some(7))?;
         check_eq([r.next(), r.next_back()], [None, None])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // The back starts at the largest item below `end`, which is not always `end - step`.
         check_eq(items_rev(0, 10, 3), [9, 6, 3, 0])?;
         check_eq(items_rev(-7, 8, 5), [3, -2, -7])?;
@@ -85,12 +85,12 @@ pub fn run() {
         check_eq(r.next(), Some(MAX - 4))?;
         check_eq([r.next(), r.next_back()], [None, None])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // A zero step panics, even for an empty range.
         check(panics(|| drop(StepRange::new(0, 10, 0))), "new(0, 10, 0) did not panic")?;
         check(panics(|| drop(StepRange::new(5, 5, 0))), "new(5, 5, 0) did not panic")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Huge counts: up to 2^64 - 1 items.
         let mut r = StepRange::new(MIN, MAX, 1);
         check_len(&r, usize::MAX)?;
@@ -109,7 +109,7 @@ pub fn run() {
         check_eq(r.next(), Some(MIN + 3))?;
         check_len(&r, usize::MAX / 3 - 3)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Steps of 2^63 and more.
         check_eq(items(MIN, MAX, 1 << 63), [MIN, 0])?;
         check_eq(items_rev(MIN, MAX, 1 << 63), [0, MIN])?;
@@ -122,7 +122,7 @@ pub fn run() {
         check_eq(r.next_back(), Some(MIN))?;
         check_eq([r.next(), r.next_back()], [None, None])
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // Adapters that rely on next_back and on the exact length.
         let mut r = StepRange::new(0, 100, 7);
         check_len(&r, 15)?;

@@ -105,13 +105,13 @@ fn poll_with<F: Future>(fut: Pin<&mut F>, waker: &Waker) -> Poll<F::Output> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let log = Log::default();
         let fut = join_all(vec![steps(&log, &["a0", "a1"]), steps(&log, &["b0", "b1", "b2"])]);
         check_eq(block_on(fut), (vec![2, 3], 3))?;
         check_eq(log.take(), ["a0", "b0", "a1", "b1", "b2"])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let log = Log::default();
         let fut = join_all(vec![
             steps(&log, &["x0", "x1", "x2"]),
@@ -121,13 +121,13 @@ pub fn run() {
         check_eq(block_on(fut), (vec![3, 1, 2], 3))?;
         check_eq(log.take(), ["x0", "y0", "z0", "x1", "z1", "x2"])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // No inputs, or only inputs that are ready at once: ready on the first poll.
         check_eq(block_on(join_all(Vec::<Ready<Ticket>>::new())), (Vec::new(), 1))?;
         let fut = join_all(vec![ready(ticket(1)), ready(ticket(2))]);
         check_eq(block_on(fut), (vec![ticket(1), ticket(2)], 1))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The inputs get the waker of the current poll; the joined future wakes nothing itself.
         let a = Arc::new(WakeCount::default());
         let b = Arc::new(WakeCount::default());
@@ -151,7 +151,7 @@ pub fn run() {
         check_eq((a.get(), b.get()), (3, 2))?;
         check_eq(log.take(), ["a0", "b0", "a1", "b1", "b2", "x0", "y0", "x1", "x2"])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Inputs that borrow locals; outputs that are not Clone, Default or Unpin.
         let words = vec![String::from("ab"), String::from("c"), String::new()];
         let futs: Vec<_> = words
@@ -165,7 +165,7 @@ pub fn run() {
             .collect();
         check_eq(block_on(join_all(futs)), (vec![ticket(2), ticket(1), ticket(0)], 3))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Outputs in input order, whatever the order in which the inputs complete; nothing runs
         // before the first poll; joined futures can be joined again.
         let log = Log::default();

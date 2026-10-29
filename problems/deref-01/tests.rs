@@ -67,7 +67,7 @@ trait NoDerefMut {
 impl<S> NoDerefMut for &Probe<S> {}
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut sv = SortedVec::from(vec![3, 1, 2]);
         check_eq(&*sv, [1, 2, 3])?;
         check_eq(sv.insert(2), 2)?;
@@ -78,7 +78,7 @@ pub fn run() {
         check_eq(sv.len(), 3)?;
         check_eq(sv[0], 1)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut sv = SortedVec::from(keys(&[(2, 'a'), (1, 'x'), (3, 'y')]));
         check_eq(letters(&sv), "xay")?;
         check_eq(sv.insert(Key(2, 'b')), 2)?;
@@ -86,7 +86,7 @@ pub fn run() {
         check_eq(sv.remove(&Key(2, 'z')), true)?;
         check_eq(letters(&sv), "xby")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // An empty SortedVec.
         let mut sv: SortedVec<i32> = SortedVec::new();
         check_eq(sv.len(), 0)?;
@@ -101,7 +101,7 @@ pub fn run() {
         check_eq(sv.len(), 0)?;
         check_eq(sv.last(), None)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Each new key goes after the keys equal to it.
         let mut sv = SortedVec::new();
         check_eq(sv.insert(Key(2, 'a')), 0)?;
@@ -113,7 +113,7 @@ pub fn run() {
         check_eq(sv.insert(Key(0, 'g')), 0)?;
         check_eq(letters(&sv), "gcfabde")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // `from` keeps the input order of equal keys, also for a longer input.
         // The keys are lettered a-z, then A-Z, in input order.
         let input: Vec<Key> = "3141592653589793238462643383279502"
@@ -126,7 +126,7 @@ pub fn run() {
         let sv = SortedVec::from(keys(&[(5, 'a'), (5, 'b'), (5, 'c')]));
         check_eq(letters(&sv), "abc")
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // `remove` takes the leftmost equal key, and only one.
         let mut sv = SortedVec::from(keys(&[(2, 'a'), (1, 'x'), (2, 'b'), (3, 'y'), (2, 'c')]));
         check_eq(letters(&sv), "xabcy")?;
@@ -146,7 +146,7 @@ pub fn run() {
         check_eq(nums.remove(&2), false)?;
         check_eq(&*nums, [1, 3])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // The slice API through deref, after a sequence of inserts.
         let mut sv = SortedVec::new();
         let mut indices = Vec::new();
@@ -166,7 +166,7 @@ pub fn run() {
         check_eq(sv.remove(&5), true)?;
         check_eq(sv.into_vec(), [-3, -3, 0, 1, 5, 5, 7, 8, 12])
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Strings, and a generic function that takes a slice.
         let mut words = SortedVec::from(vec![
             String::from("pear"),
@@ -181,7 +181,7 @@ pub fn run() {
         check_eq(words.remove(&String::from("grape")), false)?;
         check_eq(words.into_vec(), ["banana", "fig", "pear", "zucchini"])
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // SortedVec gives no mutable access to its elements.
         check(
             !(&Probe::<SortedVec<i32>>(PhantomData)).has_deref_mut(),

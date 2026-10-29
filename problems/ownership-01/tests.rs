@@ -6,11 +6,11 @@ fn names(xs: &[&str]) -> Vec<String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(greet_all(names(&["Ferris"])), (names(&["Hello, Ferris!"]), 1))
     });
-    case("hidden-1", || check_eq(greet_all(Vec::new()), (Vec::new(), 0)));
-    case("hidden-2", || {
+    case("case-1", || check_eq(greet_all(Vec::new()), (Vec::new(), 0)));
+    case("case-2", || {
         check_eq(
             greet_all(names(&["a", "b", "c"])),
             (names(&["Hello, a!", "Hello, b!", "Hello, c!"]), 3),

@@ -20,16 +20,16 @@ fn hex(rgb: [u8; 3], expected: &str) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         parses("#0A0b0C", [10, 11, 12])?;
         parses("#f80", [255, 136, 0])
     });
-    case("sample-2", || rejects(&["ff8800", "#ff80"]));
-    case("sample-3", || {
+    case("example-2", || rejects(&["ff8800", "#ff80"]));
+    case("example-3", || {
         hex([255, 8, 0], "#ff0800")?;
         hex([255, 136, 0], "#f80")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Both forms, the whole range, channels in order, mixed case.
         parses("#000000", [0, 0, 0])?;
         parses("#FFFFFF", [255, 255, 255])?;
@@ -40,30 +40,30 @@ pub fn run() {
         parses("#FfF", [255, 255, 255])?;
         parses("#9aB", [0x99, 0xaa, 0xbb])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // No '#' at the start, a second '#', and every other number of digits.
         rejects(&["", "#", "#ffff", "#fffff", "#fffffff", "#ffffffff", "ffff", "##fff"])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Whitespace is not trimmed, and other ASCII characters are not hex digits.
         rejects(&[" #fff", "#fff ", "#ff fff", "#ggg", "#12345g"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Signs are not hex digits, even where integer parsing accepts them.
         rejects(&["#+f+f+f", "#12+345", "#+fff00", "#-1-1-1", "#+ff"])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Non-ASCII characters, some with the byte length of a valid code.
         rejects(&["#1é234", "#€", "#ab€d", "éfff", "#٣٣٣"])
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // The 6-digit form keeps every leading zero and uses lowercase digits.
         hex([0, 0, 1], "#000001")?;
         hex([10, 171, 12], "#0aab0c")?;
         hex([0x10, 0x20, 0x30], "#102030")?;
         hex([0x88, 0x88, 0x80], "#888880")
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // The 3-digit form when every channel has two equal digits.
         hex([0, 0, 0], "#000")?;
         hex([0x11, 0xaa, 0xcc], "#1ac")?;

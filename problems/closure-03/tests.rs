@@ -8,31 +8,31 @@ fn check_tally(events: &[&str], limit: usize, errors: usize, log: &[&str]) -> Re
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_tally(&["ok", "ERR a", "ERR b", "ok"], 2, 2, &["ok", "ERR a", "ERR b", "abort"])?;
         check_tally(&["ok"], 1, 0, &["ok"])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let hi = make_greeter(String::from("  Hi "));
         check_eq(hi("Ann"), "Hi, Ann!")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // With limit 1, the first error aborts at once. Events after the abort are neither
         // logged nor counted.
         check_tally(&["ERR"], 1, 1, &["ERR", "abort"])?;
         check_tally(&["ERR x", "ok", "ERR y"], 1, 1, &["ERR x", "abort"])?;
         check_tally(&["ERR a", "ERR b", "ERR c", "ok", "ERR d"], 2, 2, &["ERR a", "ERR b", "abort"])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The limit is reached by the last event: "abort" is still appended.
         check_tally(&["ok", "ERR 1", "ok", "ERR 2"], 2, 2, &["ok", "ERR 1", "ok", "ERR 2", "abort"])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // The limit is never reached, and an empty list.
         check_tally(&["ERR a", "ok", "ERR b"], 3, 2, &["ERR a", "ok", "ERR b"])?;
         check_tally(&[], 1, 0, &[])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Only a case-sensitive "ERR" at the very start counts.
         check_tally(
             &["err x", "Err", " ERR", "xERR", "ERROR", "ok", "ERR"],
@@ -41,7 +41,7 @@ pub fn run() {
             &["err x", "Err", " ERR", "xERR", "ERROR", "ok", "ERR", "abort"],
         )
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Greeters outlive the Strings they were made from and can be called many times.
         // `trim` removes Unicode whitespace (U+3000) at both ends but keeps inner whitespace.
         let mut greeters = Vec::new();

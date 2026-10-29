@@ -32,7 +32,7 @@ fn guard(log: &Log, s: &'static str) -> Defer<Box<dyn FnOnce()>> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let log = RefCell::new(Vec::new());
         {
             let _a = defer(|| log.borrow_mut().push("a"));
@@ -47,7 +47,7 @@ pub fn run() {
         log.borrow_mut().push("end");
         check_eq(log.into_inner(), vec!["body", "b", "a", "now", "end"])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let log = RefCell::new(Vec::new());
         let payload = panic_payload(|| {
             let _g = defer(|| log.borrow_mut().push("cleanup"));
@@ -56,7 +56,7 @@ pub fn run() {
         check_eq(payload, Some("oops"))?;
         check_eq(log.into_inner(), vec!["cleanup"])
     });
-    case("sample-3", || {
+    case("example-3", || {
         let log = new_log();
         let all = defer_all(vec![push(&log, "1"), push(&log, "2"), push(&log, "3")]);
         check(entries(&log).is_empty(), "defer_all must not run the actions yet")?;
@@ -69,7 +69,7 @@ pub fn run() {
         check_eq(entries(&log), vec!["3", "1"])?;
         check_eq(payload, Some("2"))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // The action runs once, when the last owner of the guard drops it.
         let count = Cell::new(0);
         let g = defer(|| count.set(count.get() + 1));
@@ -95,7 +95,7 @@ pub fn run() {
         drop(guards);
         check_eq(entries(&log), vec!["z", "x", "y"])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // `cancel` drops the action at once, without running it.
         let token = Rc::new(());
         let t = Rc::clone(&token);
@@ -113,7 +113,7 @@ pub fn run() {
         check_eq(Rc::strong_count(&log), 1)?;
         check_eq(entries(&log), vec!["run"])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // An empty list, cancel and run_now on the guard of defer_all.
         defer_all(Vec::new()).run_now();
         drop(defer_all(Vec::new()));
@@ -126,7 +126,7 @@ pub fn run() {
         check_eq(entries(&log), vec!["b", "a"])?;
         check_eq(Rc::strong_count(&log), 1)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // A panic in the middle: the remaining actions still run, last to first.
         let log = new_log();
         let actions: Vec<Box<dyn FnOnce()>> = vec![
@@ -141,7 +141,7 @@ pub fn run() {
         check_eq(entries(&log), vec!["5", "3", "2", "1"])?;
         check_eq(Rc::strong_count(&log), 1)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // The first action to run panics, through run_now: the panic leaves run_now.
         let log = new_log();
         let payload = panic_payload(|| {
@@ -154,7 +154,7 @@ pub fn run() {
         check_eq(entries(&log), vec!["body", "2", "1"])?;
         check_eq(Rc::strong_count(&log), 1)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // An action that panics on a normal drop runs once, and the guards declared before it,
         // including one from defer_all, still run while the panic unwinds.
         let count = Cell::new(0);

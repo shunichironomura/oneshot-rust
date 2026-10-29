@@ -24,7 +24,7 @@ fn color(r: u8, g: u8, b: u8, a: u8) -> Color {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let c = creds("ann", "hunter2", &["read", "write"]);
         check_eq(
             format!("{c:?}"),
@@ -44,7 +44,7 @@ pub fn run() {
             ),
         )
     });
-    case("sample-2", || {
+    case("example-2", || {
         let inv = inventory(&[("pear", 1), ("apple", 3)], &[7; 64]);
         check_eq(format!("{inv:?}"), r#"Inventory { items: {"apple": 3, "pear": 1}, .. }"#)?;
         check_eq(
@@ -60,7 +60,7 @@ pub fn run() {
             ),
         )
     });
-    case("sample-3", || {
+    case("example-3", || {
         let red = color(255, 0, 16, 255);
         let glass = color(255, 0, 16, 128);
         check_eq(format!("{red:?}"), "Rgb(255, 0, 16)")?;
@@ -68,7 +68,7 @@ pub fn run() {
         check_eq(format!("{glass:?}"), "Rgba(255, 0, 16, 128)")?;
         check_eq(format!("{red:#X?}"), "Rgb(\n    0xFF,\n    0x0,\n    0x10,\n)")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // An empty password is redacted too; no scopes; the user name is escaped.
         let c = creds("\"root\"", "", &[]);
         check_eq(
@@ -82,12 +82,12 @@ pub fn run() {
             ),
         )
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // No items and an empty cache: the `..` is still there.
         let inv = inventory(&[], &[]);
         check_eq(format!("{inv:#?}"), "Inventory {\n    items: {},\n    ..\n}")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // The counts are integers, so they follow the hex flags.
         let inv = inventory(&[("nut", 16), ("bolt", 255)], &[1, 2, 3]);
         check_eq(format!("{inv:x?}"), r#"Inventory { items: {"bolt": ff, "nut": 10}, .. }"#)?;
@@ -104,13 +104,13 @@ pub fn run() {
             ),
         )
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Any alpha other than 255 gives `Rgba`, including 254 and 0.
         check_eq(format!("{:?}", color(1, 2, 3, 254)), "Rgba(1, 2, 3, 254)")?;
         check_eq(format!("{:X?}", color(171, 205, 239, 0)), "Rgba(AB, CD, EF, 0)")?;
         check_eq(format!("{:X?}", color(171, 205, 239, 255)), "Rgb(AB, CD, EF)")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Inside other values: one more level of indentation, and the flags still apply.
         check_eq(
             format!("{:#?}", [color(0, 0, 0, 0)]),

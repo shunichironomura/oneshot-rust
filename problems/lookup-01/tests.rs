@@ -9,7 +9,7 @@ fn fruits() -> Registry<String, u32> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         // A String key can be looked up with a &str or a &String.
         let mut r = fruits();
         check_eq(r.get("apple"), Some(&1))?;
@@ -21,7 +21,7 @@ pub fn run() {
         check_eq(*r.get_or("zzz", &zero), 0)?;
         check_eq(*r.get_or("pear", &zero), 2)
     });
-    case("sample-2", || {
+    case("example-2", || {
         // A Vec<u8> key is looked up with a &[u8], a u32 key with a &u32.
         let mut bytes: Registry<Vec<u8>, &str> = Registry::new();
         bytes.insert(vec![1, 2], "one-two");
@@ -30,7 +30,7 @@ pub fn run() {
         chars.insert(7, 'x');
         check_eq(chars.get(&7), Some(&'x'))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Missing keys, then replacing and removing a value.
         let mut r = fruits();
         check_eq(r.get("kiwi"), None)?;
@@ -41,7 +41,7 @@ pub fn run() {
         check_eq(r.remove(&String::from("apple")), Some(10))?;
         check(!r.contains("apple"), "\"apple\" should be gone")
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The key may be dropped before the result is used,
         // and the default may live shorter than the registry.
         let r = fruits();
@@ -61,7 +61,7 @@ pub fn run() {
         };
         check_eq(n, 99)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Byte-string keys (including the empty one) and u32 keys.
         let mut bytes: Registry<Vec<u8>, &str> = Registry::new();
         bytes.insert(Vec::new(), "empty");

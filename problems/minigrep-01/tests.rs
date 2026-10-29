@@ -13,20 +13,20 @@ fn config(query: &str, file_path: &str, ignore_case: bool) -> Config {
 const POEM: &str = "Rust:\nsafe, fast, productive.\nPick three.\nTrust me.";
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(build(&["minigrep", "to", "poem.txt"]), Ok(config("to", "poem.txt", false)))
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_eq(search("duct", POEM), vec!["safe, fast, productive."])?;
         check_eq(search("rust", POEM), vec!["Trust me."])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Missing arguments, including a completely empty iterator.
         check_eq(Config::build(std::iter::empty()), Err("Didn't get a query string"))?;
         check_eq(build(&["minigrep"]), Err("Didn't get a query string"))?;
         check_eq(build(&["minigrep", "needle"]), Err("Didn't get a file path"))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The optional fourth argument, passed through another kind of iterator.
         let argv = ["minigrep", "body", "poem.txt", "--ignore-case"];
         check_eq(
@@ -42,14 +42,14 @@ pub fn run() {
         )?;
         check_eq(build(&["minigrep", "q", "--ignore-case"]), Ok(config("q", "--ignore-case", false)))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Anything else in fourth place, and any fifth argument, is rejected.
         check_eq(build(&["minigrep", "a", "b", "-i"]), Err("Unexpected argument"))?;
         check_eq(build(&["minigrep", "a", "b", ""]), Err("Unexpected argument"))?;
         check_eq(build(&["minigrep", "a", "b", "--ignore-case", "c"]), Err("Unexpected argument"))?;
         check_eq(build(&["minigrep", "a", "b", "c", "--ignore-case"]), Err("Unexpected argument"))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Lines are split like str::lines. Matching is case-sensitive, and each matching line
         // appears once, in order. The empty query matches every line.
         check_eq(
@@ -59,7 +59,7 @@ pub fn run() {
         check_eq(search("", "one\r\ntwo\n\nthree\n"), vec!["one", "two", "", "three"])?;
         check_eq(search("", ""), Vec::<&str>::new())
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Multi-byte characters, and results that borrow only from contents.
         let contents = String::from("ÉCOLE\nécole\r\nECOLE\n");
         let query = String::from("ÉCOLE");

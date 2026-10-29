@@ -31,7 +31,7 @@ the output `Result<T, E>` may not). A lifetime parameter chosen by the caller, a
 
 `AsyncFnMut` is also implemented by ordinary closures and functions that return futures, and by
 `async fn`s such as `probe`, so callers of the old signature keep working. (A non-`move` async
-closure that only needs shared references to what it captures, like the ones in `hidden-4`, even
+closure that only needs shared references to what it captures, like the ones in `case-4`, even
 satisfied the old bound: its future copies those references instead of borrowing the closure.)
 
 ### Alternatives

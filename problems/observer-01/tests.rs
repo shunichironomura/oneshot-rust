@@ -60,7 +60,7 @@ fn tracked(names: &Names, name: &'static str, token: &Rc<()>) -> impl Fn(&str) +
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let log = new_log();
         let subject = Subject::new();
         let a = subject.subscribe(logger(&log, "a"));
@@ -72,7 +72,7 @@ pub fn run() {
         check_eq(subject.notify("bye"), 1)?;
         check_log(&log, &[("a", "hi"), ("b", "hi"), ("b", "bye")])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let log = new_log();
         let subject = Rc::new(Subject::new());
         let _a = subject.subscribe(logger(&log, "a"));
@@ -97,7 +97,7 @@ pub fn run() {
         check_eq(subject.listener_count(), 2)?;
         check_log(&log, &[("a", "1"), ("once", "1"), ("c", "1"), ("a", "2"), ("c", "2")])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // A subscription dropped at once, the order after unsubscribing, and unusual messages.
         let names = new_names();
         let subject = Subject::new();
@@ -122,7 +122,7 @@ pub fn run() {
         check_eq(names.take(), ["a", "c", "d", "c", "d"])?;
         check_eq(messages.take(), ["", "ünï 🦀"])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Dropping a subscription frees its listener at once, together with the subscriptions
         // that the listener owns.
         let names = new_names();
@@ -166,7 +166,7 @@ pub fn run() {
         drop(sub);
         check_eq(Rc::strong_count(&token), 1)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // A listener that subscribes a new listener every time it is called.
         const NAMES: [&str; 2] = ["n1", "n2"];
         let names = new_names();
@@ -191,7 +191,7 @@ pub fn run() {
         check_eq(subject.listener_count(), 3)?;
         check_eq(names.take(), ["a", "b", "a", "b", "n1"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // A listener drops the subscriptions of an earlier and a later listener.
         let names = new_names();
         let token = Rc::new(());
@@ -213,7 +213,7 @@ pub fn run() {
         check_eq((subject.listener_count(), Rc::strong_count(&token)), (2, 1))?;
         check_eq(names.take(), ["a", "killer", "d"])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Nested notify calls, before and after a listener unsubscribes itself.
         let names = new_names();
         let subject = Rc::new(Subject::new());
@@ -247,7 +247,7 @@ pub fn run() {
         drop(subject);
         check(weak.upgrade().is_none(), "the subject should be freed")
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // A listener subscribed during a notify is subscribed at once: it is counted right away,
         // and a notify started after it from inside the same listener calls it.
         let names = new_names();

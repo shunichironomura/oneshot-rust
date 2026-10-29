@@ -1,7 +1,7 @@
 import { expect, test } from "vite-plus/test";
 import { extractCaseIds, parseProblem, type ProblemFiles } from "./parse.ts";
 
-const files = (toml: string, tests = 'case("sample-1", || Ok(()));'): ProblemFiles => ({
+const files = (toml: string, tests = 'case("example-1", || Ok(()));'): ProblemFiles => ({
   dirName: "p-01",
   problemToml: toml,
   statementMd: "# hi",
@@ -28,7 +28,7 @@ test("parseProblem applies judge defaults and renders the statement", () => {
   });
   expect(problem.title).toEqual({ en: "T" });
   expect(problem.statementHtml).toEqual({ en: "<h1>hi</h1>\n" });
-  expect(problem.caseIds).toEqual(["sample-1"]);
+  expect(problem.caseIds).toEqual(["example-1"]);
   expect(solution).toEqual({ code: "pub fn f() {}" });
 });
 
@@ -102,9 +102,9 @@ test("parseProblem rejects duplicate or missing cases", () => {
 });
 
 test("extractCaseIds", () => {
-  expect(extractCaseIds('case("sample-1", || x);\n    case(\n "hidden-1", || y);')).toEqual([
-    "sample-1",
-    "hidden-1",
+  expect(extractCaseIds('case("example-1", || x);\n    case(\n "case-1", || y);')).toEqual([
+    "example-1",
+    "case-1",
   ]);
 });
 

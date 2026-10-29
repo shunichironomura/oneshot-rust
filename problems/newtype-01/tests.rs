@@ -24,7 +24,7 @@ fn borrowed<B: Borrow<str>>(b: &B) -> &str {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let u = Username::parse("  alice_1 ").unwrap();
         check_eq(&*u, "alice_1")?;
         check_eq(u.len(), 7)?;
@@ -32,18 +32,18 @@ pub fn run() {
         check(u == "alice_1", "u == \"alice_1\" should be true")?;
         check_eq(format!("<{u}>"), "<alice_1>")
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_eq(Username::parse("Al"), Err(NameError::TooShort))?;
         check_eq(Username::parse("9lives"), Err(NameError::BadStart))?;
         check_eq(Username::parse("bad-name"), Err(NameError::BadChar('-')))
     });
-    case("sample-3", || {
+    case("example-3", || {
         let mut set = HashSet::new();
         set.insert(Username::parse("alice").unwrap());
         set.insert(Username::parse("bob").unwrap());
         check(set.contains("bob"), "the set should contain \"bob\"")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Lengths are counted in chars after trimming, and both 3 and 16 are allowed.
         check_eq(Username::parse("abc").as_deref(), Ok("abc"))?;
         check_eq(Username::parse("abcdefghijklmnop").as_deref(), Ok("abcdefghijklmnop"))?;
@@ -54,7 +54,7 @@ pub fn run() {
         check_eq(Username::parse("aé"), Err(NameError::TooShort))?;
         check_eq(Username::parse("abcdefghijklmnoé"), Err(NameError::BadChar('é')))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The first character is checked after the length and before the other characters, and
         // the first character that is not a-z, 0-9 or '_' is reported.
         check_eq(Username::parse("Alice"), Err(NameError::BadStart))?;
@@ -69,7 +69,7 @@ pub fn run() {
         check_eq(Username::parse("z__").as_deref(), Ok("z__"))?;
         check_eq(Username::parse("user0123456789_z").as_deref(), Ok("user0123456789_z"))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Whitespace at both ends is removed first, as by `str::trim`.
         let u = user("\talice\r\n");
         check_eq(&*u, "alice")?;
@@ -79,7 +79,7 @@ pub fn run() {
         check_eq(Username::parse("  Bob  "), Err(NameError::BadStart))?;
         check_eq(Username::parse(" a b "), Err(NameError::BadChar(' ')))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // A username can be used like a `&str`, and `==` with a `&str` compares the exact name.
         let u = user("dave_42");
         check_eq(char_count(&u), 7)?;
@@ -105,7 +105,7 @@ pub fn run() {
         )?;
         check_eq([ann, u].join(", "), "ann, dave_42")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Hash maps can be queried with a `&str`.
         let names = ["alice", "bob", "carol_9", "dave"];
         let mut ages: HashMap<Username, u32> = names.into_iter().map(user).zip(20..).collect();
@@ -127,7 +127,7 @@ pub fn run() {
         check(!ages.contains_key("dave"), "\"dave\" should be removed")?;
         check_eq(ages.len(), 3)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Usernames are ordered like their names, and B-tree maps can be queried with a `&str`.
         let (al_x, alice, bob) = (user("al_x"), user("alice"), user("bob"));
         check(al_x < alice, "al_x should be less than alice")?;

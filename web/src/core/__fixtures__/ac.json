@@ -1,15 +1,15 @@
 {
   "problemId": "lifetime-01",
   "caseIds": [
-    "sample-1",
-    "sample-2",
-    "hidden-1",
-    "hidden-2",
-    "hidden-3"
+    "example-1",
+    "example-2",
+    "case-1",
+    "case-2",
+    "case-3"
   ],
-  "nonce": "26939546aa837961",
+  "nonce": "7d7d5bb2534c4d9f",
   "output": {
-    "stdout": "\u0001J:26939546aa837961:START\n\u0001J:26939546aa837961:CASE:sample-1:PASS\n\u0001J:26939546aa837961:CASE:sample-2:PASS\n\u0001J:26939546aa837961:CASE:hidden-1:PASS\n\u0001J:26939546aa837961:CASE:hidden-2:PASS\n\u0001J:26939546aa837961:CASE:hidden-3:PASS\n\u0001J:26939546aa837961:END\n",
+    "stdout": "\u0001J:7d7d5bb2534c4d9f:START\n\u0001J:7d7d5bb2534c4d9f:CASE:example-1:PASS\n\u0001J:7d7d5bb2534c4d9f:CASE:example-2:PASS\n\u0001J:7d7d5bb2534c4d9f:CASE:case-1:PASS\n\u0001J:7d7d5bb2534c4d9f:CASE:case-2:PASS\n\u0001J:7d7d5bb2534c4d9f:CASE:case-3:PASS\n\u0001J:7d7d5bb2534c4d9f:END\n",
     "stderr": "",
     "exitCode": 0,
     "timedOut": false,

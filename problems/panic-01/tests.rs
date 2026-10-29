@@ -119,7 +119,7 @@ fn must_panic(keys: &[u32], key: u32, trap: u32) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut v = vec!["b".to_string(), "d".to_string()];
         insert_sorted(&mut v, "c".to_string(), |a, b| a < b);
         check_eq(v, ["b", "c", "d"])?;
@@ -127,8 +127,8 @@ pub fn run() {
         insert_sorted(&mut v, (2, 'x'), |a, b| a.0 < b.0);
         check_eq(v, [(1, 'a'), (2, 'b'), (2, 'x'), (3, 'c')])
     });
-    case("sample-2", || string_panic(&["b", "d"], "c", |n, _, _| n == 2));
-    case("hidden-1", || {
+    case("example-2", || string_panic(&["b", "d"], "c", |n, _, _| n == 2));
+    case("case-1", || {
         // At the front, at the end, into an empty vector, and with a descending order.
         let mut v = vec![2, 4, 6];
         insert_sorted(&mut v, 1, |a, b| a < b);
@@ -143,7 +143,7 @@ pub fn run() {
         }
         check_eq(v, [10, 9, 8, 7, 3, 3, 1])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Equal values: the new one goes after all of them.
         let mut v = vec![(1, 'a'), (2, 'b'), (2, 'c'), (3, 'd')];
         insert_sorted(&mut v, (2, 'x'), by_key);
@@ -159,24 +159,24 @@ pub fn run() {
         }
         check_eq(v, [(1, 'b'), (1, 'e'), (2, 'd'), (2, 'g'), (3, 'a'), (3, 'c'), (3, 'f')])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // less panics on its first call.
         string_panic(&["a", "b", "c"], "bb", |n, _, _| n == 1)?;
         must_panic(&[10, 20, 30], 35, X)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // less panics in the middle of the work (when it gets "a", which every correct solution
         // compares with "b"), also among equal values.
         string_panic(&["a", "c", "e", "g", "i"], "b", |_, a, b| a == "a" || b == "a")?;
         must_panic(&[1, 2, 2, 2, 3], 2, 3)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // A panic when one of the two neighbors of the new value takes part in a comparison.
         let keys = [10, 20, 30, 40];
         must_panic(&keys, 25, 1)?;
         must_panic(&keys, 25, 2)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Without a panic, every value is dropped exactly once.
         check(!trial(&[], 7, NONE)?, "less panicked")?;
         check(!trial(&[1, 3, 3, 3, 4], 3, NONE)?, "less panicked")

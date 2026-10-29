@@ -23,13 +23,13 @@ fn unchanged(e: Expr) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(simplify(add(mul(Var, Num(1)), Num(0))), Var)?;
         check_eq(simplify(neg(neg(add(Var, Num(0))))), Var)?;
         check_eq(simplify(add(mul(Var, Num(0)), Num(7))), Num(7))
     });
-    case("sample-2", || check_eq(simplify(add(Var, neg(mul(Var, Num(1))))), Num(0)));
-    case("hidden-1", || {
+    case("example-2", || check_eq(simplify(add(Var, neg(mul(Var, Num(1))))), Num(0)));
+    case("case-1", || {
         // Nodes that match no rule stay as they are; nothing is reordered, regrouped or computed.
         unchanged(Var)?;
         unchanged(Num(-5))?;
@@ -43,7 +43,7 @@ pub fn run() {
         unchanged(add(add(Var, Num(1)), Num(2)))?;
         unchanged(mul(Num(2), mul(Num(3), Var)))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The rules for 0 and 1 work on either side.
         check_eq(simplify(add(Num(0), Var)), Var)?;
         check_eq(simplify(add(neg(Var), Num(0))), neg(Var))?;
@@ -52,14 +52,14 @@ pub fn run() {
         check_eq(simplify(mul(Num(0), mul(Var, Var))), Num(0))?;
         check_eq(simplify(mul(add(Var, Num(1)), Num(0))), Num(0))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Children are simplified first, and the node is then rewritten.
         check_eq(simplify(add(add(add(Var, Num(0)), Num(0)), Num(0))), Var)?;
         check_eq(simplify(mul(Num(1), add(neg(Num(3)), Num(3)))), Num(0))?;
         check_eq(simplify(add(mul(neg(Num(1)), Var), Num(0))), mul(neg(Num(1)), Var))?;
         check_eq(simplify(mul(neg(neg(Num(1))), add(Var, mul(Num(2), Num(0))))), Var)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // e + (-e) and (-e) + e become 0 only when both sides are equal; -(-e) becomes e.
         check_eq(simplify(add(neg(Var), Var)), Num(0))?;
         check_eq(simplify(add(neg(add(Var, Num(1))), add(Var, Num(1)))), Num(0))?;
@@ -71,7 +71,7 @@ pub fn run() {
         unchanged(add(mul(Var, Num(2)), neg(mul(Num(2), Var))))?;
         unchanged(add(Var, neg(add(Var, Num(1)))))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Larger expressions where the rules interact.
         unchanged(add(Var, add(mul(Num(MIN), Num(-1)), neg(mul(Num(-1), Num(MIN))))))?;
         check_eq(

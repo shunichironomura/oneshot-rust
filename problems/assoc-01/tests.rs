@@ -49,7 +49,7 @@ fn titles<C: Container<Item = Book>>(c: &C) -> Vec<&'static str> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut s = Stack { elems: vec![3, 1, 2] };
         let mut b = Bag::new();
         check_eq(move_all(&mut s, &mut b), 3)?;
@@ -58,20 +58,20 @@ pub fn run() {
         check_eq(total(&b), 6)?;
         check_eq(largest(&b), Some(&3))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut x = Stack { elems: vec![String::from("a"), String::from("b")] };
         let mut y = Stack { elems: vec![String::from("c")] };
         check_eq(move_all(&mut x, &mut y), 2)?;
         check_eq(x.elems.len(), 0)?;
         check_eq(y.elems, ["c", "b", "a"])
     });
-    case("sample-3", || {
+    case("example-3", || {
         check_eq(total(&Stack { elems: vec![-5i32, 2] }), -3)?;
         check_eq(total(&Stack { elems: vec![40_000u16, 30_000] }), 70_000)?;
         check_eq(largest(&Stack { elems: vec!["a", "b"] }), Some(&"b"))?;
         check_eq(describe_all(&Stack { elems: vec!['h', 'i'] }), ["h", "i"])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Empty containers.
         let mut empty = Stack { elems: Vec::<u8>::new() };
         let mut b = bag(&[5]);
@@ -85,7 +85,7 @@ pub fn run() {
         check_eq(largest(&Stack { elems: Vec::<String>::new() }), None)?;
         check_eq(describe_all(&Stack { elems: Vec::<char>::new() }), Vec::<String>::new())
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Bag to Stack, Bag to Bag and i64 stacks; the values already in `to` stay.
         let mut b = bag(&[9, 4, 7]);
         let mut s = Stack { elems: vec![1] };
@@ -101,7 +101,7 @@ pub fn run() {
         check_eq(move_all(&mut a, &mut c), 2)?;
         check_eq(c.elems, [0, 7, -1])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // The harness's own container, holding values that are not Copy, Clone or Debug.
         let mut shelf = Shelf { slots: vec![Book("Emma"), Book("Dune"), Book("Ulysses")] };
         let mut stack = Stack { elems: vec![Book("Beloved")] };
@@ -115,7 +115,7 @@ pub fn run() {
         check(best.is_some_and(|b| ptr::eq(b, &shelf.slots[2])), "expected a reference to Ulysses")?;
         check(largest(&Shelf::<Book> { slots: Vec::new() }).is_none(), "expected None")
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // total converts every value to i64 before adding.
         check_eq(total(&bag(&[255, 255, 255, 255])), 1020)?;
         check_eq(total(&Stack { elems: vec![u32::MAX, u32::MAX] }), 8_589_934_590)?;
@@ -123,7 +123,7 @@ pub fn run() {
         check_eq(total(&Shelf { slots: vec![-128i8, 127, -1] }), -2)?;
         check_eq(total(&Stack { elems: vec![true, false, true] }), 2)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // largest returns a reference into the container, to the last of equal largest values.
         let s = Stack { elems: vec![2, 7, 1, 7] };
         let got = largest(&s);
@@ -135,7 +135,7 @@ pub fn run() {
         let b = bag(&[4, 1, 4]);
         check(largest(&b).is_some_and(|r| ptr::eq(r, &b.items()[2])), "expected the last 4")
     });
-    case("hidden-6", || {
+    case("case-6", || {
         check_eq(describe_all(&bag(&[10, 2, 0])), ["0", "2", "10"])?;
         check_eq(describe_all(&Stack { elems: vec![1.5, -2.0] }), ["1.5", "-2"])?;
         check_eq(describe_all(&Stack { elems: vec!["x y", ""] }), ["x y", ""])?;

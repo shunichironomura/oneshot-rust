@@ -32,12 +32,12 @@ fn is_owned(v: &Cow<'_, [i32]>, expected: &[i32]) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         borrowed(normalize_ws("a b"), "a b")?;
         borrowed(normalize_ws("  hi\n"), "hi")?;
         owned(normalize_ws("a  b\tc "), "a b c")
     });
-    case("sample-2", || {
+    case("example-2", || {
         let data = [1, 5, 3];
         let mut v = Cow::Borrowed(&data[..]);
         clamp_all(&mut v, 9);
@@ -46,7 +46,7 @@ pub fn run() {
         is_owned(&v, &[1, 4, 3])?;
         check_eq(data, [1, 5, 3])
     });
-    case("sample-3", || {
+    case("example-3", || {
         let a = Doc::new(&["x", "y"]);
         let mut b = a.clone();
         check(a.shares_storage(&b), "a clone should share the storage")?;
@@ -55,7 +55,7 @@ pub fn run() {
         check_eq((a.line(0), b.line(0)), (Some("x"), Some("z")))?;
         check_eq((a.line(1), b.line(1)), (Some("y"), Some("y")))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Every kind of ASCII whitespace, runs of plain spaces; trimming alone borrows a slice
         // of the input.
         borrowed(normalize_ws(""), "")?;
@@ -72,7 +72,7 @@ pub fn run() {
             Cow::Owned(t) => Err(format!("expected Borrowed, got Owned({t:?})")),
         }
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Equal to max is not greater; empty and negative values.
         let data = [4, -2, 4];
         let mut v = Cow::Borrowed(&data[..]);
@@ -103,7 +103,7 @@ pub fn run() {
         is_owned(&w, &[3, 3])?;
         check(w.as_ptr() == buf, "an Owned Vec should be changed in place")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Edits on a Doc that does not share its storage, including after a snapshot is dropped.
         let mut d = Doc::new(&["a", "b", "c"]);
         d.set_line(1, "B");
@@ -117,7 +117,7 @@ pub fn run() {
         b.set_line(1, "w");
         check_eq((b.line(0), b.line(1)), (Some("x"), Some("w")))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Equal lines are not the same storage.
         let a = Doc::new(&["same"]);
         let b = Doc::new(&["same"]);
@@ -129,7 +129,7 @@ pub fn run() {
         let e2 = Doc::new(&[]);
         check(!e1.shares_storage(&e2), "two new empty Docs should not share storage")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Three snapshots: an edit only ever affects the edited one.
         let mut a = Doc::new(&["1", "2"]);
         let mut b = a.clone();

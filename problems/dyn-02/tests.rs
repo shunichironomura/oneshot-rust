@@ -6,7 +6,7 @@ fn no_digits(s: &str) -> bool {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         // Rules that borrow local variables.
         let min = 3;
         let reserved = vec![String::from("admin"), String::from("root")];
@@ -17,7 +17,7 @@ pub fn run() {
         check(!v.check("bo"), "\"bo\" is too short")?;
         check(!v.check("root"), "\"root\" is reserved")
     });
-    case("sample-2", || {
+    case("example-2", || {
         // A validator made by `banning`, plus a rule that is already boxed.
         let words = vec![String::from("spam"), String::from("ad")];
         let mut v = banning(&words);
@@ -25,7 +25,7 @@ pub fn run() {
         v.add_boxed(no_space);
         check_eq(v.passing(&["hello", "spammer", "bad", "good day"]), vec!["hello"])
     });
-    case("sample-3", || {
+    case("example-3", || {
         // The result of `passing` is used after the validator is gone.
         let items = ["kiwi", "banana", "fig"];
         let max = 4;
@@ -35,7 +35,7 @@ pub fn run() {
         drop(v);
         check_eq(short, vec!["kiwi", "fig"])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Without rules, everything passes; banning no words bans nothing.
         let empty = Validator::new();
         check(empty.check(""), "no rules: \"\" passes")?;
@@ -45,7 +45,7 @@ pub fn run() {
         check(v.check(""), "nothing banned: \"\" passes")?;
         check_eq(v.passing(&["spam", ""]), vec!["spam", ""])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Banned words match anywhere in the string, and case matters. More rules can be added.
         let words = vec![String::from("ab"), String::from("Z")];
         let min = 2;
@@ -54,7 +54,7 @@ pub fn run() {
         check_eq(v.passing(&["cab", "AB", "zz", "aZ", "x", "abc", "Ab"]), vec!["AB", "zz", "Ab"])?;
         check(!v.check("Zebra"), "\"Zebra\" contains \"Z\"")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Boxed rules may borrow too, and ordinary functions are rules as well.
         let suffix = String::from(".rs");
         let fixed: Vec<Box<dyn Fn(&str) -> bool>> = vec![
@@ -70,7 +70,7 @@ pub fn run() {
         let files = ["main.rs", ".rs", "a1.rs", "notes.txt", "", "lib.rs"];
         check_eq(v.passing(&files), vec!["main.rs", "lib.rs"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // The strings that are checked may be created after the validator.
         let min = 5;
         let mut v = Validator::new();
@@ -82,7 +82,7 @@ pub fn run() {
         let words: Vec<&str> = line.split(' ').collect();
         check_eq(v.passing(&words), vec!["ferris", "rustacean"])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // `passing` returns the strings themselves, not borrows of the slice that holds them.
         let text = String::from("one two three four");
         let banned = vec![String::from("o")];
@@ -91,7 +91,7 @@ pub fn run() {
         drop(v);
         check_eq(kept, vec!["three"])
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // The result of `passing` outlives the validator and the variables its rules borrow.
         let items = ["pear", "plum", "apple", "peach"];
         let kept = {

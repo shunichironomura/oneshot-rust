@@ -11,9 +11,9 @@ fn collect(input: &str) -> Vec<&str> {
 }
 
 pub fn run() {
-    case("sample-1", || check_eq(collect("let x = 1;"), vec!["let", "x", "=", "1;"]));
-    case("hidden-1", || check_eq(collect("   "), Vec::<&str>::new()));
-    case("hidden-2", || {
+    case("example-1", || check_eq(collect("let x = 1;"), vec!["let", "x", "=", "1;"]));
+    case("case-1", || check_eq(collect("   "), Vec::<&str>::new()));
+    case("case-2", || {
         let owned = String::from(" a\tbb  ccc ");
         let tokens = collect(&owned);
         check_eq(tokens, vec!["a", "bb", "ccc"])

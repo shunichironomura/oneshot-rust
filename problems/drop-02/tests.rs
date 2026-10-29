@@ -31,7 +31,7 @@ fn alone(log: &Log) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let log = new_log();
         let mut t = Transaction::begin(&log);
         t.push("debit");
@@ -41,7 +41,7 @@ pub fn run() {
         check_eq(drain(&log), ["commit:debit,credit"])?;
         alone(&log)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let log = new_log();
         let mut a = Transaction::begin(&log);
         a.push("x");
@@ -56,7 +56,7 @@ pub fn run() {
         check_eq(drain(&log), ["rollback:0", "rollback:1"])?;
         alone(&log)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Committing an empty transaction, then one with a single operation.
         let log = new_log();
         let t = Transaction::begin(&log);
@@ -68,7 +68,7 @@ pub fn run() {
         check_eq(drain(&log), ["commit:only"])?;
         alone(&log)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Dropping uncommitted transactions, including an empty one.
         let log = new_log();
         let empty = Transaction::begin(&log);
@@ -80,7 +80,7 @@ pub fn run() {
         check_eq(drain(&log), ["rollback:3"])?;
         alone(&log)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // into_ops on an empty transaction and on one with unusual operations.
         let log = new_log();
         let t = Transaction::begin(&log);
@@ -92,7 +92,7 @@ pub fn run() {
         check_eq(drain(&log), ["rollback:3"])?;
         alone(&log)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Retry the operations of a rolled-back transaction while another one is open.
         let log = new_log();
         let first = with_ops(&log, &["a", "b"]);
@@ -109,7 +109,7 @@ pub fn run() {
         check_eq(drain(&log), ["commit:o"])?;
         alone(&log)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Two logs, nested scopes: locals are dropped in reverse order of declaration.
         let (log1, log2) = (new_log(), new_log());
         {
@@ -128,7 +128,7 @@ pub fn run() {
         alone(&log1)?;
         alone(&log2)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // A transaction that is overwritten, and transactions kept in a Vec.
         let log = new_log();
         let mut t = with_ops(&log, &["p", "q"]);

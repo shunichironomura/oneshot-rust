@@ -51,14 +51,15 @@ use crate::judge::{case, check, check_eq};
 use crate::user::longest_word;
 
 pub fn run() {
-    case("sample-1", || check_eq(longest_word("a bb ccc"), "ccc"));
-    case("hidden-1", || check(longest_word("").is_empty(), "should be empty"));
+    case("example-1", || check_eq(longest_word("a bb ccc"), "ccc"));
+    case("case-1", || check(longest_word("").is_empty(), "should be empty"));
 }
 ```
 
 - `case(id, f)`：1 つのテストケース。`f` は `Result<(), String>` を返します。パニックは FAIL として扱われ、後続のケースは続行します。
 - `check_eq(got, expected)` / `check(cond, message)`：判定用のヘルパーです。
-- ID が `sample-` で始まるケースが公開ケースです。それ以外は非公開ケースとして扱われ、失敗理由は表示されません。
+- ケース ID は、問題文の「例」に載せたものを `example-N`、それ以外を `case-N` とします。`example-` で始まるケースが公開ケースで、
+  それ以外は非公開ケースとして扱われ、失敗理由は表示されません。
   ただし `harness_visible = true` の問題では、ハーネスのコードが見えるので、全ケースを公開ケースとして扱います。
 - ケース ID は `tests.rs` から `case("...")` を抽出して取得します。ID は文字列リテラルで直接書いてください。
 

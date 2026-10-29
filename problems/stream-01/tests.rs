@@ -148,7 +148,7 @@ impl Iterator for PinnedCountdown {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(
             trace(iter(vec![1, 2, 3]))?,
             vec![Ready(Some(1)), Ready(Some(2)), Ready(Some(3)), Ready(None)],
@@ -157,7 +157,7 @@ pub fn run() {
         check_eq(block_on(s.next())?, (Some("x"), 1))?;
         check_eq(block_on(s.next())?, (None, 1))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let (a_polls, b_polls) = (Cell::new(0), Cell::new(0));
         let z = zip(counted(iter(1..=3), &a_polls), slow(&['a', 'b'], &b_polls));
         check_eq(
@@ -166,7 +166,7 @@ pub fn run() {
         )?;
         check_eq((a_polls.get(), b_polls.get()), (3, 6))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // An empty iterator, borrowed items, any `IntoIterator`; `iter` is never `Pending`.
         let polls = Cell::new(0);
         check_eq(block_on(collect(counted(iter(Vec::<u8>::new()), &polls)))?, (vec![], 1))?;
@@ -178,7 +178,7 @@ pub fn run() {
         check_eq(block_on(s.next())?, (Some(10), 1))?;
         check_eq(block_on(collect(s))?, (vec![20], 1))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Each poll of the future of `next` polls the stream once; `next` works on trait objects.
         let polls = Cell::new(0);
         let mut s = slow(&[5, 6], &polls);
@@ -196,7 +196,7 @@ pub fn run() {
         check_eq(block_on(dynamic.next())?, (Some(7), 1))?;
         check_eq(block_on(collect(it))?, (vec![8], 1))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // `b` is not polled while `a` is `Pending`, nor after `a` has ended.
         let (a_polls, b_polls) = (Cell::new(0), Cell::new(0));
         let z = zip(slow(&[1, 2], &a_polls), counted(iter(["x", "y", "z"]), &b_polls));
@@ -206,7 +206,7 @@ pub fn run() {
         )?;
         check_eq((a_polls.get(), b_polls.get()), (6, 2))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Either stream can end first, also before the first pair.
         let (a_polls, b_polls) = (Cell::new(0), Cell::new(0));
         let z = zip(counted(iter(Vec::<i32>::new()), &a_polls), slow(&['q'], &b_polls));
@@ -221,7 +221,7 @@ pub fn run() {
         check_eq(trace(z)?, vec![Ready(Some((1, 'a'))), Ready(Some((2, 'b'))), Ready(None)])?;
         check_eq((a_polls.get(), b_polls.get()), (3, 3))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Both streams are slow: the item of `a` is held while `b` is `Pending`.
         let (a_polls, b_polls) = (Cell::new(0), Cell::new(0));
         let z = zip(slow(&[1, 2, 3], &a_polls), slow(&['p', 'q', 'r', 's'], &b_polls));
@@ -249,7 +249,7 @@ pub fn run() {
         check_eq(block_on(collect(z))?, (vec![((1, 'a'), "x"), ((2, 'b'), "y")], 7))?;
         check_eq((a_polls.get(), b_polls.get(), c_polls.get()), (3, 6, 6))
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // An iterator that is not `Unpin`, and items that are not `Unpin` (`async` blocks).
         check_eq(
             trace(iter(PinnedCountdown { n: 3, _pinned: PhantomPinned }))?,

@@ -16,20 +16,20 @@ fn run_sorted(xs: &[&str], workers: usize) -> (Vec<(char, usize)>, usize) {
 }
 
 pub fn run() {
-    case("sample-1", || check_eq(run_sorted(&["ab", "b", ""], 2), (vec![('a', 1), ('b', 2)], 3)));
-    case("hidden-1", || {
+    case("example-1", || check_eq(run_sorted(&["ab", "b", ""], 2), (vec![('a', 1), ('b', 2)], 3)));
+    case("case-1", || {
         // No words at all: the worker has nothing to do.
         check_eq(letter_counts(Vec::new(), 1), (HashMap::new(), 0))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // More workers than words: worker 1 gets nothing.
         check_eq(run_sorted(&["yxy"], 2), (vec![('x', 1), ('y', 2)], 1))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // A single worker does everything; empty words are still processed.
         check_eq(run_sorted(&["", "noon", "", "on"], 1), (vec![('n', 3), ('o', 3)], 4))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Every char counts as it is: case, punctuation, spaces and non-ASCII chars.
         let list = ["é", "Aa!", "日 é", "日é", "", "a"];
         let expected = vec![(' ', 1), ('!', 1), ('A', 1), ('a', 2), ('é', 3), ('日', 2)];

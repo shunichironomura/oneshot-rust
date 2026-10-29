@@ -8,12 +8,12 @@ use crate::user::{drain_ready, fan_in, send_all};
 struct Ticket(u32);
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let (tx, rx) = channel();
         drop(rx);
         check_eq(send_all(&tx, vec![1, 2]), vec![1, 2])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let (tx, rx) = channel();
         tx.send(1).unwrap();
         tx.send(2).unwrap();
@@ -21,7 +21,7 @@ pub fn run() {
         drop(tx);
         check_eq(drain_ready(&rx), (vec![], true))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // A live receiver gets everything, in order.
         let (tx, rx) = channel();
         check_eq(send_all(&tx, vec![10, 20]), vec![])?;
@@ -29,14 +29,14 @@ pub fn run() {
         drop(tx);
         check_eq(rx.iter().collect::<Vec<_>>(), vec![10, 20])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Every undelivered value comes back, in order, even if it cannot be cloned.
         let (tx, rx) = channel();
         drop(rx);
         let items = vec![Ticket(3), Ticket(1), Ticket(2)];
         check_eq(send_all(&tx, items), vec![Ticket(3), Ticket(1), Ticket(2)])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         let (tx, rx) = channel::<i32>();
         check_eq(drain_ready(&rx), (vec![], false))?;
         let tx2 = tx.clone();
@@ -51,7 +51,7 @@ pub fn run() {
         check_eq(drain_ready(&rx), (vec![9], true))?;
         check_eq(drain_ready(&rx), (vec![], true))
     });
-    case("sample-3", || check_eq(fan_in(vec![vec![3, 1], vec![2]]), vec![1, 2, 3]));
-    case("hidden-4", || check_eq(fan_in(Vec::new()), vec![]));
-    case("hidden-5", || check_eq(fan_in(vec![vec![9, 0, 9], vec![]]), vec![0, 9, 9]));
+    case("example-3", || check_eq(fan_in(vec![vec![3, 1], vec![2]]), vec![1, 2, 3]));
+    case("case-4", || check_eq(fan_in(Vec::new()), vec![]));
+    case("case-5", || check_eq(fan_in(vec![vec![9, 0, 9], vec![]]), vec![0, 9, 9]));
 }

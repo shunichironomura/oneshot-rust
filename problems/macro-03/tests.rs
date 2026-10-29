@@ -149,7 +149,7 @@ pub fn run() {
     // Only used by the starting code; see `support`.
     use support::Missing as _;
 
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(Color::ALL, &[Color::Red, Color::Green, Color::Blue][..])?;
         check_eq(Color::Green.name(), "Green")?;
         check_eq(Color::from_name("Blue"), Some(Color::Blue))?;
@@ -158,7 +158,7 @@ pub fn run() {
         parses(parsed!(Color, "Green"), Ok(Color::Green))?;
         parses(parsed!(Color, "Purple"), Err(unknown("Purple")))
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_eq(Dir::ALL, &[Dir::North, Dir::East, Dir::South, Dir::West][..])?;
         check_eq(Dir::West.name(), "W")?;
         check_eq(Dir::from_name("W"), Some(Dir::West))?;
@@ -167,7 +167,7 @@ pub fn run() {
         parses(parsed!(Dir, "S"), Ok(Dir::South))?;
         parses(parsed!(Dir, "South"), Err(unknown("South")))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // One variant and a trailing comma. `ALL` is a `'static` constant, and names outlive
         // the strings that `from_name` is called with.
         const UNITS: &[Unit] = Unit::ALL;
@@ -178,7 +178,7 @@ pub fn run() {
         displays(shown!(Unit::Only), "Only")?;
         parses(parsed!(Unit, "Only"), Ok(Unit::Only))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Only exact matches count, and the error keeps the string as it was.
         for s in ["red", "RED", " Red", "Red ", "Re", "", "Color::Red"] {
             check_eq(Color::from_name(s), None)?;
@@ -191,14 +191,14 @@ pub fn run() {
         parses(parsed!(Color, "red"), Err(unknown("red")))?;
         parses(parsed!(Dir, "n"), Err(unknown("n")))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // An enum without variants.
         check_eq(Never::ALL.len(), 0)?;
         check_eq(Never::from_name(""), None)?;
         check_eq(Never::from_name("Never"), None)?;
         parses(parsed!(Never, "Never"), Err(unknown("Never")))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // A label replaces the identifier, even when it is the identifier of another variant.
         check_eq(Swap::ALL, &[Swap::A, Swap::B, Swap::C][..])?;
         check_eq([Swap::A.name(), Swap::B.name(), Swap::C.name()], ["B", "A", "C"])?;
@@ -209,7 +209,7 @@ pub fn run() {
         parses(parsed!(Swap, "A"), Ok(Swap::B))?;
         parses(parsed!(Swap, "B"), Ok(Swap::A))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Labels with non-ASCII characters and spaces, and an empty label.
         check_eq(Fruit::ALL, &[Fruit::Apple, Fruit::Banana, Fruit::Cherry, Fruit::Blank][..])?;
         let names = [Fruit::Apple, Fruit::Banana, Fruit::Cherry, Fruit::Blank].map(|f| f.name());
@@ -223,7 +223,7 @@ pub fn run() {
         parses(parsed!(Fruit, ""), Ok(Fruit::Blank))?;
         parses(parsed!(Fruit, "Blank"), Err(unknown("Blank")))
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // A variant named `None`, and an enum defined in another module.
         check_eq(Level::ALL, &[Level::None, Level::Low, Level::High][..])?;
         let names = [Level::None, Level::Low, Level::High].map(|level| level.name());
@@ -239,7 +239,7 @@ pub fn run() {
         parses(parsed!(Coin, "Heads"), Ok(Coin::Heads))?;
         parses(parsed!(Coin, "Tails"), Err(unknown("Tails")))
     });
-    case("hidden-7", || {
+    case("case-7", || {
         check_round_trips!(Color, Dir, Unit, Swap, Fruit, Level, Coin);
         let lengths = [
             Color::ALL.len(),

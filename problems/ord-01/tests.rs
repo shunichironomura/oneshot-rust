@@ -22,7 +22,7 @@ fn ascending(list: &[Version]) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         ascending(&[ver(1, 9, 0, None), ver(1, 10, 0, None)])?;
         ascending(&[
             ver(1, 0, 0, Some("alpha")),
@@ -32,15 +32,15 @@ pub fn run() {
             ver(1, 0, 1, None),
         ])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let set: BTreeSet<Version> = ["1.2", "1.2.0", "1.2.0-rc1"].into_iter().map(v).collect();
         check_eq(set.len(), 2)
     });
-    case("sample-3", || {
+    case("example-3", || {
         let versions = [ver(1, 0, 0, None), ver(2, 0, 0, Some("rc1")), ver(1, 4, 0, None)];
         check_eq(latest_stable(&versions), Some(&ver(1, 4, 0, None)))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Sorting, max and min.
         let mut got = vec![
             ver(1, 10, 0, None),
@@ -74,7 +74,7 @@ pub fn run() {
         check_eq(list.iter().min(), Some(&ver(3, 0, 0, Some("beta"))))?;
         check_eq(list.into_iter().max(), Some(ver(3, 0, 0, None)))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // cmp, partial_cmp, the operators and == all agree.
         let list = [
             ver(1, 2, 0, None),
@@ -104,7 +104,7 @@ pub fn run() {
             ver(1, 2, 0, None),
         ])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // BTreeSet and HashSet see the same distinct versions.
         let list = [
             ver(1, 2, 0, Some("rc1")),
@@ -125,7 +125,7 @@ pub fn run() {
         ];
         check_eq(tree.into_iter().collect::<Vec<_>>(), expected)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // latest_stable
         check_eq(latest_stable(&[]), None)?;
         check_eq(latest_stable(&[ver(1, 0, 0, Some("rc1")), ver(2, 0, 0, Some("alpha"))]), None)?;

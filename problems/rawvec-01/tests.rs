@@ -36,7 +36,7 @@ fn push_all<T>(v: &mut MyVec<T>, items: impl IntoIterator<Item = T>) -> Vec<usiz
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut v = MyVec::new();
         check_eq((v.len(), v.capacity()), (0, 0))?;
         let caps = push_all(&mut v, ["a", "b", "c", "d", "e"].map(String::from));
@@ -49,7 +49,7 @@ pub fn run() {
         check_eq(v.get(3), None)?;
         check_eq((v.len(), v.capacity()), (3, 8))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Empty vectors, including ones that are dropped without ever allocating.
         let mut v: MyVec<String> = MyVec::new();
         check_eq((v.len(), v.capacity()), (0, 0))?;
@@ -66,7 +66,7 @@ pub fn run() {
         check_eq(v.pop(), None)?;
         check_eq((v.len(), v.capacity()), (0, 4))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Capacity grows only when a push finds the buffer full, and never shrinks.
         let mut v = MyVec::new();
         let caps = push_all(&mut v, 1..=17u64);
@@ -87,7 +87,7 @@ pub fn run() {
         check_eq(push_all(&mut w, [5, 6]), vec![4, 8])?;
         check_eq(w.as_slice(), [1, 2, 3, 5, 6])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // get and as_slice after mixed pushes and pops.
         let mut v = MyVec::new();
         for x in ["p", "q", "r", "s", "t", "u"] {
@@ -103,7 +103,7 @@ pub fn run() {
         check_eq(v.as_slice(), ["p", "q", "r", "s", "v"])?;
         check_eq((v.len(), v.capacity()), (5, 8))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Every element is dropped exactly once: by its owner after pop, or by the MyVec.
         let drops = Cell::new(0);
         let mut v = MyVec::new();
@@ -123,7 +123,7 @@ pub fn run() {
         drop(kept);
         check_eq(drops.get(), 10)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Small and over-aligned element types.
         let mut b = MyVec::new();
         let caps = push_all(&mut b, 1..=9u8);
@@ -137,7 +137,7 @@ pub fn run() {
         check_eq(w.get(4), Some(&Wide(4)))?;
         check_eq(w.as_slice(), [Wide(0), Wide(1), Wide(2), Wide(3), Wide(4)])
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // MyVecs inside a MyVec: moving and dropping elements that own memory.
         let mut outer = MyVec::new();
         for n in 0..6 {

@@ -18,10 +18,10 @@ fn to_vec(mut list: &Option<Box<Node>>) -> Vec<i32> {
 }
 
 pub fn run() {
-    case("sample-1", || check_eq(to_vec(&reverse(from_slice(&[1, 2, 3]))), vec![3, 2, 1]));
-    case("sample-2", || check_eq(reverse(None), None));
-    case("hidden-1", || check_eq(to_vec(&reverse(from_slice(&[42]))), vec![42]));
-    case("hidden-2", || {
+    case("example-1", || check_eq(to_vec(&reverse(from_slice(&[1, 2, 3]))), vec![3, 2, 1]));
+    case("example-2", || check_eq(reverse(None), None));
+    case("case-1", || check_eq(to_vec(&reverse(from_slice(&[42]))), vec![42]));
+    case("case-2", || {
         let values: Vec<i32> = (0..50).collect();
         let expected: Vec<i32> = (0..50).rev().collect();
         check_eq(to_vec(&reverse(from_slice(&values))), expected)

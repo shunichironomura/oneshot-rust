@@ -17,12 +17,12 @@ fn panic_message(value: i32) -> Option<String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(Guess::new(42).value(), 42)?;
         check_eq(Guess::try_from(100).map(|g| g.value()), Ok(100))?;
         check_eq(Guess::try_from(0), Err(GuessError::TooSmall(0)))
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_eq(
             panic_message(0).as_deref(),
             Some("Guess value must be greater than or equal to 1, got 0."),
@@ -32,7 +32,7 @@ pub fn run() {
             Some("Guess value must be less than or equal to 100, got 200."),
         )
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Both ends of the range are valid.
         check_eq(Guess::new(1).value(), 1)?;
         check_eq(Guess::new(100).value(), 100)?;
@@ -43,7 +43,7 @@ pub fn run() {
         let r: Result<Guess, GuessError> = 55.try_into();
         check_eq(r.map(|g| g.value()), Ok(55))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The error holds the value that was given.
         check_eq(Guess::try_from(101), Err(GuessError::TooLarge(101)))?;
         check_eq(Guess::try_from(-7), Err(GuessError::TooSmall(-7)))?;
@@ -52,7 +52,7 @@ pub fn run() {
         let r: Result<Guess, GuessError> = 1000.try_into();
         check_eq(r, Err(GuessError::TooLarge(1000)))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         check_eq(
             panic_message(101).as_deref(),
             Some("Guess value must be less than or equal to 100, got 101."),

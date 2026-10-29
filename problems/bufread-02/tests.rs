@@ -37,7 +37,7 @@ impl io::Write for Broken {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_response(
             &req("GET", "/", &[]),
             "HTTP/1.1 200 OK\r\nContent-Length: 15\r\n\r\n<h1>Hello!</h1>",
@@ -47,21 +47,21 @@ pub fn run() {
             "HTTP/1.1 404 NOT FOUND\r\nContent-Length: 5\r\n\r\nOops!",
         )
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Content-Length counts bytes: "こんにちは" is 5 characters but 15 bytes.
         check_response(
             &req("GET", "/greet", &[("Accept", "*/*")]),
             "HTTP/1.1 200 OK\r\nContent-Length: 15\r\n\r\nこんにちは",
         )
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Everything else is 404, compared exactly.
         let not_found = "HTTP/1.1 404 NOT FOUND\r\nContent-Length: 5\r\n\r\nOops!";
         check_response(&req("GET", "/greet/", &[]), not_found)?;
         check_response(&req("get", "/", &[]), not_found)?;
         check_response(&req("HEAD", "/greet", &[]), not_found)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // An error from the writer is returned, not unwrapped.
         check(respond(&req("GET", "/", &[]), &mut Broken).is_err(), "expected Err from a broken writer")
     });

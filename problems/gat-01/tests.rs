@@ -12,7 +12,7 @@ fn windows_of(v: &mut [i32], size: usize) -> Vec<Vec<i32>> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut v = vec![1, 2, 3, 4];
         let mut windows = windows_mut(&mut v, 2);
         while let Some(w) = windows.next() {
@@ -20,17 +20,17 @@ pub fn run() {
         }
         check_eq(v, [1, 3, 6, 10])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut lines = numbered("apple\nbanana");
         check_eq(lines.next(), Some("1: apple"))?;
         check_eq(lines.next(), Some("2: banana"))?;
         check_eq(lines.next(), None)
     });
-    case("sample-3", || {
+    case("example-3", || {
         check_eq(count_all(windows_mut(&mut [0; 5], 3)), 3)?;
         check_eq(count_all(numbered("a\nb\nc")), 3)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // The windows from left to right, one element apart.
         let mut v = vec![1, 2, 3, 4, 5];
         check_eq(windows_of(&mut v, 3), [vec![1, 2, 3], vec![2, 3, 4], vec![3, 4, 5]])?;
@@ -38,7 +38,7 @@ pub fn run() {
         check_eq(windows_of(&mut v, 6), Vec::<Vec<i32>>::new())?;
         check_eq(windows_of(&mut [], 1), Vec::<Vec<i32>>::new())
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // A change made through one window is seen by the next ones.
         let mut fib = [1, 1, 0, 0, 0, 0, 0, 0];
         let mut windows = windows_mut(&mut fib, 3);
@@ -48,7 +48,7 @@ pub fn run() {
         check(windows.next().is_none(), "expected None again after the last window")?;
         check_eq(fib, [1, 1, 2, 3, 5, 8, 13, 21])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Elements that are not Copy, and elements that are references.
         let mut words = [String::from("a"), String::from("b"), String::from("c")];
         let mut windows = windows_mut(&mut words, 2);
@@ -63,7 +63,7 @@ pub fn run() {
         }
         check_eq(parts, ["z", "y", "x"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Empty text, "\r\n", an empty line, non-ASCII text and a final line ending.
         let mut empty = numbered("");
         check_eq(empty.next(), None)?;
@@ -76,7 +76,7 @@ pub fn run() {
         }
         check_eq(got, ["1: a", "2: ", "3: 日本"])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // count_all counts only the items that are left.
         let mut v = [0; 5];
         let mut windows = windows_mut(&mut v, 2);
@@ -87,7 +87,7 @@ pub fn run() {
         lines.next();
         check_eq(count_all(lines), 2)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Items of two different lenders can be used at the same time.
         let mut v = vec![1, 2, 3, 10, 20, 30];
         let (left, right) = v.split_at_mut(3);

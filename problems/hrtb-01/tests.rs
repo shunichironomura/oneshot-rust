@@ -6,19 +6,19 @@ fn first_word(s: &str) -> &str {
 }
 
 pub fn run() {
-    case("sample-1", || check_eq(map_lines("  a \n b  ", |s| s.trim()), vec!["a", "b"]));
-    case("sample-2", || {
+    case("example-1", || check_eq(map_lines("  a \n b  ", |s| s.trim()), vec!["a", "b"]));
+    case("example-2", || {
         check_eq(map_lines("hello world\nfoo bar", first_word), vec!["hello", "foo"])
     });
-    case("hidden-1", || check_eq(map_lines("", |s| s), Vec::<String>::new()));
-    case("hidden-2", || {
+    case("case-1", || check_eq(map_lines("", |s| s), Vec::<String>::new()));
+    case("case-2", || {
         let prefix = String::from("# ");
         let got = map_lines("# x\r\ny\r\n# z", |s| {
             s.strip_prefix(prefix.as_str()).unwrap_or(s)
         });
         check_eq(got, vec!["x", "y", "z"])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         let text = String::from("one two\n\nthree");
         let got = map_lines(&text, first_word);
         drop(text);

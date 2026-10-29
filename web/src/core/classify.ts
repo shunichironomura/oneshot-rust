@@ -6,7 +6,7 @@ import {
   parseStderr,
   warningsOf,
 } from "./diagnostics.ts";
-import { isSampleCase } from "./problem.ts";
+import { isExampleCase } from "./problem.ts";
 import { parseStdout } from "./protocol.ts";
 
 export type CaseStatus = "pass" | "fail" | "not-run";
@@ -83,7 +83,7 @@ function caseResults(
   const byId = new Map(outcomes.map((o) => [o.id, o]));
   return caseIds.map((id): CaseResult => {
     const o = byId.get(id);
-    const visible = isSampleCase(id);
+    const visible = isExampleCase(id);
     if (o === undefined) return { id, visible, status: "not-run" };
     return o.pass
       ? { id, visible, status: "pass" }

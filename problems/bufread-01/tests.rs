@@ -27,7 +27,7 @@ fn check_req(
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_req(
             parse_request(b"GET / HTTP/1.1\r\nHost: localhost:7878\r\nAccept: */*\r\n\r\n"),
             "GET",
@@ -36,13 +36,13 @@ pub fn run() {
         )?;
         check_eq(parse_request(b"GET / HTTP/1.0\r\n\r\n"), None)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // No request line, or a request line without exactly three parts.
         check_eq(parse_request(b""), None)?;
         check_eq(parse_request(b"GET /\r\n"), None)?;
         check_eq(parse_request(b"GET / HTTP/1.1 x\r\n"), None)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Without an empty line, the headers run to the end of the input. The method and the path
         // are taken as they are (UTF-8 is fine), and a header is split at its first ": " only,
         // without trimming.
@@ -54,11 +54,11 @@ pub fn run() {
             &[("X", " a: b "), ("E", ""), ("H", "フェリス")],
         )
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // A header line without ": " makes the request invalid.
         check_eq(parse_request(b"GET / HTTP/1.1\r\nA:b\r\n\r\n"), None)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // The body is ignored, even if it is not a header or not UTF-8.
         check_req(
             parse_request(b"POST /f HTTP/1.1\r\nA: b\r\n\r\nno colon\r\n\xff"),
@@ -67,7 +67,7 @@ pub fn run() {
             &[("A", "b")],
         )
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Invalid UTF-8 before the body makes the request invalid.
         check_eq(parse_request(b"GET /caf\xe9 HTTP/1.1\r\n"), None)?;
         check_eq(parse_request(b"GET / HTTP/1.1\r\nX: \xff\r\nA: b\r\n"), None)

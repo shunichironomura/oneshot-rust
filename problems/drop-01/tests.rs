@@ -19,7 +19,7 @@ fn note(log: &Log, entry: &str) {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let log = new_log();
         let a = Lock::acquire("a", &log);
         let b = Lock::acquire("b", &log);
@@ -28,7 +28,7 @@ pub fn run() {
         release_all(vec![a, b, c]);
         check_eq(drain(&log), ["release c", "release b", "release a"])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let log = new_log();
         let mut x = Lock::acquire("x", &log);
         check_eq(drain(&log), ["acquire x"])?;
@@ -38,7 +38,7 @@ pub fn run() {
         drop(x);
         check_eq(drain(&log), ["release y"])
     });
-    case("sample-3", || {
+    case("example-3", || {
         let log = new_log();
         let a = Lock::acquire("a", &log);
         let b = Lock::acquire("b", &log);
@@ -57,7 +57,7 @@ pub fn run() {
         check_eq(n, 42)?;
         check_eq(drain(&log), ["acquire m", "work", "release m"])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Empty and one-element vectors.
         let log = new_log();
         release_all(Vec::new());
@@ -69,7 +69,7 @@ pub fn run() {
         drop(kept);
         check_eq(drain(&log), ["release s"])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The Vec order is not the order of acquisition, and the locks write to two logs.
         let (log1, log2) = (new_log(), new_log());
         let p = Lock::acquire("p", &log1);
@@ -82,7 +82,7 @@ pub fn run() {
         check_eq(drain(&log1), ["release t", "release p", "release r"])?;
         check_eq(drain(&log2), ["release q"])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // keep_first releases the others in their Vec order.
         let log = new_log();
         let q = Lock::acquire("q", &log);
@@ -96,7 +96,7 @@ pub fn run() {
         drop(kept);
         check_eq(drain(&log), ["release q"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // swap_in twice, with another lock on the same log.
         let log = new_log();
         let mut x = Lock::acquire("x", &log);
@@ -113,7 +113,7 @@ pub fn run() {
         drop(x);
         check_eq(drain(&log), ["release ログ", "release z"])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // An empty name is a name like any other.
         let log = new_log();
         let e = Lock::acquire("", &log);
@@ -128,7 +128,7 @@ pub fn run() {
         with_lock("", &log, || note(&log, "anonymous"));
         check_eq(drain(&log), ["acquire ", "anonymous", "release "])
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Locals, swap_in on an element of a Vec, and keep_first together.
         let log = new_log();
         {
@@ -146,7 +146,7 @@ pub fn run() {
             ],
         )
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // Nested calls, a result that is not Copy, and a lock that outlives the call.
         let log = new_log();
         let word = String::from("tea");

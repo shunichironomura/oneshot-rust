@@ -2,7 +2,7 @@ use crate::judge::{case, check_eq};
 use crate::user::Post;
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut post = Post::new();
         post.add_text("salad");
         check_eq(post.content(), "")?;
@@ -13,7 +13,7 @@ pub fn run() {
         post.approve();
         check_eq(post.content(), "salad")
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut post = Post::new();
         post.add_text("I ate ");
         post.request_review();
@@ -26,7 +26,7 @@ pub fn run() {
         post.approve();
         check_eq(post.content(), "I ate a salad")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // A new post is an empty draft, and text is appended only while it is a draft.
         let mut post = Post::new();
         check_eq(post.content(), "")?;
@@ -42,7 +42,7 @@ pub fn run() {
         check_eq(post.content(), "caf\u{e9} \u{2615}")?;
         check_eq(post.content(), "caf\u{e9} \u{2615}")
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Approving or rejecting a draft does nothing.
         let mut post = Post::new();
         post.add_text("draft");
@@ -58,7 +58,7 @@ pub fn run() {
         post.approve();
         check_eq(post.content(), "draft!")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // reject discards the approval, so two new approvals are needed.
         let mut post = Post::new();
         post.add_text("v1");
@@ -77,7 +77,7 @@ pub fn run() {
         post.approve();
         check_eq(post.content(), "v1 v2")
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Requesting a review again while pending keeps the approval.
         let mut post = Post::new();
         post.add_text("keep");
@@ -89,7 +89,7 @@ pub fn run() {
         post.approve();
         check_eq(post.content(), "keep")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // A published post stays published, and posts do not share state.
         let mut post = Post::new();
         let mut other = Post::new();

@@ -1,15 +1,15 @@
 {
   "problemId": "lifetime-01",
   "caseIds": [
-    "sample-1",
-    "sample-2",
-    "hidden-1",
-    "hidden-2",
-    "hidden-3"
+    "example-1",
+    "example-2",
+    "case-1",
+    "case-2",
+    "case-3"
   ],
-  "nonce": "b941ca5644d77d9f",
+  "nonce": "6faa9866bb14efcc",
   "output": {
-    "stdout": "\u0001J:b941ca5644d77d9f:START\n\u0001J:b941ca5644d77d9f:CASE:sample-1:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:b941ca5644d77d9f:CASE:sample-2:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:b941ca5644d77d9f:CASE:hidden-1:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:b941ca5644d77d9f:CASE:hidden-2:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:b941ca5644d77d9f:CASE:hidden-3:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:b941ca5644d77d9f:END\n",
+    "stdout": "\u0001J:6faa9866bb14efcc:START\n\u0001J:6faa9866bb14efcc:CASE:example-1:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:6faa9866bb14efcc:CASE:example-2:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:6faa9866bb14efcc:CASE:case-1:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:6faa9866bb14efcc:CASE:case-2:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:6faa9866bb14efcc:CASE:case-3:FAIL:panicked: not yet implemented at /src/user.rs:2:5\n\u0001J:6faa9866bb14efcc:END\n",
     "stderr": "{\"$message_type\":\"diagnostic\",\"message\":\"unused variable: `s`\",\"code\":{\"code\":\"unused_variables\",\"explanation\":null},\"level\":\"warning\",\"spans\":[{\"file_name\":\"/src/user.rs\",\"byte_start\":20,\"byte_end\":21,\"line_start\":1,\"line_end\":1,\"column_start\":21,\"column_end\":22,\"is_primary\":true,\"text\":[{\"text\":\"pub fn longest_word(s: &str) -> &str {\",\"highlight_start\":21,\"highlight_end\":22}],\"label\":null,\"suggested_replacement\":null,\"suggestion_applicability\":null,\"expansion\":null}],\"children\":[{\"message\":\"`#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\",\"code\":null,\"level\":\"note\",\"spans\":[],\"children\":[],\"rendered\":null},{\"message\":\"if this is intentional, prefix it with an underscore\",\"code\":null,\"level\":\"help\",\"spans\":[{\"file_name\":\"/src/user.rs\",\"byte_start\":20,\"byte_end\":21,\"line_start\":1,\"line_end\":1,\"column_start\":21,\"column_end\":22,\"is_primary\":true,\"text\":[{\"text\":\"pub fn longest_word(s: &str) -> &str {\",\"highlight_start\":21,\"highlight_end\":22}],\"label\":null,\"suggested_replacement\":\"_s\",\"suggestion_applicability\":\"MachineApplicable\",\"expansion\":null}],\"children\":[],\"rendered\":null}],\"rendered\":\"warning: unused variable: `s`\\n --> /src/user.rs:1:21\\n  |\\n1 | pub fn longest_word(s: &str) -> &str {\\n  |                     ^ help: if this is intentional, prefix it with an underscore: `_s`\\n  |\\n  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\\n\\n\"}\n{\"$message_type\":\"diagnostic\",\"message\":\"1 warning emitted\",\"code\":null,\"level\":\"warning\",\"spans\":[],\"children\":[],\"rendered\":\"warning: 1 warning emitted\\n\\n\"}\n",
     "exitCode": 0,
     "timedOut": false,

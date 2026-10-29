@@ -21,23 +21,23 @@ impl PartialOrd for Tagged {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let m: Map<&str, i32> = crate::user::hashmap! { "a" => 1, "b" => 2, };
         check_eq(m.len(), 2)?;
         check_eq(m["a"], 1)?;
         check_eq(m["b"], 2)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let x: i32 = crate::user::max_of!(3, 9, 4);
         check_eq(x, 9)
     });
-    case("sample-3", || {
+    case("example-3", || {
         const N: usize = crate::user::count!(a + (b c));
         const Z: usize = crate::user::count!();
         check_eq(N, 3)?;
         check_eq(Z, 0)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Empty maps take their types from the context; the last value of a key wins.
         let empty: Map<String, Vec<u8>> = crate::user::hashmap! {};
         check(empty.is_empty(), "hashmap! {} should be empty")?;
@@ -53,7 +53,7 @@ pub fn run() {
         check_eq(m["x"], 3)?;
         check_eq(m["y"], 20)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Every key and value is evaluated once, in the order k1, v1, k2, v2, ...
         let mut log: Vec<&str> = Vec::new();
         let m: Map<u8, char> = crate::user::hashmap! {
@@ -66,7 +66,7 @@ pub fn run() {
         check_eq(m[&1], 'c')?;
         check_eq(m[&2], 'b')
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // One argument, trailing commas, and names that clash with a macro's own locals.
         let a: i32 = crate::user::max_of!(7);
         let b: i32 = crate::user::max_of!(-5,);
@@ -75,7 +75,7 @@ pub fn run() {
         let d: i32 = crate::user::max_of!(max, next, map);
         check_eq((a, b, c, d), (7, -5, 2, 6))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Every argument is evaluated once, from left to right.
         let mut log: Vec<i32> = Vec::new();
         let x: i32 = crate::user::max_of!(
@@ -87,7 +87,7 @@ pub fn run() {
         check_eq(x, 9)?;
         check_eq(log, vec![1, 2, 3, 4])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // On a tie, the leftmost of the greatest values is the result.
         let t: Tagged =
             crate::user::max_of!(Tagged(2, "a"), Tagged(5, "b"), Tagged(1, "c"), Tagged(5, "d"));
@@ -95,7 +95,7 @@ pub fn run() {
         let t: Tagged = crate::user::max_of!(Tagged(0, "x"), Tagged(0, "y"), Tagged(0, "z"));
         check_eq(t.1, "x")
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Values that are not Copy, and types that are PartialOrd but not Ord.
         let (pear, plum, apple) = (String::from("pear"), String::from("plum"), String::from("apple"));
         let s: String = crate::user::max_of!(pear, plum, apple);
@@ -105,7 +105,7 @@ pub fn run() {
         let w: &str = crate::user::max_of!("b", "c", "a");
         check_eq(w, "c")
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // Groups count as one token tree; punctuation, literals and lifetimes count too.
         const A: usize = crate::user::count!(fn main() { println!("hi"); });
         const B: usize = crate::user::count!(x :: y => 'a "s" 1.5 [1, 2, 3]);

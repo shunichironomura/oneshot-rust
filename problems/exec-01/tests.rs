@@ -88,7 +88,7 @@ fn waiter(name: &'static str, times: usize, slot: Slot, log: Log) -> impl Future
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let log = Log::default();
         let mut ex = Executor::new();
         let l = log.clone();
@@ -102,7 +102,7 @@ pub fn run() {
         check_eq(ex.run(), 3)?;
         check_eq(log.take(), vec!["a1", "b1", "a2"])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let slot = Slot::default();
         let mut ex = Executor::new();
         ex.spawn(park(&slot));
@@ -111,7 +111,7 @@ pub fn run() {
         slot.take().wake();
         check_eq(ex.run(), 1)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // An empty executor; spawn does not poll; spawning again after run.
         let log = Log::default();
         let mut ex = Executor::new();
@@ -126,7 +126,7 @@ pub fn run() {
         check_eq(ex.run(), 1)?;
         check_eq(log.take(), vec!["x", "y"])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // A finished task is never polled again, and waking it does nothing, also when other
         // tasks are ready after it.
         let mut ex = Executor::new();
@@ -154,7 +154,7 @@ pub fn run() {
         slot.take().wake();
         check_eq(ex.run(), 1)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // A waker woken on another thread, and a waker kept from an earlier poll.
         let log = Log::default();
         let slot = Slot::default();
@@ -188,7 +188,7 @@ pub fn run() {
         check_eq(ex.run(), 1)?;
         check_eq(log.take(), vec!["done"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // First in, first out, whether a task was spawned or woken.
         let log = Log::default();
         let slots = [Slot::default(), Slot::default(), Slot::default()];
@@ -204,7 +204,7 @@ pub fn run() {
         check_eq(ex.run(), 4)?;
         check_eq(log.take(), vec!["p", "q", "r", "r", "s", "p", "q"])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // A task woken during another task's poll goes last.
         let log = Log::default();
         let (a, b, c) = (Slot::default(), Slot::default(), Slot::default());
@@ -225,7 +225,7 @@ pub fn run() {
         check_eq(ex.run(), 4)?;
         check_eq(log.take(), vec!["a", "b", "c", "a", "b", "c", "a"])
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Finished futures are dropped at once, the others with the executor. A waker may
         // outlive the executor.
         let token = Rc::new(());

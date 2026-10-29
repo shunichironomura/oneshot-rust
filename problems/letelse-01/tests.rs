@@ -9,27 +9,27 @@ fn none() -> Vec<(u32, &'static str)> {
 }
 
 pub fn run() {
-    case("sample-1", || check_eq(parse_orders(EXAMPLE), vec![(3, "cups"), (2, "pens"), (5, "cups")]));
-    case("hidden-1", || {
+    case("example-1", || check_eq(parse_orders(EXAMPLE), vec![(3, "cups"), (2, "pens"), (5, "cups")]));
+    case("case-1", || {
         // Empty text and blank lines.
         check_eq(parse_orders(""), none())?;
         check_eq(parse_orders(" \n\t\n"), none())
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // COUNT is whatever parse::<u32> accepts, except 0. 2^32 + 1 must not wrap around to 1.
         let text = "+7 a\n-7 b\n007 c\n00 d\n4294967297 e\n4294967295 f";
         check_eq(parse_orders(text), vec![(7, "a"), (7, "c"), (4294967295, "f")])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Any amount of spaces and tabs, and \r\n line endings.
         let text = "3\tcups\r\n  7   pens \t\r\n\t1  a";
         check_eq(parse_orders(text), vec![(3, "cups"), (7, "pens"), (1, "a")])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Exactly two words, in the order COUNT ITEM.
         check_eq(parse_orders("2 a b\n5\na 5\n1 ok"), vec![(1, "ok")])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // The items are slices of the text.
         let text = String::from("3 cups\n4  pens\n x y z\n1 a");
         let orders = parse_orders(&text);

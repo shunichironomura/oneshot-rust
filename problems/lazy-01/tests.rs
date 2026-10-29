@@ -12,7 +12,7 @@ fn answer() -> u64 {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let name = String::from("Ferris");
         let mut greeting = Lazy::new(move || name + "!");
         check_eq(greeting.is_ready(), false)?;
@@ -21,7 +21,7 @@ pub fn run() {
         check_eq(greeting.get(), "Ferris!")?;
         check_eq(greeting.into_value(), "Ferris!")
     });
-    case("sample-2", || {
+    case("example-2", || {
         let calls = Cell::new(0);
         let lazy = Lazy::new(|| {
             calls.set(calls.get() + 1);
@@ -31,7 +31,7 @@ pub fn run() {
         check_eq(lazy.into_value(), vec![1, 2, 3])?;
         check_eq(calls.get(), 1)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Neither `new` nor `is_ready` calls init, and dropping an unused Lazy does not either.
         let calls = Cell::new(0);
         let word = String::from("unused");
@@ -46,7 +46,7 @@ pub fn run() {
         drop(lazy);
         check_eq(calls.get(), 0)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The value is computed by the first `get`, not by `new`, and only once.
         let calls = Cell::new(0);
         let base = Cell::new(1);
@@ -64,7 +64,7 @@ pub fn run() {
         check_eq(lazy.into_value(), 70)?;
         check_eq(calls.get(), 1)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // A type that is not Clone, moved out by a closure that can be called only once.
         let mut lazy = Lazy::new(move || Token(String::from("abc")));
         check_eq(lazy.get(), &Token(String::from("abc")))?;
@@ -74,7 +74,7 @@ pub fn run() {
         check(!lazy.is_ready(), "a new Lazy should not be ready")?;
         check_eq(lazy.into_value(), Token(String::from("xyz")))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // A function, a value that borrows from a local, and a boxed closure.
         let mut a = Lazy::new(answer);
         check_eq(*a.get(), 42)?;
@@ -91,7 +91,7 @@ pub fn run() {
         check(c.is_ready(), "the Lazy should be ready after get")?;
         check_eq(c.into_value(), "BOXED")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Each Lazy is independent, the value may be `()`, and a Lazy may use another one.
         let calls = Cell::new(0);
         let mut unit = Lazy::new(|| calls.set(calls.get() + 1));

@@ -31,22 +31,22 @@ impl Wake for CountingWaker {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(poll_count(countdown(3)), (3, 4))?;
         check_eq(block_on(Delay::new(2).extra(1)), 3)
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_eq(block_on(async { countdown(2).await + Delay::new(1).await }), 3)?;
         check_eq(poll_count(async { 5 }), (5, 1))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Zero polls to wait: ready on the first poll.
         check_eq(poll_count(countdown(0)), (0, 1))?;
         check_eq(block_on(countdown(0)), 0)?;
         check_eq(block_on(Delay::new(0).extra(0)), 0)?;
         check_eq(poll_count(countdown(20)), (20, 21))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Exactly one wake before each Pending, none on Ready.
         let counter = CountingWaker::new();
         let waker = Waker::from(counter.clone());
@@ -59,7 +59,7 @@ pub fn run() {
         check_eq(fut.as_mut().poll(&mut cx), Poll::Ready(3))?;
         check_eq(counter.count(), 3)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // The waker of the current poll is the one to wake; countdown(0) never wakes.
         let a = CountingWaker::new();
         let b = CountingWaker::new();
@@ -76,13 +76,13 @@ pub fn run() {
         check_eq(zero.as_mut().poll(&mut Context::from_waker(&waker_a)), Poll::Ready(0))?;
         check_eq(a.count(), 2)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Every call to `extra` adds to the count.
         check_eq(block_on(Delay::new(1).extra(2).extra(3)), 6)?;
         check_eq(poll_count(Delay::new(2).extra(3).into_future()), (5, 6))?;
         check_eq(block_on(Delay::new(4)), 4)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         check_eq(
             poll_count(async {
                 countdown(1).await;
@@ -91,7 +91,7 @@ pub fn run() {
             ((), 3),
         )
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Nested async blocks that borrow a local across an await.
         let words = vec!["a", "bb", "ccc"];
         let fut = async {

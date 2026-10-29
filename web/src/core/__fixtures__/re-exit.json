@@ -1,15 +1,15 @@
 {
   "problemId": "lifetime-01",
   "caseIds": [
-    "sample-1",
-    "sample-2",
-    "hidden-1",
-    "hidden-2",
-    "hidden-3"
+    "example-1",
+    "example-2",
+    "case-1",
+    "case-2",
+    "case-3"
   ],
-  "nonce": "aa324a0a6c365868",
+  "nonce": "2c9de273ee8fe337",
   "output": {
-    "stdout": "\u0001J:aa324a0a6c365868:START\n\u0001J:aa324a0a6c365868:CASE:sample-1:FAIL:expected \"ccc\", got \"a bb ccc\"\n\u0001J:aa324a0a6c365868:CASE:sample-2:FAIL:expected \"xx\", got \"xx yy\"\n",
+    "stdout": "\u0001J:2c9de273ee8fe337:START\n\u0001J:2c9de273ee8fe337:CASE:example-1:FAIL:expected \"ccc\", got \"a bb ccc\"\n\u0001J:2c9de273ee8fe337:CASE:example-2:FAIL:expected \"xx\", got \"xx yy\"\n",
     "stderr": "",
     "exitCode": 3,
     "timedOut": false,

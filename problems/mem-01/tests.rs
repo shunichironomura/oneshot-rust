@@ -22,7 +22,7 @@ fn failed(unsent: &[&str]) -> Conn {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut c = Client::new();
         check_eq(c.send("lost"), false)?;
         c.step(true);
@@ -38,7 +38,7 @@ pub fn run() {
         check_eq(c.take_closed(), vec![session(2, &["hello", "bye"])])?;
         check_eq(c.take_closed(), vec![])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut c = Client::new();
         c.step(true);
         check_eq(c.send("x"), true)?;
@@ -52,7 +52,7 @@ pub fn run() {
         check_eq(c.send("y"), false)?;
         check_eq(c.state(), &failed(&["x"]))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // A new client is offline, and step leaves Offline whatever `ok` is.
         let mut c = Client::new();
         check_eq(c.state(), &Conn::Offline)?;
@@ -62,7 +62,7 @@ pub fn run() {
         c.step(false);
         check_eq(c.state(), &connecting(1, &[]))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // An online client stays online with the same session while steps succeed.
         let mut c = Client::new();
         c.step(true);
@@ -75,7 +75,7 @@ pub fn run() {
         check_eq(c.state(), &online(1, &["a", "b"]))?;
         check_eq(c.take_closed(), vec![])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Giving up with an empty queue; Failed is final and closes no session.
         let mut c = Client::new();
         for ok in [true, false, false, false] {
@@ -88,7 +88,7 @@ pub fn run() {
         check_eq(c.state(), &failed(&[]))?;
         check_eq(c.take_closed(), vec![])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Several sessions: attempts and the queue start over each time, and closed
         // sessions are returned in order.
         let mut c = Client::new();
@@ -112,7 +112,7 @@ pub fn run() {
         c.step(false);
         check_eq(c.take_closed(), vec![session(1, &[])])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Queued messages keep their order across retries and become the session's
         // first messages. The third attempt may still succeed.
         let mut c = Client::new();

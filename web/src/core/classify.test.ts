@@ -30,7 +30,7 @@ describe("classify (recorded Miri output)", () => {
     const v = run(waTodo).verdict;
     expect(v.kind).toBe("WA");
     if (v.kind !== "WA") return;
-    expect(v.cases[0]).toMatchObject({ id: "sample-1", visible: true, status: "fail" });
+    expect(v.cases[0]).toMatchObject({ id: "example-1", visible: true, status: "fail" });
     expect(v.cases[0].message).toMatch(/^panicked: not yet implemented at \/src\/user\.rs:2:5/);
   });
 
@@ -69,7 +69,7 @@ describe("classify (recorded Miri output)", () => {
       exitCode: null,
       stdout: waTodo.output.stdout.split("\n").slice(0, 2).join("\n") + "\n",
     });
-    expect(v.verdict).toMatchObject({ kind: "TLE", runningCase: "sample-2" });
+    expect(v.verdict).toMatchObject({ kind: "TLE", runningCase: "example-2" });
   });
 
   test("output limit is a runtime error", () => {
