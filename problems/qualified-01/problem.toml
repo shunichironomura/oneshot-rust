@@ -1,7 +1,7 @@
 id = "qualified-01"
 title = { en = "Same name, different trait", ja = "同じ名前、別のトレイト" }
 difficulty = 2
-concepts = ["fully qualified syntax <Type as Trait>::f", "ambiguous method calls (E0034)", "associated functions without self (E0790)", "inherent methods shadow trait methods", "no auto-ref in Trait::method(x) calls"]
+concepts = ["fully qualified syntax <Type as Trait>::f", "associated functions without self (E0790)", "ambiguous associated functions (E0034)"]
 kind = "repair"
 
 [judge]

@@ -1,0 +1,12 @@
+id = "borrow-04"
+title = { en = "Merge two accounts", ja = "口座をまとめる" }
+difficulty = 2
+concepts = ["two &mut into one slice (E0499)", "slice::get_disjoint_mut", "aliasing case from == to", "std::mem::take", "split_at_mut"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

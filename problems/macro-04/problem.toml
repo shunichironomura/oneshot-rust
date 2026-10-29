@@ -1,7 +1,7 @@
 id = "macro-04"
-title = { en = "Pattern macros", ja = "パターンを受け取るマクロ" }
+title = { en = "A pattern macro", ja = "パターンを受け取るマクロ" }
 difficulty = 2
-concepts = ["macro_rules!", "pat vs pat_param (edition 2021)", "or-patterns", "follow-set restrictions", "missing fragment specifier (hard error since 1.89)", "tt munching", "internal rules"]
+concepts = ["macro_rules!", "pat vs pat_param (edition 2021)", "or-patterns", "follow-set restrictions"]
 kind = "repair"
 
 [judge]

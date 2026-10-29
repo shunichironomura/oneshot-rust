@@ -1,11 +1,5 @@
 use crate::judge::{case, check_eq};
-use crate::user::{Bank, TransferError, merge_accounts};
-
-fn merged(balances: &[u64], from: usize, to: usize) -> Vec<u64> {
-    let mut v = balances.to_vec();
-    merge_accounts(&mut v, from, to);
-    v
-}
+use crate::user::{Bank, TransferError};
 
 pub fn run() {
     case("example-1", || {
@@ -14,7 +8,6 @@ pub fn run() {
         check_eq((bank.balance("a"), bank.balance("b")), (Some(3), Some(7)))?;
         check_eq(bank.transfer("a", "a", 1), Err(TransferError::SameAccount))
     });
-    case("example-2", || check_eq(merged(&[5, 0, 7], 0, 2), vec![0, 0, 12]));
     case("case-1", || {
         // SameAccount is checked first, even for an unknown name or an amount of 0.
         let mut bank = Bank::new(&[("a", 10), ("b", 5)]);
@@ -56,18 +49,5 @@ pub fn run() {
             (bank.balance("a"), bank.balance("b"), bank.balance("c")),
             (Some(0), Some(2), Some(4)),
         )
-    });
-    case("case-5", || {
-        // Merging an account into itself leaves everything unchanged.
-        check_eq(merged(&[4, 9], 1, 1), vec![4, 9])?;
-        check_eq(merged(&[4, 9], 0, 0), vec![4, 9])?;
-        check_eq(merged(&[6], 0, 0), vec![6])
-    });
-    case("case-6", || {
-        // `from` may come after `to`, and the accounts may be next to each other.
-        check_eq(merged(&[1, 2, 3, 4], 3, 0), vec![5, 2, 3, 0])?;
-        check_eq(merged(&[1, 2, 3, 4], 1, 2), vec![1, 0, 5, 4])?;
-        check_eq(merged(&[1, 2, 3, 4], 2, 1), vec![1, 5, 0, 4])?;
-        check_eq(merged(&[0, 8], 0, 1), vec![0, 8])
     });
 }

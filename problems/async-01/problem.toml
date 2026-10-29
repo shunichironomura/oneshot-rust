@@ -1,7 +1,7 @@
 id = "async-01"
-title = { en = "Three futures", ja = "3 つの Future" }
+title = { en = "A greeting for later", ja = "あとで届くあいさつ" }
 difficulty = 2
-concepts = ["async blocks borrow their captures", "async move", "await only directly inside async fns and blocks", "recursive async fn needs boxing (Box::pin)", "impl Future return types"]
+concepts = ["async blocks borrow their captures", "async move", "impl Future return types"]
 kind = "repair"
 
 [judge]

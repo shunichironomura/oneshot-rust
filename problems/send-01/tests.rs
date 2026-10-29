@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Mutex, mpsc};
 
 use crate::judge::{case, check_eq};
-use crate::user::{par_map, spawn_job};
+use crate::user::par_map;
 
 pub fn run() {
     case("example-1", || {
@@ -17,11 +17,6 @@ pub fn run() {
         check_eq(labels, ["item-a", "item-bb", "item-ccc"])?;
         check_eq(calls.load(Ordering::Relaxed), 3)
     });
-    case("example-2", || {
-        let name = String::from("Ferris");
-        let job = spawn_job(3, move |n: usize| name + &"!".repeat(n));
-        check_eq(job.join().unwrap(), "Ferris!!!")
-    });
     case("case-1", || {
         let no_bytes: Vec<Vec<u8>> = Vec::new();
         check_eq(par_map(no_bytes, |bytes| bytes.len()), Vec::<usize>::new())?;
@@ -31,37 +26,24 @@ pub fn run() {
         check_eq(par_map(no_numbers, |n| Cell::new(n * 2)), Vec::<Cell<i32>>::new())
     });
     case("case-2", || {
+        // The items are receivers, and each thread takes its own.
+        let (tx1, rx1) = mpsc::channel();
+        let (tx2, rx2) = mpsc::channel();
+        tx1.send(4).unwrap();
+        tx2.send(-1).unwrap();
+        check_eq(par_map(vec![rx1, rx2], |rx| rx.recv().unwrap() * 10), [40, -10])
+    });
+    case("case-3", || {
         // The item and the result borrow `text`.
         let text = String::from("  solo ");
         check_eq(par_map(vec![text.as_str()], |w| w.trim()), ["solo"])
     });
-    case("case-3", || {
+    case("case-4", || {
         // The closure takes the lock guard with it.
         let table = Mutex::new(vec![10, 20, 30, 40]);
         let guard = table.lock().unwrap();
         let picked = par_map(vec![3, 0], move |i: usize| guard[i]);
         check_eq(picked, [40, 10])?;
         check_eq(table.lock().unwrap().len(), 4)
-    });
-    case("case-4", || {
-        // The job is already running while this thread sends the numbers.
-        let (tx, rx) = mpsc::channel();
-        let job = spawn_job(rx, |rx: mpsc::Receiver<i32>| rx.iter().sum::<i32>());
-        for n in [1, 2, 3] {
-            tx.send(n).unwrap();
-        }
-        drop(tx);
-        check_eq(job.join().unwrap(), 6)
-    });
-    case("case-5", || {
-        // The closure takes the receiver with it and gives it back.
-        let (tx, rx) = mpsc::channel();
-        let job = spawn_job(10, move |k: i32| (rx.recv().unwrap() * k, rx));
-        tx.send(4).unwrap();
-        tx.send(5).unwrap();
-        drop(tx);
-        let (first, rx) = job.join().unwrap();
-        check_eq(first, 40)?;
-        check_eq(rx.iter().collect::<Vec<i32>>(), [5])
     });
 }

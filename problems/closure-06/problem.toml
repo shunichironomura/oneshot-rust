@@ -1,0 +1,16 @@
+id = "closure-06"
+title = { en = "Greeter factory", ja = "あいさつ関数を作る" }
+difficulty = 2
+concepts = [
+    "move closures for returned closures",
+    "moving a reference into a closure still borrows",
+    "shadowing with a borrowed &str",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

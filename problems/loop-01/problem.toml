@@ -6,8 +6,6 @@ concepts = [
     "for loops evaluate to ()",
     "labeled block expressions",
     "labeled breaks out of nested loops",
-    "let-else must diverge",
-    "returning &str borrowed from the input",
 ]
 kind = "repair"
 

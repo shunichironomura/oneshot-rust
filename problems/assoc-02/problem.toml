@@ -1,0 +1,16 @@
+id = "assoc-02"
+title = { en = "The total of any container", ja = "どのコンテナでも合計" }
+difficulty = 3
+concepts = [
+    "bounds on associated types (where C::Item: ...)",
+    "where-clauses guide inference (Into<i64> vs i64: From<T>)",
+    "|&x| patterns need Copy",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

@@ -1,7 +1,7 @@
 id = "edition-01"
 title = { en = "Moving to 2024", ja = "2024 エディションへ引っ越し" }
 difficulty = 1
-concepts = ["edition 2024", "reserved keyword gen", "raw identifiers", "keywords as field names", "field init shorthand", "IntoIterator for Box<[T]>", "move"]
+concepts = ["edition 2024", "reserved keyword gen", "raw identifiers", "keywords as field names", "field init shorthand"]
 kind = "repair"
 
 [judge]

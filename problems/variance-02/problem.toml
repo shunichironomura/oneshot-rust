@@ -1,0 +1,12 @@
+id = "variance-02"
+title = { en = "Distinct words", ja = "重複しない単語" }
+difficulty = 3
+concepts = ["the &'a mut X<'a> anti-pattern", "&mut T is invariant in T", "separate lifetimes for the borrow and the borrowed data"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

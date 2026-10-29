@@ -1,5 +1,5 @@
 use crate::judge::{case, check_eq};
-use crate::user::{make_greeter, tally};
+use crate::user::tally;
 
 fn check_tally(events: &[&str], limit: usize, errors: usize, log: &[&str]) -> Result<(), String> {
     let (got_errors, got_log) = tally(events, limit);
@@ -11,10 +11,6 @@ pub fn run() {
     case("example-1", || {
         check_tally(&["ok", "ERR a", "ERR b", "ok"], 2, 2, &["ok", "ERR a", "ERR b", "abort"])?;
         check_tally(&["ok"], 1, 0, &["ok"])
-    });
-    case("example-2", || {
-        let hi = make_greeter(String::from("  Hi "));
-        check_eq(hi("Ann"), "Hi, Ann!")
     });
     case("case-1", || {
         // With limit 1, the first error aborts at once. Events after the abort are neither
@@ -40,21 +36,5 @@ pub fn run() {
             2,
             &["err x", "Err", " ERR", "xERR", "ERROR", "ok", "ERR", "abort"],
         )
-    });
-    case("case-5", || {
-        // Greeters outlive the Strings they were made from and can be called many times.
-        // `trim` removes Unicode whitespace (U+3000) at both ends but keeps inner whitespace.
-        let mut greeters = Vec::new();
-        for greeting in ["\tHola\n", "\u{3000}こんにちは ", "   ", " Good  day "] {
-            greeters.push(make_greeter(greeting.to_string()));
-        }
-        let name = String::from("Ferris");
-        let got: Vec<String> = greeters.iter().rev().map(|g| g(&name)).collect();
-        check_eq(
-            got,
-            ["Good  day, Ferris!", ", Ferris!", "こんにちは, Ferris!", "Hola, Ferris!"],
-        )?;
-        drop(name);
-        check_eq(greeters[0](" Bob "), "Hola,  Bob !")
     });
 }

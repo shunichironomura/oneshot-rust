@@ -1,0 +1,16 @@
+id = "array-03"
+title = { en = "Letters in use", ja = "使われている英字" }
+difficulty = 1
+concepts = [
+    "arrays and slices are indexed by usize only (SliceIndex)",
+    "u8 is not char: char::from / as char, only u8 can be cast to char",
+    "byte ranges b'a'..=b'z'",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

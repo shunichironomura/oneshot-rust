@@ -4,9 +4,9 @@ difficulty = 3
 concepts = [
     "Send / Sync bounds",
     "&F shared across threads requires F: Sync (not F: Send)",
-    "'static for thread::spawn but not for scoped threads",
-    "Fn for a shared closure, FnOnce for a closure called once",
-    "JoinHandle<T>",
+    "no 'static for scoped threads",
+    "Fn for a closure shared by several threads",
+    "Send but not Sync (Receiver, Cell) and Sync but not Send (MutexGuard)",
 ]
 kind = "signature"
 

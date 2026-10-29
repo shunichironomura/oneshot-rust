@@ -2,9 +2,9 @@ id = "basics-02"
 title = { en = "Expressions with values", ja = "値を持つ式" }
 difficulty = 1
 concepts = [
-    "if and loop are expressions that yield values",
-    "if as an expression (same arm types)",
-    "break with a value from loop",
+    "if is an expression that yields a value",
+    "all branches of an if have the same type",
+    "&str vs String",
 ]
 kind = "repair"
 

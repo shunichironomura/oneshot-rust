@@ -1,13 +1,12 @@
 id = "impltrait-01"
-title = { en = "Filters, labels and operators", ja = "フィルタ、ラベル、演算子" }
+title = { en = "Pick a filter", ja = "フィルタを選ぶ" }
 difficulty = 2
 concepts = [
     "return-position impl Trait is a single type",
     "every closure has a unique type",
-    "Box<dyn Iterator + '_> / Box<dyn Fn>",
+    "Box<dyn Iterator + '_>",
     "move closures capturing Copy parameters",
     "remainder of negative numbers",
-    "unsigned_abs",
 ]
 kind = "repair"
 

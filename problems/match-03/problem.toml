@@ -1,12 +1,11 @@
 id = "match-03"
-title = { en = "Case by case", ja = "場合分け" }
+title = { en = "Which quadrant?", ja = "どの象限？" }
 difficulty = 1
 concepts = [
     "match exhaustiveness",
-    "integer range patterns",
-    "exclusive range patterns",
-    "guards do not count for exhaustiveness",
     "tuple patterns",
+    "Ordering from cmp",
+    "integer range patterns",
 ]
 kind = "repair"
 

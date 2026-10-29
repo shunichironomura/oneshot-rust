@@ -1,5 +1,5 @@
 use crate::judge::{case, check, check_eq};
-use crate::user::{first_word, pick, strip_tag};
+use crate::user::strip_tag;
 
 pub fn run() {
     case("example-1", || {
@@ -10,17 +10,6 @@ pub fn run() {
             message = strip_tag(&line, &tag);
         }
         check_eq(message, "server started")
-    });
-    case("example-2", || {
-        let left = String::from("left");
-        let right = String::from("right");
-        check_eq(pick(&left, &right, true), "left")?;
-        check_eq(pick(&left, &right, false), "right")
-    });
-    case("example-3", || {
-        let owned = String::from("Rust is fun");
-        check_eq(first_word("  hello world"), "hello")?;
-        check_eq(first_word(&owned), "Rust")
     });
     case("case-1", || {
         // Without the tag at the very start, `line` itself comes back.
@@ -51,31 +40,5 @@ pub fn run() {
             start <= p && p + m.len() <= start + log.len()
         });
         check(inside, "the messages should point into the log")
-    });
-    case("case-4", || {
-        let empty = String::new();
-        let word = String::from("word");
-        check_eq(pick(&empty, &word, true), "")?;
-        check_eq(pick(&word, &empty, false), "")?;
-        check(std::ptr::eq(pick(&word, &empty, true), word.as_str()), "should return `a` itself")?;
-        check(std::ptr::eq(pick(&empty, &word, false), word.as_str()), "should return `b` itself")
-    });
-    case("case-5", || {
-        let info = String::from("[INFO] all good");
-        let warn = String::from("[WARN]  low battery");
-        let message;
-        {
-            let tag = String::from("[WARN]");
-            message = strip_tag(pick(&info, &warn, false), &tag);
-        }
-        check_eq(message, "low battery")
-    });
-    case("case-6", || {
-        check_eq(first_word(""), "")?;
-        check_eq(first_word(" \t\n "), "")?;
-        check_eq(first_word("\tone\ntwo"), "one")?;
-        check_eq(first_word("  日本語 テキスト"), "日本語")?;
-        let solo = String::from("solo");
-        check(std::ptr::eq(first_word(&solo), solo.as_str()), "should be a slice of `s`")
     });
 }
