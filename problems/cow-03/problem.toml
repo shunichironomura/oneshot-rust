@@ -1,0 +1,12 @@
+id = "cow-03"
+title = { en = "Cheap snapshots", ja = "安価なスナップショット" }
+difficulty = 2
+concepts = ["Rc::make_mut", "Rc::ptr_eq"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
