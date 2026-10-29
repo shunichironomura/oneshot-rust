@@ -125,7 +125,7 @@ Web アプリに同梱している npm パッケージ（Preact、CodeMirror、�
 
 次の問題は、[The Rust Programming Language](https://github.com/rust-lang/book)（The Book）または
 [The Rustonomicon](https://github.com/rust-lang/nomicon) の例やコードを元にしています。
-どちらも Copyright (c) The Rust Project Contributors で、MIT または Apache-2.0 のもとで提供されています。
+どちらも Copyright (c) 2010 The Rust Project Developers で、MIT または Apache-2.0 のもとで提供されています。
 
 | 出典 | 問題 |
 | --- | --- |
