@@ -15,8 +15,8 @@ out the matching element of `b` on each call. The `unwrap` never fails, because 
 
 ### Alternatives
 
-`std::array::from_fn(|i| ...)` builds an array from the indices. For `zip_arrays`, it works only if
-the closure takes the elements from an iterator instead of indexing.
+`std::array::from_fn(|i| ...)` builds an array from the indices. Direct indexing cannot move
+non-`Copy` values out of the original arrays. One option is to take elements from an iterator:
 
 ```rust
 pub fn zip_arrays<A, B, const N: usize>(a: [A; N], b: [B; N]) -> [(A, B); N] {
@@ -24,6 +24,11 @@ pub fn zip_arrays<A, B, const N: usize>(a: [A; N], b: [B; N]) -> [(A, B); N] {
     std::array::from_fn(|_| pairs.next().unwrap())
 }
 ```
+
+Alternatively, wrap the inputs in arrays of `Option` with `let mut a = a.map(Some)` and
+`let mut b = b.map(Some)`. Then use
+`std::array::from_fn(|i| (a[i].take().unwrap(), b[i].take().unwrap()))` to move each pair out,
+leaving `None` at each index. Each index is visited once, so the `unwrap` calls succeed.
 
 You can also collect into a `Vec` and convert it back to an array. `.try_into().unwrap()` does not
 compile here: the error of the conversion is the `Vec` itself, and `unwrap` needs it to implement

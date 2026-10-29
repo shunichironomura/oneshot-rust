@@ -9,7 +9,9 @@ and a value does not carry its padding, so storing it makes that byte uninitiali
 `bits` then reads that byte. Build the number with shifts instead.
 
 The solution needs no `unsafe`. Shifts and `u32::from` also do not depend on the byte order of the
-target, while any union-based `pack_header` relies on the target being little-endian.
+target, while the union-based `pack_header` shown below relies on the target being little-endian.
+A union-based version can support both byte orders by storing `len.to_le()` and converting the
+result with `u32::from_le`.
 
 ### Alternatives
 

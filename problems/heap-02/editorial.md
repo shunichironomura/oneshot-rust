@@ -2,16 +2,18 @@
 flips the order, so the max-heap becomes a min-heap and pops the smallest value first. Negating the
 values (`-x`) instead would overflow for `i32::MIN` (a panic in debug builds).
 
-Only `pop` and `into_sorted_vec` give the values in order: `iter`, `into_iter` and `into_vec` walk the
-heap's internal array, which is not sorted, so taking the first `k` of them gives wrong answers.
+For `BinaryHeap<Reverse<i32>>`, repeated `pop` returns integers in ascending order, while
+`into_sorted_vec` returns them in descending order (inside `Reverse`). `iter`, `into_iter` and
+`into_vec` walk the heap's internal array, which is not sorted, so taking the first `k` of them gives
+wrong answers.
 Stopping when the heap runs out handles `k > v.len()`, whereas `Vec::with_capacity(k)` would panic
 for `k = usize::MAX`.
 
 ### Alternatives
 
 You can also keep just `k` values in a max-heap. The largest of the `k` smallest values seen so far
-sits on top, and a smaller newcomer replaces it. `into_sorted_vec` returns the values in ascending
-order.
+sits on top, and a smaller newcomer replaces it. For this `BinaryHeap<i32>` without `Reverse`,
+`into_sorted_vec` returns the values in ascending order.
 
 ```rust
 pub fn k_smallest(v: &[i32], k: usize) -> Vec<i32> {
