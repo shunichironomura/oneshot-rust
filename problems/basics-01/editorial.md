@@ -5,8 +5,11 @@ Each slip needs only a small fix, but the compiler does not show all three at on
    in `rest % BASE`, and Rust never converts between integer types implicitly. The compiler suggests
    `: i32`, the default type of an integer literal, which only leads to new type errors.
 2. **Parameters are immutable.** A parameter is a binding just like `let n`, so `n = sum` is
-   rejected. Write `mut n: u64` in the parameter list (the function's type stays the same), or shadow
-   it with `let mut n = n;` at the start of the body. Writing `let n = sum;` inside the loop compiles,
+   rejected. Write `mut n: u64` in the parameter list, or shadow it with `let mut n = n;` at the start
+   of the body. `mut n: u64` does not change the signature: a `mut` on a parameter only makes the
+   binding `n` inside the function mutable and is not part of the function's type, which stays
+   `fn(u64) -> u64`. The argument is passed by value, so callers cannot tell the difference, and
+   rustdoc leaves this `mut` out. Writing `let n = sum;` inside the loop compiles,
    but it declares a new `n` that disappears at the end of each iteration: the condition `n >= BASE`
    keeps seeing the original value, and the loop never ends.
 3. **`n;` is a statement.** A function returns the value of its final expression, which has no
