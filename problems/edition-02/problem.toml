@@ -1,0 +1,12 @@
+id = "edition-02"
+title = { en = "Boxed slices in 2024", ja = "2024 のボックス化スライス" }
+difficulty = 1
+concepts = ["IntoIterator for Box<[T]> (edition 2024)", "into_iter consumes the box (use after move)", "edition 2024"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

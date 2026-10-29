@@ -1,7 +1,7 @@
 次のコードはコンパイルが通りません。直してください。
 
 このコードは Rust 2021 向けに書かれ、そこではコンパイルが通っていました。しかし、ジャッジは
-Rust 2024 としてコンパイルします。中身は、小さな乱数生成器、単語の分類、得点の計算の 3 つです。
+Rust 2024 としてコンパイルします。中身は、小さな乱数生成器と単語の分類の 2 つです。
 
 ```rust
 pub struct Rng {
@@ -27,7 +27,6 @@ pub struct Token {
 }
 
 pub fn classify(word: &str) -> Token;
-pub fn score(points: Box<[u32]>) -> u32;
 ```
 
 - `Rng` は 64 ビットの線形合同法による乱数生成器です。`Rng::new(seed)` は状態 `seed` から始まります。
@@ -39,8 +38,6 @@ pub fn score(points: Box<[u32]>) -> u32;
 - `classify(word)` は、`text` が `word` である `Token` を返します。`word` が `fn`、`let`、`match`、
   `gen`、`async`、`try` のどれかと完全に一致すれば（大文字と小文字は区別します）`type` は
   `Kind::Keyword`、そうでなければ `Kind::Ident` です。
-- `score(points)` は、全要素の和に要素 1 つにつき 1 を足した値を返します。空なら `0` です。
-  結果は必ず `u32` に収まります。
 
 公開されている名前とシグネチャは変えないでください。ハーネスも Rust 2024 としてコンパイルされ、
 それらを使います。
@@ -50,4 +47,3 @@ pub fn score(points: Box<[u32]>) -> u32;
 - `Rng::new(0)` で `gen` を 3 回呼ぶと、`167951807`、`218396424`、`1299921937` を返します。
 - `classify("gen")` は `Token { r#type: Kind::Keyword, text: "gen".to_string() }` で、
   `classify("gene").r#type` は `Kind::Ident` です。
-- `score(vec![3, 4].into_boxed_slice())` は `3 + 4 + 2 = 9` です。
