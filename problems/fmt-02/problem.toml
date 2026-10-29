@@ -1,7 +1,7 @@
 id = "fmt-02"
 title = { en = "Receipt printer", ja = "レシート印刷" }
 difficulty = 1
-concepts = ["format spec mini-language", "width, fill and alignment", "precision on floats and strings", "{:02X} and {:#010b}", "runtime width with name$"]
+concepts = ["format spec mini-language", "width, fill and alignment", "precision on floats and strings"]
 kind = "implement"
 
 [judge]
