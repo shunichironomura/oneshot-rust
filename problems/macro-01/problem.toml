@@ -1,7 +1,7 @@
 id = "macro-01"
-title = { en = "Macros with repetitions", ja = "繰り返しのあるマクロ" }
+title = { en = "A map literal macro", ja = "マップを作るマクロ" }
 difficulty = 2
-concepts = ["macro_rules!", "repetitions", "optional trailing comma", "$crate paths", "macro hygiene", "evaluating arguments once", "constant expressions"]
+concepts = ["macro_rules!", "repetitions", "optional trailing comma", "call-site path resolution", "macro hygiene", "evaluating arguments once"]
 kind = "implement"
 
 [judge]
