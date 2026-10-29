@@ -1,0 +1,17 @@
+id = "asref-02"
+title = { en = "Groups of strings", ja = "文字列のグループ" }
+difficulty = 2
+concepts = [
+    "IntoIterator bounds on nested items",
+    "associated type bounds (Item: Trait)",
+    "AsRef<str> bounds",
+    "<I::Item as IntoIterator>::Item vs I::Item::Item",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true
