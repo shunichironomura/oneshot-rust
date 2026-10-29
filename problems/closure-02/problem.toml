@@ -5,8 +5,6 @@ concepts = [
     "FnOnce / FnMut / Fn bounds",
     "mut binding for an FnMut parameter",
     "generic closure inputs and outputs",
-    "calling through &F requires Fn",
-    "passing an FnMut on through recursion as &mut F (implicit reborrow, &mut F is FnMut)",
 ]
 kind = "signature"
 

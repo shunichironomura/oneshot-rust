@@ -1,0 +1,15 @@
+id = "closure-04"
+title = { en = "Digit by digit", ja = "1 桁ずつ" }
+difficulty = 2
+concepts = [
+    "passing an FnMut on through recursion as &mut F (implicit reborrow, &mut F is FnMut)",
+    "FnMut bound for a closure that mutates its captures",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true
