@@ -1,12 +1,5 @@
-use std::sync::mpsc::{Receiver, Sender};
-
-pub fn send_all<T>(tx: &Sender<T>, items: Vec<T>) -> Vec<T> {
-    todo!()
-}
-
-pub fn drain_ready<T>(rx: &Receiver<T>) -> (Vec<T>, bool) {
-    todo!()
-}
+use std::sync::mpsc;
+use std::thread;
 
 pub fn fan_in(groups: Vec<Vec<u32>>) -> Vec<u32> {
     todo!()

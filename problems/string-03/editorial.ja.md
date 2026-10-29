@@ -1,14 +1,7 @@
 `&str` は UTF-8 のバイト列の中の**バイト**単位の位置でスライスします。1 文字は 1〜4 バイトです。
-そのため `&s[..n]` の `n` は文字数ではなくバイト数で、`n` が文字の途中に当たるとき
-（`byte index 2 is not a char boundary; it is inside 'é'`）や `s` の末尾を超えるときはパニックします。
-どの関数でも、まず文字数やバイト数の上限を正しいバイト位置に直し、それからスライスする必要があります。
-
-`char_indices` は各文字を、その文字が始まるバイト位置と一緒に返します。`first_chars` では、0 から数えて
-`n` 番目の文字が始まる位置が、ちょうど先頭 `n` 文字の終わりになります。そこまで文字がなければ
-`map_or(s.len(), ...)` で `s` 全体を取ります。`last_chars` は `rev()` で後ろからたどり、たどった `n` 文字のうち
-最後の文字が末尾部分の始まりになります。`take(n).last()` なら `n = 0` も扱えます。何もたどらないので、結果は `s` の
-末尾にある空のスライスになります。つい書きたくなる `rev().nth(n - 1)` は、このとき `0 - 1` が `usize` で
-オーバーフローしてパニックします。
+`&s[..max]` は、`max` が文字の途中に当たるとき
+（`byte index 2 is not a char boundary; it is inside 'é'`）や `s` の末尾を超えるときにパニックします。
+そのため、まずバイト数の上限を正しいバイト位置に直し、それからスライスする必要があります。
 
 `str::floor_char_boundary`（Rust 1.91 で安定化）は、バイト位置を、それ以下で最も近い文字境界に
 切り下げ、末尾を超える位置には `s.len()` を返します。`truncate_bytes` にはこれがそのまま使えます。
@@ -34,30 +27,5 @@ pub fn truncate_bytes(s: &str, max: usize) -> &str {
         end -= 1;
     }
     &s[..end]
-}
-```
-
-`last_chars` は、先に文字数を数えて末尾 `n` 文字以外を読み飛ばす方法でも書けます。読み飛ばす部分がどこで終わるかは
-`first_chars` で求められます。`n` が文字数より大きいとき、`saturating_sub` はアンダーフローせずに 0 を返します。
-
-```rust
-pub fn last_chars(s: &str, n: usize) -> &str {
-    let skip = s.chars().count().saturating_sub(n);
-    &s[first_chars(s, skip).len()..]
-}
-```
-
-先頭（または末尾）の `n` 文字の `len_utf8` を足し合わせれば、先頭部分（または末尾部分）のバイト数が直接求まります。
-`n = 0` なら合計は 0 なので、`last_chars` は `&s[s.len()..]` を返します。
-
-```rust
-pub fn first_chars(s: &str, n: usize) -> &str {
-    let len: usize = s.chars().take(n).map(char::len_utf8).sum();
-    &s[..len]
-}
-
-pub fn last_chars(s: &str, n: usize) -> &str {
-    let len: usize = s.chars().rev().take(n).map(char::len_utf8).sum();
-    &s[s.len() - len..]
 }
 ```

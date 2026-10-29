@@ -1,10 +1,8 @@
 id = "slice-01"
-title = { en = "Runs and windows", ja = "連なりと窓" }
+title = { en = "Rising runs", ja = "増加する連なり" }
 difficulty = 1
 concepts = [
     "slice::chunk_by",
-    "slice::windows",
-    "chunks_exact and remainder",
     "returning subslices (elision)",
     "usize underflow in manual loops",
 ]

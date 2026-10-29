@@ -1,0 +1,17 @@
+id = "numeric-03"
+title = { en = "Slots in a ring", ja = "輪になったスロット" }
+difficulty = 1
+concepts = [
+    "rem_euclid",
+    "% keeps the sign of the dividend",
+    "as casts of negative values",
+    "overflow panics in debug",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

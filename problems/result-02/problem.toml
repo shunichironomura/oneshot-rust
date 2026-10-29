@@ -3,10 +3,7 @@ title = { en = "Results in bulk", ja = "まとめて Result" }
 difficulty = 2
 concepts = [
     "collect into Result<Vec<_>, _>",
-    "&&'a str from iterating &[&'a str]",
-    "Option<Result>::transpose",
-    "try_fold with checked_add",
-    "Sum for Option panics on overflow",
+    "&&str from iterating &[&str]",
     "ParseIntError equality",
 ]
 kind = "implement"

@@ -1,0 +1,12 @@
+id = "macro-06"
+title = { en = "Counting token trees", ja = "トークンツリーを数える" }
+difficulty = 2
+concepts = ["macro_rules!", "recursive macros", "$crate paths", "constant expressions", "tt fragments"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

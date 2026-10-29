@@ -1,7 +1,7 @@
 id = "heap-01"
 title = { en = "Who's next?", ja = "次はだれ？" }
 difficulty = 1
-concepts = ["BinaryHeap is a max-heap", "cmp::Reverse", "tuple ordering for tie-breaks", "peek", "heap iteration order"]
+concepts = ["BinaryHeap is a max-heap", "cmp::Reverse", "tuple ordering for tie-breaks", "peek"]
 kind = "implement"
 
 [judge]

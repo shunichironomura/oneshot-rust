@@ -1,0 +1,12 @@
+id = "channel-02"
+title = { en = "Return to sender", ja = "差出人に戻る" }
+difficulty = 2
+concepts = ["SendError carries the value back", "mpsc channels", "send takes its argument by value"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 20000
+stdout_limit_bytes = 65536
+harness_visible = false

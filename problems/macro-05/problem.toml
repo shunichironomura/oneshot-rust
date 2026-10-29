@@ -1,0 +1,12 @@
+id = "macro-05"
+title = { en = "The greatest argument", ja = "最大の引数" }
+difficulty = 2
+concepts = ["macro_rules!", "evaluating arguments once", "macro hygiene", "repetitions", "optional trailing comma", "PartialOrd without Copy"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

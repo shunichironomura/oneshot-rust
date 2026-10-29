@@ -1,12 +1,3 @@
-pub const fn gcd(mut a: u64, mut b: u64) -> u64 {
-    while b != 0 {
-        let r = a % b;
-        a = b;
-        b = r;
-    }
-    a
-}
-
 pub const fn is_prime(n: u32) -> bool {
     if n < 2 {
         return false;
@@ -37,16 +28,6 @@ pub const fn first_primes<const N: usize>() -> [u32; N] {
         candidate += 1;
     }
     primes
-}
-
-pub const fn weighted_sum(bytes: &[u8]) -> u32 {
-    let mut sum = 0;
-    let mut i = 0;
-    while i < bytes.len() {
-        sum += (i as u32 + 1) * bytes[i] as u32;
-        i += 1;
-    }
-    sum
 }
 
 pub const PRIMES_10: [u32; 10] = first_primes::<10>();

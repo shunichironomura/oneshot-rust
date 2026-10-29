@@ -1,7 +1,7 @@
 id = "string-03"
 title = { en = "Cut to fit", ja = "収まるように切り詰める" }
 difficulty = 1
-concepts = ["UTF-8 byte indices", "char boundaries", "char_indices", "str::floor_char_boundary", "returning subslices"]
+concepts = ["UTF-8 byte indices", "char boundaries", "str::floor_char_boundary", "returning subslices"]
 kind = "implement"
 
 [judge]

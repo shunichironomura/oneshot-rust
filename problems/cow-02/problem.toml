@@ -1,0 +1,12 @@
+id = "cow-02"
+title = { en = "Tidy whitespace", ja = "空白を整える" }
+difficulty = 2
+concepts = ["Cow<'_, str>", "returning a slice of the input as Cow::Borrowed", "trim_ascii / split_ascii_whitespace vs Unicode whitespace"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
