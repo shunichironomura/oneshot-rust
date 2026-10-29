@@ -71,15 +71,3 @@ pub fn move_all(from: &mut Stack<u8>, to: &mut Bag) -> usize {
     }
     n
 }
-
-pub fn total(c: &Bag) -> i64 {
-    c.items().iter().map(|&x| x.into()).sum()
-}
-
-pub fn largest(c: &Stack<String>) -> Option<&String> {
-    c.items().iter().max()
-}
-
-pub fn describe_all(c: &Stack<char>) -> Vec<String> {
-    c.items().iter().map(|x| x.to_string()).collect()
-}

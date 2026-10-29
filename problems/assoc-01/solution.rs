@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 /// Something that values can be put into and taken out of.
 pub trait Container {
     /// The type of the values it holds.
@@ -76,28 +74,4 @@ where
         n += 1;
     }
     n
-}
-
-pub fn total<C>(c: &C) -> i64
-where
-    C: Container,
-    C::Item: Copy + Into<i64>,
-{
-    c.items().iter().map(|&x| x.into()).sum()
-}
-
-pub fn largest<C>(c: &C) -> Option<&C::Item>
-where
-    C: Container,
-    C::Item: Ord,
-{
-    c.items().iter().max()
-}
-
-pub fn describe_all<C>(c: &C) -> Vec<String>
-where
-    C: Container,
-    C::Item: Display,
-{
-    c.items().iter().map(|x| x.to_string()).collect()
 }
