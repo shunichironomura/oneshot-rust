@@ -1,0 +1,12 @@
+id = "heap-02"
+title = { en = "The k smallest", ja = "小さいほうから k 個" }
+difficulty = 1
+concepts = ["cmp::Reverse for a min-heap", "BinaryHeap is a max-heap", "heap iteration order", "negation overflows at i32::MIN"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
