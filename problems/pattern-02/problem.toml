@@ -6,7 +6,6 @@ concepts = [
     "edition 2024: no ref / mut / & inside implicitly-borrowing patterns",
     "fully explicit patterns",
     "copying out of references",
-    "closure parameters of filter get an extra reference",
 ]
 kind = "repair"
 

@@ -1,0 +1,17 @@
+id = "pattern-03"
+title = { en = "Rounds over par", ja = "パーを超えたラウンド" }
+difficulty = 2
+concepts = [
+    "edition 2024: no & below a reference the pattern skipped",
+    "match ergonomics and default binding modes",
+    "closure parameters of filter get an extra reference",
+    "fully explicit patterns",
+]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
