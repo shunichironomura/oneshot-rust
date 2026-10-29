@@ -60,6 +60,14 @@ test("cases show the messages of public cases only", () => {
   expect(cases.find((c) => c.id === "hidden-1")?.message).toBeUndefined();
 });
 
+test("a visible harness makes every case public", () => {
+  const cases = view(waTodo, true).cases ?? [];
+  expect(cases.every((c) => c.visible)).toBe(true);
+  expect(cases.find((c) => c.id === "hidden-1")?.message).toBe(
+    "panicked: not yet implemented at user.rs:2:5",
+  );
+});
+
 test("UB drops help but keeps the location", () => {
   const v = view(ubDangling);
   expect(v.kind).toBe("UB");
