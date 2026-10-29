@@ -1,0 +1,12 @@
+id = "escape-02"
+title = { en = "Bytes, not characters", ja = "文字ではなくバイト" }
+difficulty = 1
+concepts = ["byte strings", "\\x escapes in str are ASCII only", "&'static [u8]"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

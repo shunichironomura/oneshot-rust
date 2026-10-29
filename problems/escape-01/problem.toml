@@ -1,7 +1,7 @@
 id = "escape-01"
 title = { en = "Escape hatch", ja = "エスケープの抜け道" }
 difficulty = 1
-concepts = ["string literal escapes", "raw strings with #", "byte strings", "&'static [u8]", "\\x escapes in str are ASCII only"]
+concepts = ["string literal escapes", "raw strings"]
 kind = "repair"
 
 [judge]
