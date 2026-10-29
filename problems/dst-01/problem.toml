@@ -5,7 +5,6 @@ concepts = [
     "?Sized",
     "dynamically sized types (str, [T], dyn Trait)",
     "implicit Sized bound on generic parameters",
-    "From<Box<T>> for Rc<T> with unsized T",
     "size_of_val",
 ]
 kind = "signature"
