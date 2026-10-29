@@ -8,6 +8,11 @@ export function toolchainIdOfTag(tag: string): string {
   return m[1];
 }
 
+/** Download URL of a release asset; `base` is e.g. `https://github.com/<owner>/<repo>/releases/download`. */
+export function assetUrl(base: string, tag: string, asset: string): string {
+  return `${base.replace(/\/+$/, "")}/${encodeURIComponent(tag)}/${encodeURIComponent(asset)}`;
+}
+
 /** Release assets are flat; the manifest says where each part goes under the toolchain dir. */
 export function placements(manifest: ToolchainManifest): { asset: string; path: string }[] {
   const parts = Object.values(manifest.files).flatMap((f) => f.parts);

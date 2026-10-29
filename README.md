@@ -58,18 +58,15 @@ GitHub Release として公開し、`toolchain/RELEASE` に記録した版をダ
 ### 初回のセットアップ
 
 1. ツールチェーンを GitHub Release として公開します（次の節）。
-2. Cloudflare のビルドが Release を読むための GitHub トークンを作ります。fine-grained personal access token で、
-   対象リポジトリを `oneshot-rust` に限定し、権限は **Contents: Read-only** だけにします。
-3. Cloudflare のダッシュボードで **Workers & Pages → Create → Import a repository** から、このリポジトリを接続します。
+2. Cloudflare のダッシュボードで **Workers & Pages → Create → Import a repository** から、このリポジトリを接続します。
    - プロジェクト名：`oneshot-rust`（`wrangler.jsonc` の `name` と一致させる）
    - Root directory：`web`
    - Build command：`pnpm run build:deploy`（ツールチェーンの取得 → ビルド → サイズの確認）
    - Deploy command：既定（`npx wrangler deploy`）のまま
    - 本番以外のブランチのビルドを有効にする（プレビュー URL を出すため）
-   - Build variables and secrets：手順 2 のトークンを、シークレット `GITHUB_TOKEN` として登録する。
-     **Production と Previews の両方に登録すること**（Production だけだと、PR のプレビュービルドで取得に失敗する）
    - プレビュー URL（Settings → Domains & Routes の Preview / Version URLs）を有効にする
-4. 独自ドメイン（oneshotrust.dev）を使う場合は、Worker の **Settings → Domains & Routes** で追加します。
+   - ビルド変数やシークレットは要りません（ツールチェーンは Release の公開ダウンロード URL から取得します）
+3. 独自ドメイン（oneshotrust.dev）を使う場合は、Worker の **Settings → Domains & Routes** で追加します。
 
 pnpm のバージョンは `package.json` の `packageManager` で固定しています。Node.js はビルド環境の既定（24 系）を使います。
 

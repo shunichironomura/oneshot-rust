@@ -1,10 +1,20 @@
 import { expect, test } from "vite-plus/test";
 import type { ToolchainManifest } from "../src/runner/manifest.ts";
-import { placements, toolchainIdOfTag } from "./toolchain-release.ts";
+import { assetUrl, placements, toolchainIdOfTag } from "./toolchain-release.ts";
 
 test("toolchainIdOfTag", () => {
   expect(toolchainIdOfTag("toolchain-2c66f92f336b\n")).toBe("2c66f92f336b");
   expect(() => toolchainIdOfTag("v1.0")).toThrow(/invalid toolchain release tag/);
+});
+
+test("assetUrl", () => {
+  const base = "https://github.com/o/r/releases/download";
+  expect(assetUrl(base, "toolchain-abc", "miri.wasm.gz.0")).toBe(
+    "https://github.com/o/r/releases/download/toolchain-abc/miri.wasm.gz.0",
+  );
+  expect(assetUrl(`${base}/`, "toolchain-abc", "a b")).toBe(
+    "https://github.com/o/r/releases/download/toolchain-abc/a%20b",
+  );
 });
 
 test("placements maps flat release assets into the toolchain directory", () => {

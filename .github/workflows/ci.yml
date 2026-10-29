@@ -34,8 +34,6 @@ jobs:
 
       - name: Fetch the prebuilt toolchain
         run: vp run fetch-toolchain
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
 
       - run: vp check
       - run: vp test
