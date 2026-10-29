@@ -1,0 +1,16 @@
+id = "option-03"
+title = { en = "Evicting expired sessions", ja = "期限切れのセッションを追い出す" }
+difficulty = 1
+concepts = [
+    "Option::take_if",
+    "consuming Option methods through &mut (E0507)",
+    "Option::take",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

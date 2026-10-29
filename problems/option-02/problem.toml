@@ -1,11 +1,9 @@
 id = "option-02"
-title = { en = "Session helpers", ja = "セッションの道具箱" }
+title = { en = "Login attempts", ja = "ログインの試行回数" }
 difficulty = 1
 concepts = [
-    "Option::is_some_and / is_none_or",
-    "Option::take_if",
-    "bool::then vs then_some (eager evaluation)",
-    "consuming Option methods through &mut (E0507)",
+    "Option::is_none_or",
+    "no sentinel value can stand for \"no limit\"",
 ]
 kind = "implement"
 
