@@ -1,0 +1,15 @@
+id = "iter-04"
+title = { en = "Powers that fit", ja = "収まる累乗" }
+difficulty = 2
+concepts = [
+    "iter::successors with checked_mul",
+    "integer overflow panics in debug builds",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
