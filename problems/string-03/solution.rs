@@ -1,15 +1,3 @@
-pub fn first_chars(s: &str, n: usize) -> &str {
-    // The byte offset where the (n + 1)-th char starts is where the prefix ends.
-    let end = s.char_indices().nth(n).map_or(s.len(), |(i, _)| i);
-    &s[..end]
-}
-
-pub fn last_chars(s: &str, n: usize) -> &str {
-    // Walk back over at most n chars; the last one visited is where the suffix starts.
-    let start = s.char_indices().rev().take(n).last().map_or(s.len(), |(i, _)| i);
-    &s[start..]
-}
-
 pub fn truncate_bytes(s: &str, max: usize) -> &str {
     &s[..s.floor_char_boundary(max)]
 }

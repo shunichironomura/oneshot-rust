@@ -1,0 +1,12 @@
+id = "string-04"
+title = { en = "The last n characters", ja = "末尾の n 文字" }
+difficulty = 1
+concepts = ["UTF-8 byte indices", "char_indices", "returning subslices"]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
