@@ -1,0 +1,17 @@
+id = "fmt-04"
+title = { en = "Rgb or Rgba", ja = "Rgb か Rgba か" }
+difficulty = 2
+concepts = [
+  "manual fmt::Debug matching derive output",
+  "Formatter::debug_tuple",
+  "builder kept in a variable (E0716 on a temporary)",
+  "{:#?} alternate and {:x?} flags reaching fields",
+]
+kind = "implement"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

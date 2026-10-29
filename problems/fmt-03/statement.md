@@ -1,6 +1,5 @@
-A service writes its state to a log with `{:?}`. Passwords must never end up in the log, and some
-fields are too big to be worth printing. Implement `Debug` by hand for the three types below (they
-are already in the editor).
+A service writes its state to a log with `{:?}`, and passwords must never end up in the log.
+Implement `Debug` by hand for `Credentials` (it is already in the editor).
 
 ```rust
 pub struct Credentials {
@@ -9,37 +8,16 @@ pub struct Credentials {
     pub scopes: Vec<String>,
 }
 
-pub struct Inventory {
-    pub items: BTreeMap<String, u32>,
-    pub cache: Vec<u8>,
-}
-
-pub struct Color {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-    pub a: u8,
-}
-
 impl fmt::Debug for Credentials { /* to implement */ }
-impl fmt::Debug for Inventory { /* to implement */ }
-impl fmt::Debug for Color { /* to implement */ }
 ```
 
-- Each type prints exactly what `#[derive(Debug)]` would print for the shape described below.
-  Strings, lists and maps inside are shown the way `{:?}` shows a `String`, a `Vec` and a
-  `BTreeMap`.
-- `Credentials` looks like a struct named `Credentials` with the fields `user`, `password` and
-  `scopes`, in this order. The value of `password` is always the bare text `<redacted>`, without
-  quotes, whatever the password is (even an empty one).
-- `Inventory` looks like a struct named `Inventory` with only the field `items`, followed by `..`
-  to show that something was left out. `cache` is never printed, and the `..` is always there, even
-  when `cache` is empty.
-- `Color` looks like the tuple struct `Rgb(r, g, b)` when `a` is 255 (fully opaque), and like the
-  tuple struct `Rgba(r, g, b, a)` otherwise.
-- Like a derived `Debug`, the output follows the formatter's flags: the pretty form of `{:#?}`,
-  the hexadecimal integers of `{:x?}` and `{:X?}` (with `0x` under `#`), and the extra indentation
-  when the value is nested inside another value printed with `{:#?}`.
+- `Credentials` prints exactly what `#[derive(Debug)]` would print for a struct named
+  `Credentials` with the fields `user`, `password` and `scopes`, in this order. `user` and `scopes`
+  are shown the way `{:?}` shows a `String` and a `Vec`.
+- The value of `password` is always the bare text `<redacted>`, without quotes, whatever the
+  password is (even an empty one).
+- Like a derived `Debug`, the output follows the formatter's flags: the pretty form of `{:#?}`, and
+  the extra indentation when the value is nested inside another value printed with `{:#?}`.
 - Width, fill, alignment, precision and the `+` and `0` flags are not used.
 
 ### Examples
@@ -69,40 +47,4 @@ Credentials {
         "write",
     ],
 }
-```
-
-For an `Inventory` whose `items` are `"pear"` → `1` and `"apple"` → `3`, and whose `cache` holds
-64 bytes, `{:?}` and `{:#?}` print
-
-```text
-Inventory { items: {"apple": 3, "pear": 1}, .. }
-```
-
-```text
-Inventory {
-    items: {
-        "apple": 3,
-        "pear": 1,
-    },
-    ..
-}
-```
-
-With `red = Color { r: 255, g: 0, b: 16, a: 255 }` and
-`glass = Color { r: 255, g: 0, b: 16, a: 128 }`:
-
-| Code | Result |
-| --- | --- |
-| `format!("{red:?}")` | `Rgb(255, 0, 16)` |
-| `format!("{red:x?}")` | `Rgb(ff, 0, 10)` |
-| `format!("{glass:?}")` | `Rgba(255, 0, 16, 128)` |
-
-and `format!("{red:#X?}")` is
-
-```text
-Rgb(
-    0xFF,
-    0x0,
-    0x10,
-)
 ```
