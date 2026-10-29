@@ -1,6 +1,6 @@
 id = "result-02"
 title = { en = "Results in bulk", ja = "まとめて Result" }
-difficulty = 2
+difficulty = 1
 concepts = [
     "collect into Result<Vec<_>, _>",
     "&&str from iterating &[&str]",
