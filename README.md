@@ -129,7 +129,7 @@ Web アプリに同梱している npm パッケージ（Preact、CodeMirror、�
 
 | 出典 | 問題 |
 | --- | --- |
-| The Book | `bufread-01`、`bufread-02`、`generics-01`、`guard-01`、`minigrep-01`、`pool-01`、`refcell-01`、`signature-01`、`state-02`、`string-02` |
+| The Book | `bufread-01`、`bufread-02`、`generics-01`、`guard-01`、`minigrep-01`、`pool-01`、`refcell-01`、`signature-01`、`state-02`、`string-02`、`string-05` |
 | The Rustonomicon | `arc-01`、`itermut-01`、`rawvec-01` |
 
 ### ツールチェーン

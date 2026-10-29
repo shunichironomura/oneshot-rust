@@ -16,10 +16,8 @@ def main []: nothing -> nothing {
   let licenses = $manifest.licenses | each { |p| $PUBLIC_DIR | path join $p }
 
   if (^gh release view $tag | complete).exit_code == 0 {
-    # The assets are the same, but the manifest and the licenses may be newer (a release made
-    # before the licenses were collected gets them this way).
-    print $"Release ($tag) already exists; updating its manifest and licenses"
-    ^gh release upload $tag $manifest_path ...$licenses --clobber
+    # Releases are immutable once published, so an existing one is left as it is.
+    print $"Release ($tag) already exists"
   } else {
     let notes = $"miri.wasm and its sysroot, built by toolchain/build.nu from rust-lang/rust@($manifest.rustCommit).\n\nThe license texts of their components are in the assets: start with README.txt.\n\nFetch with `node web/scripts/fetch-toolchain.ts`."
     ^gh release create $tag $manifest_path ...$parts ...$licenses --title $"Toolchain ($id)" --notes $notes --latest=false
