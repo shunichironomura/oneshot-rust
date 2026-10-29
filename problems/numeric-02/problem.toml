@@ -1,13 +1,11 @@
 id = "numeric-02"
-title = { en = "Arithmetic at the edges", ja = "端っこの算術" }
+title = { en = "A sum that fits in a byte", ja = "1 バイトに収まる合計" }
 difficulty = 1
 concepts = [
     "overflow panics in debug",
-    "wrapping_* / checked_* / saturating_*",
-    "rem_euclid",
-    "div_ceil",
-    "midpoint",
-    "abs_diff",
+    "checked_add",
+    "try_fold",
+    "Sum for Option panics on overflow",
 ]
 kind = "implement"
 
