@@ -73,6 +73,12 @@ GitHub Release として公開し、`toolchain/RELEASE` に記録した版をダ
 
 pnpm のバージョンは `package.json` の `packageManager` で固定しています。Node.js はビルド環境の既定（24 系）を使います。
 
+### Web アプリの依存パッケージ
+
+Web アプリに同梱している npm パッケージ（Preact、CodeMirror、フォントなど）の名前・バージョン・ライセンス・ライセンス文は、
+ビルド時に `web/dist/third-party-licenses.txt` にまとめられ、サイトの `/third-party-licenses.txt` で公開しています
+（トップページのフッターからリンクしています）。フォント（Barlow Condensed、Caveat）は SIL Open Font License 1.1 です。
+
 ### ツールチェーンを更新したとき
 
 ```sh

@@ -6,6 +6,8 @@ import { RoundLauncher } from "./RoundLauncher.tsx";
 const AUTHOR = { name: "Shunichiro Nomura", url: "https://github.com/shunichironomura" };
 // The README lists the licenses of the code, the problems and the toolchain.
 const REPOSITORY_URL = "https://github.com/shunichironomura/oneshot-rust#readme";
+// Written by the third-party-licenses plugin (scripts/third-party-licenses.ts) at build time.
+const THIRD_PARTY_LICENSES_URL = `${import.meta.env.BASE_URL}third-party-licenses.txt`;
 
 function openRound(): void {
   window.location.hash = routeHref({ page: "round" });
@@ -27,7 +29,8 @@ export function HomePage() {
       <footer class="credit">
         <p>
           {t.madeBy} <a href={AUTHOR.url}>{AUTHOR.name}</a> ·{" "}
-          <a href={REPOSITORY_URL}>{t.sourceAndLicenses}</a>
+          <a href={REPOSITORY_URL}>{t.sourceAndLicenses}</a> ·{" "}
+          <a href={THIRD_PARTY_LICENSES_URL}>{t.thirdPartyLicenses}</a>
         </p>
         <p class="ai-notice">{t.aiNotice}</p>
       </footer>
