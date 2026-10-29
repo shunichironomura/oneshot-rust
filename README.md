@@ -28,7 +28,7 @@ Requirements: [Nushell](https://www.nushell.sh/), Python 3, git, Node.js 24 or l
 
 1. Place the toolchain (`miri.wasm` and the sysroot) in `web/public/toolchain/`. Either download the published one
    or build it yourself (the first build takes 20–30 minutes). See [toolchain/README.md](toolchain/README.md)
-   (in Japanese) for details.
+   for details.
 
    ```sh
    cd web && vp run fetch-toolchain   # download the version in toolchain/RELEASE
@@ -113,7 +113,7 @@ Run these in the `web/` directory.
 | `node scripts/judge.ts <id> <file.rs>` | Judge arbitrary code and show what the player would see |
 | `node scripts/record-fixtures.ts` | Re-record Miri's actual output for the `classify` tests |
 
-See [problems/README.md](problems/README.md) (in Japanese) for how to write problems.
+See [problems/README.md](problems/README.md) for how to write problems.
 
 ## License
 
@@ -140,4 +140,4 @@ and are provided under MIT or Apache-2.0.
 The distributed toolchain (`miri.wasm` and the sysroot) is built from [rust-lang/rust](https://github.com/rust-lang/rust)
 (MIT or Apache-2.0) and its dependency crates, plus wasi-libc and compiler-rt from
 [wasi-sdk](https://github.com/WebAssembly/wasi-sdk). The license texts are distributed with the toolchain as
-`licenses/` (see [toolchain/README.md](toolchain/README.md#ライセンス)).
+`licenses/` (see [toolchain/README.md](toolchain/README.md#license)).

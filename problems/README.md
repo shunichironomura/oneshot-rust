@@ -1,53 +1,57 @@
-# 問題の書き方
+# Writing problems
 
-1 問を 1 ディレクトリにまとめます。ディレクトリ名が問題 ID になります。
+English | [日本語](README.ja.md)
 
-問題は [CC BY 4.0](LICENSE) で公開します。ほかの資料の例やコードを元にした問題は、ルートの
-[README.md](../README.md#出典) の出典の表に追加してください（元のライセンスが CC BY 4.0 と両立するものに限ります）。
+Each problem lives in its own directory. The directory name is the problem ID.
+
+Problems are published under [CC BY 4.0](LICENSE). If a problem is based on examples or code from other material,
+add it to the sources tables in both the root [README.md](../README.md#sources) and
+[README.ja.md](../README.ja.md#出典) (only if the original license is compatible with CC BY 4.0).
 
 ```text
 problems/<id>/
-  problem.toml      メタデータ
-  statement.md      問題文（英語、必須）
-  statement.ja.md   問題文（日本語、任意。ない場合は英語版を表示）
-  template.rs       初期コード
-  tests.rs          テストハーネス
-  solution.rs       模範解答（問題を終えたプレイヤーに表示。問題ごとに別チャンクで配信）
-  editorial.md      解説（英語、任意。模範解答と一緒に表示）
-  editorial.ja.md   解説（日本語、任意。editorial.md がある場合のみ）
+  problem.toml      Metadata
+  statement.md      Problem statement (English, required)
+  statement.ja.md   Problem statement (Japanese, optional; the English one is shown if missing)
+  template.rs       Starting code
+  tests.rs          Test harness
+  solution.rs       Reference solution (shown to players who finished the problem; served as a per-problem chunk)
+  editorial.md      Editorial (English, optional; shown with the reference solution)
+  editorial.ja.md   Editorial (Japanese, optional; only if editorial.md exists)
 ```
 
 ## problem.toml
 
 ```toml
-id = "lifetime-01"             # ディレクトリ名と同じにする
-title = { en = "Longest word", ja = "最長の単語" }   # en は必須
-difficulty = 2                 # 難易度ティア：1（初級）| 2（中級）| 3（上級）。出題と一覧の並び順に使う
-concepts = ["lifetimes", "iterators"]  # 作者向けのメモ。ネタバレになるのでプレイヤーには表示しない
+id = "lifetime-01"             # same as the directory name
+title = { en = "Longest word", ja = "最長の単語" }   # en is required
+difficulty = 2                 # difficulty tier: 1 (beginner) | 2 (intermediate) | 3 (advanced); used for selection and list order
+concepts = ["lifetimes", "iterators"]  # notes for authors; not shown to players since they are spoilers
 kind = "implement"             # implement | repair | signature
 
-[judge]                        # 省略した項目は以下の既定値になる
-forbid_unsafe = true           # プレイヤーのコードに #[forbid(unsafe_code)] を付ける
-miri_checks = "full"           # full | fast（fast は Stacked Borrows と validation を無効化）
+[judge]                        # omitted fields take the defaults below
+forbid_unsafe = true           # add #[forbid(unsafe_code)] to the player's code
+miri_checks = "full"           # full | fast (fast disables Stacked Borrows and validation)
 time_limit_ms = 15000
 stdout_limit_bytes = 65536
-harness_visible = false        # tests.rs をプレイヤーに見せるか
+harness_visible = false        # whether to show tests.rs to the player
 ```
 
-1 ラウンドは初級・中級・上級を 1 問ずつ、この順に出題します（`web/src/core/round.ts` の `ROUND_LADDER`）。
-各ティアでは未出題の問題を優先するので、どのティアにも十分な数の問題があるようにしてください。
+A round consists of one beginner, one intermediate, and one advanced problem, in that order (`ROUND_LADDER` in
+`web/src/core/round.ts`). Within each tier, problems not yet played are preferred, so make sure every tier has enough
+problems.
 
-## 問題の種類
+## Problem kinds
 
-| kind | 内容 | template.rs |
+| kind | Description | template.rs |
 | --- | --- | --- |
-| `implement` | 仕様とシグネチャが与えられ、本体を実装する | コンパイルが通り、AC にはならないこと |
-| `repair` | コンパイルの通らないコードを直す | CE になること |
-| `signature` | 本体は与えられ、ハーネスが通るシグネチャを書く | CE になること。`harness_visible = true` が必須 |
+| `implement` | Given a spec and signatures, implement the bodies | Must compile and must not get AC |
+| `repair` | Fix code that doesn't compile | Must be CE |
+| `signature` | Given the bodies, write signatures that make the harness pass | Must be CE. `harness_visible = true` is required |
 
 ## tests.rs
 
-プレイヤーのコードは `crate::user`、判定ライブラリは `crate::judge` です。
+The player's code is `crate::user`, and the judge library is `crate::judge`.
 
 ```rust
 use crate::judge::{case, check, check_eq};
@@ -59,74 +63,81 @@ pub fn run() {
 }
 ```
 
-- `case(id, f)`：1 つのテストケース。`f` は `Result<(), String>` を返します。パニックは FAIL として扱われ、後続のケースは続行します。
-- `check_eq(got, expected)` / `check(cond, message)`：判定用のヘルパーです。
-- ケース ID は、問題文の「例」に載せたものを `example-N`、それ以外を `case-N` とします。`example-` で始まるケースが公開ケースで、
-  それ以外は非公開ケースとして扱われ、失敗理由は表示されません。
-  ただし `harness_visible = true` の問題では、ハーネスのコードが見えるので、全ケースを公開ケースとして扱います。
-- ケース ID は `tests.rs` から `case("...")` を抽出して取得します。ID は文字列リテラルで直接書いてください。
+- `case(id, f)`: one test case. `f` returns `Result<(), String>`. A panic counts as FAIL, and the remaining cases
+  still run.
+- `check_eq(got, expected)` / `check(cond, message)`: helpers for checking.
+- Name the cases shown in the statement's examples `example-N` and the others `case-N`. Cases starting with
+  `example-` are public; the others are hidden, and their failure reasons are not shown.
+  However, in problems with `harness_visible = true`, the harness code is visible, so all cases are treated as public.
+- Case IDs are obtained by extracting `case("...")` from `tests.rs`. Write each ID directly as a string literal.
 
-## 規模の基準
+## Size guidelines
 
-ラウンドのスコアは提出回数なので、テーマと無関係な場所でコンパイルエラーや WA を出す機会を増やさないことが
-基準の目的です。数値より先に、次の原則を守ってください。
+A round's score is the number of submissions, so the purpose of these guidelines is to avoid adding chances for
+compile errors or WA in places unrelated to the theme. Follow these principles before the numbers.
 
-1. **1 問 1 テーマ。** `concepts` の先頭が主テーマです。プレイヤーが埋める穴（`todo!()`・修正箇所・シグネチャ）は、
-   すべて主テーマを使うものにします。主テーマを使わない穴は、テンプレートに実装済みで渡すか、削ります。
-2. **1 問 1 課題。** 穴はすべて 1 つの課題に属するようにします。同じテーマでも、互いに独立して仕様を書けて
-   テストもできる課題が 2 つ以上あるなら、別々の問題にします。片方を解き終えても、もう片方を書き上げるまで
-   提出できず、片方の WA の分だけもう片方も提出回数を払うことになるからです。
-   例：`Triage` 型と、それを使わない関数 `k_smallest` は別の問題にする。1 つの型のメソッド群や、
-   プレイヤーが書いた型・関数を使う関数は、1 つの課題とみなします。
-3. **補助概念は「無料」であること。** 主テーマ以外に必要な概念は、そのティアで既知とみなせるもので、かつ
-   自然な解き方をすれば余分なコンパイルエラーや WA を生まないものに限ります。
-   例：初級で `match` や `Vec::push` は無料。`Result` への `collect` と空入力の特別扱いは無料ではありません。
-4. **仕様の細部はテーマに奉仕する。** 模範解答に「主テーマと無関係だが、隠しテストを通すためだけに必要な分岐」が
-   あれば、その隠しテストと仕様を削ります。
-5. **超過したら、まず削る。それでも収まらなければ分割する。** 削るのはテーマ外の仕様、同じ形のバリアントや
-   メソッドの重複、結果を数えて返すだけの付加仕様です。分割が必要になるのは、テーマか課題が 2 つある場合に限られます。
-   2 問目は 1 問目で実装したものをテンプレートに与えてかまいません。
-6. **問題文は 1 画面。** 読んで 1 分以内に「何を書くか」が分かること。箇条書きの各項目は、隠しテストと
-   1 対 1 で対応するのが理想です。問題文にない挙動をテストしないでください。
+1. **One theme per problem.** The first entry of `concepts` is the main theme. Every hole the player fills in
+   (`todo!()`, a fix, a signature) must use the main theme. Holes that don't use it should either be given already
+   implemented in the template or removed.
+2. **One task per problem.** All holes must belong to a single task. If, even within the same theme, there are two or
+   more tasks that can be specified and tested independently, make them separate problems. Otherwise, a player who
+   has solved one still can't submit until they finish the other, and every WA on one costs submissions for the
+   other too.
+   Example: a `Triage` type and a function `k_smallest` that doesn't use it become separate problems. A set of
+   methods on one type, or a function that uses a type or function the player wrote, counts as one task.
+3. **Supporting concepts must be "free".** Concepts other than the main theme must be ones that can be assumed known
+   at that tier and that don't cause extra compile errors or WA when solved the natural way.
+   Example: at the beginner tier, `match` and `Vec::push` are free. `collect` into a `Result` and special handling
+   of empty input are not.
+4. **Spec details serve the theme.** If the reference solution has a branch that is unrelated to the main theme and
+   exists only to pass a hidden test, remove that hidden test and the spec.
+5. **When over the limit, cut first. If that's not enough, split.** Cut off-theme spec, duplicate variants or methods
+   of the same shape, and add-on specs that just count and return results. Splitting is needed only when there are
+   two themes or two tasks. The second problem may provide what was implemented in the first in its template.
+6. **The statement fits on one screen.** A reader should know what to write within a minute. Ideally, each bullet
+   point corresponds one-to-one with a hidden test. Don't test behavior that isn't in the statement.
 
-数値の上限は次のとおりです（`web/content/size.ts` の `SIZE_LIMITS`）。超過は「削減か分割を検討せよ」の
-シグナルであって、禁止ではありません。原則 1〜4 を満たしていれば、超過していても残してかまいません。
+The numeric limits are as follows (`SIZE_LIMITS` in `web/content/size.ts`). Exceeding one is a signal to consider
+cutting or splitting, not a prohibition. A problem that satisfies principles 1–4 may stay even if it exceeds a limit.
 
-| 指標 | 測り方 | 初級 | 中級 | 上級 |
+| Metric | How it is measured | Beginner | Intermediate | Advanced |
 | --- | --- | --- | --- | --- |
-| 書く行数（implement） | `solution.rs` の行数 − `template.rs` の行数 + `todo!()` の数 | 20 | 30 | 40 |
-| 修正箇所（repair / signature） | 論理的に独立した修正の数。手で数える（スクリプトが出す diff の hunk 数は参考値） | 3 | 4 | 5 |
-| 問題文の語数 | `statement.md`（英語）の単語数 | 400 | 500 | 600 |
-| テストケース数 | `tests.rs` の `case("` の数 | 10 | 10 | 10 |
+| Lines to write (implement) | lines in `solution.rs` − lines in `template.rs` + number of `todo!()` | 20 | 30 | 40 |
+| Fixes (repair / signature) | Number of logically independent fixes, counted by hand (the diff hunk count from the script is a reference) | 3 | 4 | 5 |
+| Statement words | Word count of `statement.md` (English) | 400 | 500 | 600 |
+| Test cases | Number of `case("` in `tests.rs` | 10 | 10 | 10 |
 
-`web/` で次を実行すると、全問題の計測値と上限を超えたものが一覧できます。CI でも実行しますが、警告だけで失敗にはしません。
+Run the following in `web/` to list the measurements of all problems and those over a limit. CI runs it too, but
+only as a warning, never a failure.
 
 ```sh
-node scripts/problem-size.ts            # 全問題
-node scripts/problem-size.ts iter-01    # 指定した問題だけ
+node scripts/problem-size.ts            # all problems
+node scripts/problem-size.ts iter-01    # only the given problems
 ```
 
-## 模範解答と解説
+## Reference solutions and editorials
 
-`solution.rs` はプレイヤーにも表示します。プレイヤーが読むことを前提に、慣用的で読みやすいコードにしてください。
-`editorial.md` には、要点（なぜそう書くか、詰まりやすい点）と別解を簡潔に書きます。別解のコードも
-コンパイルが通りテストに合格するものにしてください。
+`solution.rs` is shown to players too. Write it as idiomatic, readable code, assuming players will read it.
+In `editorial.md`, briefly cover the key points (why it is written that way, common pitfalls) and alternative
+solutions. Alternative solution code must also compile and pass the tests.
 
-表示の条件は次のとおりです（`web/src/core/solution.ts`）。
+The display conditions are as follows (`web/src/core/solution.ts`).
 
-- プレイ画面では、その挑戦を終える（AC またはギブアップ）と「模範解答」タブが現れる。挑戦の途中では見られない。
-- 問題の履歴ページ（記録ページから開く）では、その問題の挑戦を一度でも終えていれば見られる。
-- 一度表示すると、それ以降の挑戦（と中断している挑戦）は「解答閲覧済み」になり、自己ベストを更新しない。
+- On the play screen, the "Solution" tab appears once the attempt is finished (AC or give up). It can't be viewed
+  mid-attempt.
+- On a problem's history page (opened from the records page), it can be viewed if an attempt at that problem has
+  ever been finished.
+- Once viewed, later attempts (and suspended ones) are marked "Solution seen" and don't update the personal best.
 
-模範解答はメインのバンドルには含めず、表示するときに問題ごとのチャンクを読み込みます。
-判定はブラウザ内で行うので、隠しテストと同じく、技術的に秘匿されているわけではありません。
+Reference solutions are not included in the main bundle; each problem's chunk is loaded when it is shown.
+Judging happens in the browser, so, like the hidden tests, they are not technically secret.
 
-## 検証
+## Verification
 
-`web/` で次を実行し、模範解答が AC になること、テンプレートが上の表の条件を満たすこと、
-模範解答が制限時間の半分以内で終わることを確認します。
+Run the following in `web/` to confirm that the reference solution gets AC, that the template meets the conditions
+in the table above, and that the reference solution finishes within half the time limit.
 
 ```sh
-node scripts/verify-problems.ts            # 全問題
-node scripts/verify-problems.ts iter-01    # 指定した問題だけ
+node scripts/verify-problems.ts            # all problems
+node scripts/verify-problems.ts iter-01    # only the given problems
 ```

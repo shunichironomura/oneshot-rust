@@ -27,7 +27,7 @@ web/         フロントエンド（Vite+ / Preact / CodeMirror 6）
 
 1. ツールチェーン（`miri.wasm` と sysroot）を `web/public/toolchain/` に配置します。公開済みのものを
    ダウンロードするか、自分でビルドします（初回は 20〜30 分）。詳しくは
-   [toolchain/README.md](toolchain/README.md) を参照してください。
+   [toolchain/README.ja.md](toolchain/README.ja.md) を参照してください。
 
    ```sh
    cd web && vp run fetch-toolchain   # toolchain/RELEASE の版をダウンロード
@@ -110,7 +110,7 @@ Web アプリに同梱している npm パッケージ（Preact、CodeMirror、�
 | `node scripts/judge.ts <id> <file.rs>` | 任意のコードを判定し、プレイヤーに見える内容を表示 |
 | `node scripts/record-fixtures.ts` | `classify` のテスト用に、Miri の実際の出力を記録し直す |
 
-問題の書き方は [problems/README.md](problems/README.md) を参照してください。
+問題の書き方は [problems/README.ja.md](problems/README.ja.md) を参照してください。
 
 ## ライセンス
 
@@ -136,4 +136,4 @@ Web アプリに同梱している npm パッケージ（Preact、CodeMirror、�
 配信しているツールチェーン（`miri.wasm` と sysroot）は、[rust-lang/rust](https://github.com/rust-lang/rust)
 （MIT または Apache-2.0）とその依存クレート、[wasi-sdk](https://github.com/WebAssembly/wasi-sdk) の wasi-libc と
 compiler-rt から作られています。各ライセンス文は、ツールチェーンと一緒に `licenses/` として配布しています
-（[toolchain/README.md](toolchain/README.md#ライセンス) を参照）。
+（[toolchain/README.ja.md](toolchain/README.ja.md#ライセンス) を参照）。

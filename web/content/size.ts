@@ -1,5 +1,5 @@
 // Size metrics of a problem and the per-difficulty limits of the sizing guideline
-// (problems/README.md, "規模の基準"). Pure: the IO is in scripts/problem-size.ts.
+// (problems/README.md, "Size guidelines"). Pure: the IO is in scripts/problem-size.ts.
 import { structuredPatch } from "diff";
 import type { Difficulty, ProblemKind } from "../src/core/problem.ts";
 import { extractCaseIds, type ProblemFiles } from "./parse.ts";
