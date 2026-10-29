@@ -11,11 +11,7 @@
 
 `transfer` がエラーを返したときは、どの残高も変わりません。
 
-`merge_accounts` は、添字を口座番号としてスライスに並べた残高を扱います。
-`balances[from]` を `balances[to]` に足し、`balances[from]` を 0 にします。
-どちらの添字も `balances.len()` 未満です。`from == to` なら、スライスは変わりません。
-
-`Bank` でもスライスでも、残高の合計は `u64` に収まるので、足し算がオーバーフローすることはありません。
+残高の合計は `u64` に収まるので、足し算がオーバーフローすることはありません。
 
 ```rust
 #[derive(Debug, PartialEq)]
@@ -30,8 +26,6 @@ impl Bank {
     pub fn balance(&self, name: &str) -> Option<u64>;
     pub fn transfer(&mut self, from: &str, to: &str, amount: u64) -> Result<(), TransferError>;
 }
-
-pub fn merge_accounts(balances: &mut [u64], from: usize, to: usize);
 ```
 
 これらのシグネチャは変えないでください。
@@ -41,4 +35,3 @@ pub fn merge_accounts(balances: &mut [u64], from: usize, to: usize);
 - `let mut bank = Bank::new(&[("a", 10), ("b", 0)]);` のとき、`bank.transfer("a", "b", 7)` は `Ok(())` を返し、
   その後の `bank.balance("a")` は `Some(3)`、`bank.balance("b")` は `Some(7)` です。
   `bank.transfer("a", "a", 1)` は `Err(TransferError::SameAccount)` を返します。
-- `[5, 0, 7]` に `from = 0`、`to = 2` で `merge_accounts` を呼ぶと `[0, 0, 12]` になります。

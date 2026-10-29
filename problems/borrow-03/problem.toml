@@ -1,7 +1,7 @@
 id = "borrow-03"
 title = { en = "Two accounts at once", ja = "ふたつの口座を同時に" }
 difficulty = 2
-concepts = ["two &mut into one collection (E0499)", "HashMap::get_disjoint_mut", "slice::get_disjoint_mut", "aliasing case i == j", "validate before mutating"]
+concepts = ["two &mut into one collection (E0499)", "HashMap::get_disjoint_mut", "aliasing case from == to", "validate before mutating"]
 kind = "repair"
 
 [judge]
