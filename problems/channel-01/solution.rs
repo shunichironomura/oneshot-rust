@@ -1,27 +1,5 @@
-use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
+use std::sync::mpsc;
 use std::thread;
-
-pub fn send_all<T>(tx: &Sender<T>, items: Vec<T>) -> Vec<T> {
-    let mut unsent = Vec::new();
-    for item in items {
-        // `send` takes the item by value; on failure, the error hands it back.
-        if let Err(err) = tx.send(item) {
-            unsent.push(err.0);
-        }
-    }
-    unsent
-}
-
-pub fn drain_ready<T>(rx: &Receiver<T>) -> (Vec<T>, bool) {
-    let mut ready = Vec::new();
-    loop {
-        match rx.try_recv() {
-            Ok(value) => ready.push(value),
-            Err(TryRecvError::Empty) => return (ready, false),
-            Err(TryRecvError::Disconnected) => return (ready, true),
-        }
-    }
-}
 
 pub fn fan_in(groups: Vec<Vec<u32>>) -> Vec<u32> {
     let (tx, rx) = mpsc::channel();
