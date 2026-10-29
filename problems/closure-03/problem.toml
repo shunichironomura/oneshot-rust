@@ -1,12 +1,10 @@
 id = "closure-03"
-title = { en = "Tally and greet", ja = "集計とあいさつ" }
+title = { en = "Error tally", ja = "エラーの集計" }
 difficulty = 2
 concepts = [
     "closures capture by &mut",
     "the borrow lasts until the closure's last use",
     "borrow liveness follows control flow (push before break is fine)",
-    "move closures for returned closures",
-    "moving a reference into a closure still borrows",
     "restructuring around captures",
 ]
 kind = "repair"
