@@ -1,10 +1,9 @@
 次のコードはコンパイルが通りません。直してください。
 
-次の 2 つの関数は、単語を入れる 26 個のバケツを扱います。バケツは英語のアルファベット 1 文字につき 1 つです。
+次の関数は、単語を 26 個のバケツに仕分けます。バケツは英語のアルファベット 1 文字につき 1 つです。
 
 ```rust
 pub fn bucket_by_initial(words: &[&str]) -> [Vec<String>; 26]
-pub fn letters_used(buckets: &[Vec<String>; 26]) -> String
 ```
 
 - バケツ `0` が `a`、バケツ `1` が `b`、というように続き、バケツ `25` が `z` に対応します。
@@ -15,8 +14,6 @@ pub fn letters_used(buckets: &[Vec<String>; 26]) -> String
 - それ以外の単語は無視します。空文字列と、最初の文字が ASCII の英字でない単語です。
   数字、空白、記号、ASCII 以外の文字などで始まる単語がこれにあたります。ASCII に含まれない文字は、
   `é` のような英字に似た文字であっても英字とはみなしません。
-- `letters_used` は、空でないバケツに対応する英字を小文字でアルファベット順に並べた文字列を返します。
-  見るのは各バケツが空かどうかだけで、中の文字列は見ません。すべてのバケツが空なら `""` を返します。
 
 シグネチャは変えないでください。
 
@@ -24,5 +21,5 @@ pub fn letters_used(buckets: &[Vec<String>; 26]) -> String
 
 - `bucket_by_initial(&["bob", "Al", "42", "éclair", "", "beth"])` が返す配列は、バケツ `0` が
   `["Al"]`、バケツ `1` が `["bob", "beth"]` で、ほかのバケツはすべて空です。
-- この配列を `letters_used` に渡すと `"ab"` が返ります。
-- `letters_used(&bucket_by_initial(&["zoo", "Yak", "zebra"]))` は `"yz"` です。
+- `bucket_by_initial(&["zoo", "Yak", "zebra"])` が返す配列は、バケツ `24` が `["Yak"]`、
+  バケツ `25` が `["zoo", "zebra"]` で、ほかのバケツはすべて空です。
