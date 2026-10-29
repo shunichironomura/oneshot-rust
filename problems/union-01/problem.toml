@@ -3,12 +3,8 @@ title = { en = "Reinterpretation", ja = "読み替え" }
 difficulty = 3
 concepts = [
     "unions",
-    "validity invariants (bool must be 0 or 1)",
-    "producing an invalid value is UB even if it is never used",
     "reading uninitialized bytes",
     "padding bytes become uninitialized on a typed write",
-    "f32::to_bits vs numeric as casts",
-    "lossless integer widening",
 ]
 kind = "implement"
 
