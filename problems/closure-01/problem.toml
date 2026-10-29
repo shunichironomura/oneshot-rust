@@ -1,7 +1,7 @@
 id = "closure-01"
 title = { en = "Step counter", ja = "歩数カウンター" }
 difficulty = 2
-concepts = ["closures", "move", "impl Trait", "FnMut", "Fn"]
+concepts = ["closures", "move", "impl Trait", "FnMut"]
 kind = "implement"
 
 [judge]

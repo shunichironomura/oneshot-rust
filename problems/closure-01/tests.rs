@@ -1,14 +1,10 @@
 use crate::judge::{case, check_eq};
-use crate::user::{compose, make_counter};
+use crate::user::make_counter;
 
 pub fn run() {
     case("example-1", || {
         let mut c = make_counter(3);
         check_eq([c(), c(), c()], [3, 6, 9])
-    });
-    case("example-2", || {
-        let h = compose(|x: i32| x + 1, |x: i32| x * 10);
-        check_eq(h(4), 50)
     });
     case("case-1", || {
         // Each counter keeps its own state.
@@ -26,18 +22,5 @@ pub fn run() {
         let firsts: Vec<u32> = counters.iter_mut().map(|c| c()).collect();
         let seconds: Vec<u32> = counters.iter_mut().map(|c| c()).collect();
         check_eq((firsts, seconds), (vec![1, 2, 3], vec![2, 4, 6]))
-    });
-    case("case-4", || {
-        // Types may change from step to step, and captured values must stay alive.
-        let suffix = String::from("!");
-        let shout = compose(|s: &str| s.to_uppercase(), move |s: String| s + &suffix);
-        let len = compose(|s: &str| s.len(), |n: usize| n * 2);
-        check_eq((shout("hey"), shout("ok"), len("abc")), ("HEY!".to_string(), "OK!".to_string(), 6))
-    });
-    case("case-5", || {
-        let inc = |x: u64| x + 1;
-        let twice = compose(inc, inc);
-        let four = compose(&twice, &twice);
-        check_eq((twice(0), four(10)), (2, 14))
     });
 }
