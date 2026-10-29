@@ -1,10 +1,11 @@
-The five closures look alike, but they do not all receive the same type. Count the `&`s:
+The three closures look alike, but they do not all receive the same type. Count the `&`s:
 
-- `v.iter()` yields `&i32`; `words.iter()` yields `&&str` or `&String`.
+- `v.iter()` yields `&i32`; `words.iter()` yields `&&str`.
 - `find` and `filter` still need the item after asking the closure (to return it or to pass it on),
-  so the closure only gets a **reference to the item**: `&&i32` for `v.iter()`.
-- `position`, `any` and `map` are done with the item after the call, so the closure gets the item
-  itself: `&i32` for `v.iter()`, `&String` for `words.iter()`.
+  so the closure only gets a **reference to the item**: `&&i32` for `v.iter()`, `&&&str` for
+  `words.iter()`.
+- `position` is done with the item after the call, so the closure gets the item itself: `&i32` for
+  `v.iter()`.
 
 What each body does with its argument then decides whether it compiles:
 
@@ -19,32 +20,16 @@ What each body does with its argument then decides whether it compiles:
 - Method calls, unlike operators, dereference automatically. In `count_long` the closure gets a
   `&&&str`, three layers, and `w.len()` still finds `str::len`. So `position_of_max` and
   `count_long` were already correct.
-- `slice::contains` takes a `&T`, here a `&String`, and a `&str` is not one (E0308). `==` is more
-  flexible: `String` can be compared with `str`, so `s == w` works for `s: &String` and `w: &str`.
-  Comparing with `==` also matches whole words only, unlike `s.contains(w)`, which looks for a part.
-- The pattern `|&w|` takes the `String` out of the reference, which would move it (E0507). The same
-  pattern works for `i32` only because `i32` is `Copy`. Take `|w|` and call the method on it.
 
 ### Alternatives
 
-Keep the template's shape and strip the layers in the closures with patterns or `*`, then copy the
-result. A method path such as `String::len` can replace a closure that only calls a method.
+Keep the template's shape and strip the layers in the closure with a pattern, then copy the result.
 
 ```rust
 pub fn first_negative(v: &[i32]) -> Option<i32> {
     v.iter().find(|&&x| x < 0).copied()
 }
-
-pub fn contains_word(words: &[String], w: &str) -> bool {
-    words.iter().any(|s| s.as_str() == w)
-}
-
-pub fn total_len(words: &[String]) -> usize {
-    words.iter().map(String::len).sum()
-}
 ```
-
-`words.contains(&w.to_string())` also works, but it builds a new `String` just for the comparison.
 
 A plain `for` loop avoids the question of layers. `for &x in v` copies each `i32` out of the slice.
 
