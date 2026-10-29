@@ -7,7 +7,8 @@
 #   3. Build Miri for the wasm32-wasip1 host (x.py, stage 2).
 #   4. Build a native Miri + cargo-miri from the same tree and use it to build
 #      the Miri sysroot (std with MIR) for the interpreted target.
-#   5. Package miri.wasm + sysroot.tar under a content-addressed toolchain id.
+#   5. Collect the licenses of everything in miri.wasm and the sysroot.
+#   6. Package miri.wasm + sysroot.tar + licenses under a content-addressed toolchain id.
 #
 # Everything is cached in toolchain/work/; rerunning only rebuilds what changed.
 
@@ -19,6 +20,7 @@ const TOOLCHAIN_DIR = path self .
 const WORK_DIR = ($TOOLCHAIN_DIR | path join work)
 const RUST_DIR = ($WORK_DIR | path join rust)
 const SYSROOT_DIR = ($WORK_DIR | path join sysroot)
+const LICENSES_DIR = ($WORK_DIR | path join licenses)
 const PUBLIC_DIR = ($TOOLCHAIN_DIR | path join .. web public toolchain)
 
 def build-triple []: nothing -> string {
@@ -106,6 +108,67 @@ def build-sysroot []: nothing -> nothing {
   with-env $env_vars { ^($bin | path join cargo-miri) miri setup --target $INTERPRETED_TARGET }
 }
 
+# wasi-libc files that carry license terms (wasi-libc includes parts of musl, cloudlibc and musl-fts).
+const WASI_LIBC_LICENSES = [
+  "LICENSE" "LICENSE-APACHE" "LICENSE-APACHE-LLVM" "LICENSE-MIT"
+  "libc-top-half/musl/COPYRIGHT" "libc-bottom-half/cloudlibc/LICENSE" "fts/musl-fts/COPYING"
+]
+
+# Collects into LICENSES_DIR the license texts of what the toolchain contains:
+#   - rustc, Miri, the standard library and their crates.io dependencies, as listed by
+#     rust-lang/rust's own `generate-copyright` tool (the COPYRIGHT.html shipped with Rust releases);
+#   - wasi-sdk's wasi-libc and compiler-rt, which are linked into miri.wasm.
+def collect-licenses [wasi_sdk: path]: nothing -> nothing {
+  rm --recursive --force $LICENSES_DIR
+  mkdir $LICENSES_DIR
+
+  # Writes build/COPYRIGHT.html (the whole toolchain) and build/COPYRIGHT-library.html (the
+  # standard library only, i.e. the sysroot).
+  x $wasi_sdk run src/tools/generate-copyright
+  for name in [COPYRIGHT.html COPYRIGHT-library.html] {
+    cp ($RUST_DIR | path join build $name) ($LICENSES_DIR | path join $"rust-($name)")
+  }
+  for name in [COPYRIGHT LICENSE-MIT LICENSE-APACHE] {
+    cp ($RUST_DIR | path join $name) ($LICENSES_DIR | path join $"rust-($name)")
+  }
+
+  # wasi-sdk's VERSION file names the commits it was built from, e.g. "wasi-libc: 2fc32bc81b9f".
+  let versions = open --raw ($wasi_sdk | path join VERSION)
+    | lines
+    | parse "{key}: {value}"
+    | reduce --fold {} { |it, acc| $acc | upsert $it.key $it.value }
+  let wasi_libc_commit = $versions | get "wasi-libc"
+  let llvm_version = $versions | get "llvm-version"
+  let base = "https://raw.githubusercontent.com"
+  for file in $WASI_LIBC_LICENSES {
+    let name = $"wasi-libc-($file | str replace --all '/' '-')"
+    http get --raw $"($base)/WebAssembly/wasi-libc/($wasi_libc_commit)/($file)"
+    | save --raw ($LICENSES_DIR | path join $name)
+  }
+  http get --raw $"($base)/llvm/llvm-project/llvmorg-($llvm_version)/compiler-rt/LICENSE.TXT"
+  | save --raw ($LICENSES_DIR | path join compiler-rt-LICENSE.TXT)
+
+  $"Licenses of the OneShot Rust toolchain \(miri.wasm and its sysroot\)
+
+miri.wasm is Miri and rustc built for wasm32-wasip1 from rust-lang/rust@($RUST_COMMIT),
+with the patches in toolchain/patches/ of https://github.com/shunichironomura/oneshot-rust.
+sysroot.tar holds the Rust standard library built from the same commit.
+
+  rust-COPYRIGHT, rust-LICENSE-MIT, rust-LICENSE-APACHE
+      The Rust project \(MIT OR Apache-2.0\).
+  rust-COPYRIGHT.html
+      Every component of rustc, Miri and the standard library, with their crates.io
+      dependencies and license texts \(covers miri.wasm\).
+  rust-COPYRIGHT-library.html
+      The same for the standard library only \(covers sysroot.tar\).
+  wasi-libc-*
+      wasi-libc \(WebAssembly/wasi-libc@($wasi_libc_commit), from wasi-sdk ($WASI_SDK_VERSION)\),
+      linked into miri.wasm, and the musl, cloudlibc and musl-fts code it includes.
+  compiler-rt-LICENSE.TXT
+      compiler-rt builtins \(LLVM ($llvm_version)\), linked into miri.wasm.
+" | save --force ($LICENSES_DIR | path join README.txt)
+}
+
 # Cloudflare Pages serves files of at most 25 MiB, so assets are gzipped and split.
 const PART_SIZE = 20 * 1024 * 1024
 
@@ -151,6 +214,9 @@ def package []: nothing -> nothing {
   let dest = $PUBLIC_DIR | path join $id
   rm --recursive --force $PUBLIC_DIR
   mkdir $dest
+  # The license texts are served uncompressed next to the assets they cover.
+  cp --recursive $LICENSES_DIR ($dest | path join licenses)
+  let licenses = ls ($dest | path join licenses) | get name | path basename | sort | each { |name| $"($id)/licenses/($name)" }
   {
     toolchainId: $id
     rustCommit: $RUST_COMMIT
@@ -159,6 +225,7 @@ def package []: nothing -> nothing {
       miriWasm: (publish-asset $miri_wasm $dest $id)
       sysroot: (publish-asset $sysroot_tar $dest $id)
     }
+    licenses: $licenses
   } | to json | save --force ($PUBLIC_DIR | path join manifest.json)
   print $"Installed toolchain ($id) into ($PUBLIC_DIR)"
 }
@@ -172,5 +239,6 @@ def main []: nothing -> nothing {
   x $wasi_sdk build --stage 2 miri --host wasm32-wasip1 --target wasm32-wasip1
   x $wasi_sdk build --stage 2 library src/tools/miri src/tools/miri/cargo-miri --host $host --target $host
   build-sysroot
+  collect-licenses $wasi_sdk
   package
 }

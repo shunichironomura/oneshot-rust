@@ -100,10 +100,10 @@ async function main() {
     throw new Error(`release ${tag} contains toolchain ${manifest.toolchainId}`);
   }
   await rm(TOOLCHAIN_DIR, { recursive: true, force: true });
-  await mkdir(path.join(TOOLCHAIN_DIR, id), { recursive: true });
   await Promise.all(
     placements(manifest).map(async ({ asset, path: dest }) => {
       const bytes = asset === "manifest.json" ? manifestBytes : await download(asset);
+      await mkdir(path.dirname(path.join(TOOLCHAIN_DIR, dest)), { recursive: true });
       await writeFile(path.join(TOOLCHAIN_DIR, dest), bytes);
     }),
   );

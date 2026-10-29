@@ -27,3 +27,26 @@ test("placements maps flat release assets into the toolchain directory", () => {
     { asset: "manifest.json", path: "manifest.json" },
   ]);
 });
+
+test("placements includes the licenses when the manifest lists them", () => {
+  const file = (name: string) => ({
+    path: `abc/${name}`,
+    size: 1,
+    compressedSize: 1,
+    parts: [`abc/${name}.gz.0`],
+  });
+  const manifest: ToolchainManifest = {
+    toolchainId: "abc",
+    rustCommit: "x",
+    target: "t",
+    files: { miriWasm: file("miri.wasm"), sysroot: file("sysroot.tar") },
+    licenses: ["abc/licenses/README.txt", "abc/licenses/rust-COPYRIGHT.html"],
+  };
+  expect(placements(manifest)).toEqual([
+    { asset: "miri.wasm.gz.0", path: "abc/miri.wasm.gz.0" },
+    { asset: "sysroot.tar.gz.0", path: "abc/sysroot.tar.gz.0" },
+    { asset: "README.txt", path: "abc/licenses/README.txt" },
+    { asset: "rust-COPYRIGHT.html", path: "abc/licenses/rust-COPYRIGHT.html" },
+    { asset: "manifest.json", path: "manifest.json" },
+  ]);
+});

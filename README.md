@@ -106,3 +106,29 @@ pnpm のバージョンは `package.json` の `packageManager` で固定して�
 | `node scripts/record-fixtures.ts` | `classify` のテスト用に、Miri の実際の出力を記録し直す |
 
 問題の書き方は [problems/README.md](problems/README.md) を参照してください。
+
+## ライセンス
+
+- コード（`problems/` 以外）：[MIT](LICENSE-MIT) または [Apache-2.0](LICENSE-APACHE) のいずれかを選択できます。
+- 問題（`problems/` の問題文・解説・テンプレート・テスト・模範解答）：[CC BY 4.0](problems/LICENSE)。
+  ただし、下記の出典に由来する部分は、その元のライセンスに従います。
+
+プルリクエストなどで送られた変更は、同じライセンスで提供されたものとして扱います。
+
+### 出典
+
+次の問題は、[The Rust Programming Language](https://github.com/rust-lang/book)（The Book）または
+[The Rustonomicon](https://github.com/rust-lang/nomicon) の例やコードを元にしています。
+どちらも Copyright (c) 2010 The Rust Project Developers で、MIT または Apache-2.0 のもとで提供されています。
+
+| 出典 | 問題 |
+| --- | --- |
+| The Book | `bufread-01`、`bufread-02`、`generics-01`、`guard-01`、`minigrep-01`、`pool-01`、`refcell-01`、`signature-01`、`state-02`、`string-02` |
+| The Rustonomicon | `arc-01`、`itermut-01`、`rawvec-01` |
+
+### ツールチェーン
+
+配信しているツールチェーン（`miri.wasm` と sysroot）は、[rust-lang/rust](https://github.com/rust-lang/rust)
+（MIT または Apache-2.0）とその依存クレート、[wasi-sdk](https://github.com/WebAssembly/wasi-sdk) の wasi-libc と
+compiler-rt から作られています。各ライセンス文は、ツールチェーンと一緒に `licenses/` として配布しています
+（[toolchain/README.md](toolchain/README.md#ライセンス) を参照）。
