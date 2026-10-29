@@ -11,7 +11,7 @@ fn card(rank: Rank, suit: Suit) -> Card {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let cards = [card(King, Hearts), card(Num(10), Spades), card(King, Clubs)];
         check_eq(
             sorted(&cards),
@@ -19,12 +19,12 @@ pub fn run() {
         )?;
         check_eq(best(&cards), Some(card(King, Hearts)))
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_eq(distinct(&[card(Ace, Spades), card(Ace, Spades), card(Num(2), Clubs)]), 2)?;
         check(Num(10) < Jack, "Rank::Num(10) < Rank::Jack should be true")?;
         check_eq(Card::default(), card(Ace, Spades))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Ranks, with `<`, `cmp` and `sort()`.
         let chain = [Num(2), Num(3), Num(9), Num(10), Jack, Queen, King, Ace];
         for w in chain.windows(2) {
@@ -36,7 +36,7 @@ pub fn run() {
         check_eq(ranks, chain.to_vec())?;
         check_eq(Num(7).cmp(&Num(7)), Ordering::Equal)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Suits, and the default values of each type.
         check(Clubs < Diamonds && Diamonds < Hearts && Hearts < Spades, "suits are out of order")?;
         let mut suits = vec![Hearts, Spades, Clubs, Diamonds];
@@ -46,7 +46,7 @@ pub fn run() {
         check_eq(Rank::default(), Ace)?;
         check_eq(Card::default(), Card { rank: Rank::default(), suit: Suit::default() })
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // The rank decides first, even against a stronger suit; the suit breaks ties.
         check(card(Num(10), Spades) < card(Jack, Clubs), "10S < JC should be true")?;
         check(card(Ace, Clubs) > card(King, Spades), "AC > KS should be true")?;
@@ -56,7 +56,7 @@ pub fn run() {
         check_eq(card(Jack, Spades).cmp(&card(Queen, Clubs)), Ordering::Less)?;
         check_eq(card(Jack, Diamonds).cmp(&card(Jack, Diamonds)), Ordering::Equal)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // A longer list: `sorted`, `sort()` and a `BTreeSet` must agree.
         let cards = vec![
             card(Queen, Spades),
@@ -93,7 +93,7 @@ pub fn run() {
         unique.dedup();
         check_eq(set.into_iter().collect::<Vec<_>>(), unique)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         check_eq(best(&[]), None)?;
         check_eq(best(&[card(Num(3), Diamonds)]), Some(card(Num(3), Diamonds)))?;
         check_eq(best(&[card(Num(4), Hearts); 3]), Some(card(Num(4), Hearts)))?;
@@ -108,7 +108,7 @@ pub fn run() {
         check_eq(best(&cards), Some(card(Ace, Diamonds)))?;
         check_eq(cards.iter().max(), Some(&card(Ace, Diamonds)))
     });
-    case("hidden-6", || {
+    case("case-6", || {
         check_eq(distinct(&[]), 0)?;
         check_eq(distinct(&[card(Num(2), Clubs), card(Ace, Clubs), card(Num(2), Clubs)]), 2)?;
         check_eq(

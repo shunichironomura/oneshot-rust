@@ -40,7 +40,7 @@ fn alive(log: &Log, files: usize) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let log = new_log();
         let mut a = TempFile::create("a", &log);
         a.write(b"hi");
@@ -51,7 +51,7 @@ pub fn run() {
         check_eq(drain(&log), ["create a", "create b", "delete b (0 bytes)"])?;
         alive(&log, 0)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let log = new_log();
         let mut f = TempFile::create("draft", &log);
         f.write(b"abc");
@@ -62,7 +62,7 @@ pub fn run() {
         check_eq(drain(&log), ["delete final (3 bytes)"])?;
         alive(&log, 0)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // An empty name and empty contents are nothing special.
         let log = new_log();
         let f = TempFile::create("", &log);
@@ -74,7 +74,7 @@ pub fn run() {
         check_eq(drain(&log), ["create ", "delete  (0 bytes)"])?;
         alive(&log, 0)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Writes add up, and lengths count bytes.
         let log = new_log();
         let mut f = TempFile::create("notes.txt", &log);
@@ -91,7 +91,7 @@ pub fn run() {
         check_eq(drain(&log), nothing())?;
         alive(&log, 0)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Renaming several times, writing in between, then persisting.
         let log = new_log();
         let f = file(&log, "a", b"x");
@@ -106,7 +106,7 @@ pub fn run() {
         )?;
         alive(&log, 0)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Several files share a log: persisting or renaming one leaves the others alone.
         let log = new_log();
         {
@@ -131,7 +131,7 @@ pub fn run() {
         )?;
         alive(&log, 0)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Files kept in collections, on two logs.
         let (log1, log2) = (new_log(), new_log());
         let mut files = vec![
@@ -157,7 +157,7 @@ pub fn run() {
         check_eq(drain(&log2), ["create q", "create s", "rename q -> q2", "delete q2 (1 bytes)"])?;
         alive(&log2, 0)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // A variable whose file was persisted or renamed can be assigned again.
         let log = new_log();
         let mut f = file(&log, "one", b"1");

@@ -35,7 +35,7 @@ fn ids(items: &[Option<Ticket>]) -> Vec<Option<u32>> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut b: Bag<char> = "hello".chars().collect();
         check_eq((b.count(&'l'), b.len()), (2, 5))?;
         b.extend("lo".chars());
@@ -43,14 +43,14 @@ pub fn run() {
         check_eq(pairs(&b), vec![('e', 1), ('h', 1), ('l', 3), ('o', 2), ('x', 2)])?;
         check_eq(b.into_iter().collect::<String>(), "ehlllooxx")
     });
-    case("sample-2", || {
+    case("example-2", || {
         let b: Bag<i32> = (1..=3).chain(2..=3).collect();
         check_eq((b.count(&3), b.len()), (2, 5))?;
         check_eq((&b).into_iter().next_back(), Some((&3, 2)))?;
         check_eq(b.into_iter().rev().collect::<Vec<_>>(), vec![3, 3, 2, 2, 1])?;
         check_eq(Bag::<i32>::new().into_iter().next(), None)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Empty bags, and elements that were never added.
         let empty: Bag<i32> = Bag::new();
         check_eq((empty.len(), empty.count(&0)), (0, 0))?;
@@ -60,7 +60,7 @@ pub fn run() {
         let none: Bag<i32> = Vec::new().into_iter().collect();
         check_eq((none.len(), none.count(&7), pairs(&none)), (0, 0, Vec::new()))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // String elements.
         let mut b: Bag<String> = ["to", "be"].into_iter().map(String::from).collect();
         b.extend(vec![String::from("be"), String::from("a")]);
@@ -69,7 +69,7 @@ pub fn run() {
         check_eq(got, vec![("a", 1), ("be", 2), ("to", 1)])?;
         check_eq(b.into_iter().collect::<Vec<String>>(), vec!["a", "be", "be", "to"])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Creating the owned iterator clones nothing. Using it up, from either end, clones each
         // element count - 1 times.
         let b: Bag<Ticket> =
@@ -94,7 +94,7 @@ pub fn run() {
         check_eq(ids(&got), vec![Some(9), Some(5), Some(9), Some(7), Some(5), None, None])?;
         check_eq(clones() - before, 2)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Extending with references to Copy elements.
         let mut b: Bag<i32> = Bag::new();
         let v = vec![5, -3, 5];
@@ -103,7 +103,7 @@ pub fn run() {
         check_eq(pairs(&b), vec![(-3, 2), (5, 3)])?;
         check_eq(b.len(), 5)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Borrowed iteration: repeatable, reversible, and the bag stays usable.
         let mut b: Bag<i32> = vec![3, -1, 3, 0, -1].into_iter().collect();
         let back: Vec<(i32, usize)> = (&b).into_iter().rev().map(|(&x, n)| (x, n)).collect();
@@ -116,7 +116,7 @@ pub fn run() {
         b.extend([0]);
         check_eq((b.count(&0), b.len()), (2, 6))
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Extending a collected bag, and mixing next and next_back on the owned iterator.
         let mut b: Bag<char> = "ba".chars().collect();
         b.extend("b".chars());

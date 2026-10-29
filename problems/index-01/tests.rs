@@ -9,7 +9,7 @@ fn panics<R>(f: impl FnOnce() -> R) -> bool {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut g = Grid::new(3, 2, 0);
         g[(2, 1)] = 5;
         g[(0, 0)] += 7;
@@ -17,7 +17,7 @@ pub fn run() {
         check_eq(g.get(2, 1), Some(&5))?;
         check_eq(g.row(1), [0, 0, 5])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Each coordinate is checked on its own, not only the flattened index.
         let mut g = Grid::new(3, 2, 0);
         g[(0, 1)] = 4;
@@ -32,7 +32,7 @@ pub fn run() {
         check_eq(g.row(0), [0, 0, 0])?;
         check_eq(g.row(1), [4, 0, 0])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // A grid that is taller than it is wide: x is the column, y is the row.
         let mut g = Grid::new(2, 3, 'a');
         g[(1, 2)] = 'z';
@@ -44,7 +44,7 @@ pub fn run() {
         check_eq(g.get(2, 1), None)?;
         check_eq(g[(0, 1)], 'm')
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Cells that are not Copy: indexing hands out references.
         let mut g = Grid::new(2, 2, String::from("-"));
         g[(1, 0)].push_str("hi");
@@ -54,7 +54,7 @@ pub fn run() {
         check_eq(g.get(1, 0).map(String::as_str), Some("-hi"))?;
         check_eq(g[(1, 1)].as_str(), "-")
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Grids with no columns or no cells at all.
         let g = Grid::new(0, 2, 1);
         check_eq(g.row(1).len(), 0)?;

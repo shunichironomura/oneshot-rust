@@ -73,21 +73,21 @@ fn chain(n: usize) -> Tree {
 }
 
 pub fn run() {
-    case("sample-1", || check_eq(block_on(greet("Ann".to_string())), "Hello, Ann!"));
-    case("sample-2", || check_eq(block_on(sum_all(vec![ready(1), ready(2), ready(3)])), 6));
-    case("sample-3", || {
+    case("example-1", || check_eq(block_on(greet("Ann".to_string())), "Hello, Ann!"));
+    case("example-2", || check_eq(block_on(sum_all(vec![ready(1), ready(2), ready(3)])), 6));
+    case("example-3", || {
         let tree = node(vec![node(vec![leaf()]), leaf()]);
         check_eq(block_on(depth(&tree)), 3)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // The futures are awaited after greet has returned, in the opposite order.
         let empty = greet(String::new());
         let spaced = greet(" 世界 ".to_string());
         check_eq(block_on(spaced), "Hello,  世界 !")?;
         check_eq(block_on(empty), "Hello, !")
     });
-    case("hidden-2", || check_eq(block_on(sum_all(Vec::new())), 0));
-    case("hidden-3", || {
+    case("case-2", || check_eq(block_on(sum_all(Vec::new())), 0));
+    case("case-3", || {
         // One at a time, in the order of the vector, even when a future is not ready at once.
         let log = Log::default();
         let futs = vec![slow(0, 10, &log), ready(5), slow(1, 20, &log), slow(2, 30, &log)];
@@ -97,7 +97,7 @@ pub fn run() {
             vec![(0, "start"), (0, "end"), (1, "start"), (1, "end"), (2, "start"), (2, "end")],
         )
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // The futures of sum_all and depth can be passed to sum_all themselves.
         let log = Log::default();
         let tree = chain(4);
@@ -109,11 +109,11 @@ pub fn run() {
         check_eq(block_on(sum_all(futs)), 127)?;
         check_eq(log.take(), vec![(0, "start"), (0, "end"), (1, "start"), (1, "end")])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         check_eq(block_on(depth(&leaf())), 1)?;
         check_eq(block_on(depth(&chain(10))), 10)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // The deepest branch can be anywhere among the children.
         let first = node(vec![chain(3), leaf(), chain(2)]);
         let middle = node(vec![leaf(), node(vec![leaf(), chain(2)]), leaf()]);

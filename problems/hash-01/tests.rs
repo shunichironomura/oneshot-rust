@@ -31,11 +31,11 @@ fn different(a: &str, b: &str) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || check_eq(spellings(&unique_tags(&["Rust", "go", "RUST", "Go"])), vec!["Rust", "go"]));
-    case("sample-2", || {
+    case("example-1", || check_eq(spellings(&unique_tags(&["Rust", "go", "RUST", "Go"])), vec!["Rust", "go"]));
+    case("example-2", || {
         check_eq(entries(&tag_counts(&["Rust", "go", "rust", "RUST"])), vec![("Rust", 3), ("go", 1)])
     });
-    case("sample-3", || {
+    case("example-3", || {
         let mut set = HashSet::new();
         check(set.insert(Tag::new("Rust")), "the first insert should return true")?;
         check(set.contains(&Tag::new("rUST")), "the set should contain \"rUST\"")?;
@@ -43,7 +43,7 @@ pub fn run() {
         check_eq(set.len(), 1)?;
         check_eq(set.get(&Tag::new("rust")).map(Tag::as_str), Some("Rust"))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Only ASCII letters ignore case; everything else must match exactly.
         same("Rust", "rUST")?;
         same("a-B_c 1", "A-b_C 1")?;
@@ -55,7 +55,7 @@ pub fn run() {
         different("rust", "rusty")?;
         different(" a", "a")
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Equal tags must have equal hashes.
         for (a, b) in [("Rust", "rUST"), ("a-B_c 1", "A-b_C 1"), ("Café", "CAFé")] {
             if hash_of(&Tag::new(a)) != hash_of(&Tag::new(b)) {
@@ -64,23 +64,23 @@ pub fn run() {
         }
         Ok(())
     });
-    case("hidden-3", || {
+    case("case-3", || {
         check_eq(spellings(&unique_tags(&["é", "É", "e", "E", "é"])), vec!["é", "É", "e"])?;
         check_eq(entries(&tag_counts(&["Straße", "STRASSE", "strasse"])), vec![("STRASSE", 2), ("Straße", 1)])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         check_eq(spellings(&unique_tags(&[])), Vec::<&str>::new())?;
         check(tag_counts(&[]).is_empty(), "tag_counts(&[]) should be empty")?;
         check_eq(entries(&tag_counts(&["", "x", "", "X"])), vec![("", 2), ("x", 2)])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         let tag = Tag::new("RuSt");
         check_eq(tag.as_str(), "RuSt")?;
         check_eq(tag.to_string(), "RuSt")?;
         check_eq(tag.clone().as_str(), "RuSt")?;
         check_eq(Tag::new(" Go ").as_str(), " Go ")
     });
-    case("hidden-6", || {
+    case("case-6", || {
         let words = ["Apple", "banana", "APPLE", "Cherry", "bAnAnA", "apple"];
         check_eq(spellings(&unique_tags(&words)), vec!["Apple", "banana", "Cherry"])?;
         let counts = tag_counts(&words);

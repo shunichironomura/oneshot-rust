@@ -40,14 +40,14 @@ fn expect_err(got: Sum, want: AppError, shown: &str) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(parse_pair("3, 0.5"), Ok((3, 0.5)))?;
         check_eq(parse_pair("x,1"), Err(parse_err(INVALID_DIGIT)))?;
         check_eq(parse_pair("1,abc"), Err(parse_err(INVALID_FLOAT)))
     });
-    case("sample-2", || expect_sum(sum_pairs("1,0.5\n\n2,1.5"), 5.0));
-    case("sample-3", || expect_err(sum_pairs("1,1\n2"), AppError::MissingComma, "missing comma"));
-    case("hidden-1", || {
+    case("example-2", || expect_sum(sum_pairs("1,0.5\n\n2,1.5"), 5.0));
+    case("example-3", || expect_err(sum_pairs("1,1\n2"), AppError::MissingComma, "missing comma"));
+    case("case-1", || {
         // No comma at all, and empty parts.
         check_eq(parse_pair("1"), Err(AppError::MissingComma))?;
         check_eq(parse_pair(""), Err(AppError::MissingComma))?;
@@ -55,14 +55,14 @@ pub fn run() {
         check_eq(parse_pair(","), Err(parse_err(EMPTY_INT)))?;
         check_eq(parse_pair("1,"), Err(parse_err(EMPTY_FLOAT)))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Split at the first comma; both parts are trimmed.
         check_eq(parse_pair("1,2,3"), Err(parse_err(INVALID_FLOAT)))?;
         check_eq(parse_pair(" 7 , 2.5 "), Ok((7, 2.5)))?;
         check_eq(parse_pair("\t-7,\t1e3 "), Ok((-7, 1000.0)))?;
         check_eq(parse_pair("+4,.25"), Ok((4, 0.25)))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // `a` is checked first, and it must fit in an i32.
         check_eq(parse_pair("x,y"), Err(parse_err(INVALID_DIGIT)))?;
         check_eq(parse_pair("1.5,2"), Err(parse_err(INVALID_DIGIT)))?;
@@ -70,14 +70,14 @@ pub fn run() {
         check_eq(parse_pair("-2147483649,0"), Err(parse_err(TOO_SMALL)))?;
         check_eq(parse_pair("-2147483648,0"), Ok((i32::MIN, 0.0)))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Blank lines are skipped, so no pairs at all sum to 0.0.
         expect_sum(sum_pairs(""), 0.0)?;
         expect_sum(sum_pairs("  \n\t\n"), 0.0)?;
         expect_sum(sum_pairs("1,1\r\n2,2\r\n"), 6.0)?;
         expect_sum(sum_pairs("-3, 0.25\n   \n 4 ,-1.5\n"), -0.25)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // The first bad line wins, and it is returned as the AppError itself.
         expect_err(sum_pairs("1,1\n2\n3,x"), AppError::MissingComma, "missing comma")?;
         expect_err(
@@ -91,7 +91,7 @@ pub fn run() {
             "parse error: cannot parse integer from empty string",
         )
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // `a` is converted to f64 before it is added, so large values do not overflow.
         expect_sum(sum_pairs("2147483647,0.5\n2147483647,0.5"), 4294967295.0)
     });

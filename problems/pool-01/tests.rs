@@ -40,7 +40,7 @@ fn meet<T: Send + 'static>(
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let pool = ThreadPool::new(2);
         let total = Arc::new(AtomicUsize::new(0));
         for i in 1..=3 {
@@ -52,7 +52,7 @@ pub fn run() {
         pool.shutdown();
         check_eq(total.load(SeqCst), 6)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let pool = ThreadPool::new(1);
         let log = Arc::new(Mutex::new(Vec::new()));
         for word in ["a", "b", "c"] {
@@ -62,13 +62,13 @@ pub fn run() {
         drop(pool);
         check_eq(log.lock().unwrap().clone(), vec!["a", "b", "c"])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // new(0) panics, and a pool without jobs shuts down.
         check(panic::catch_unwind(|| ThreadPool::new(0)).is_err(), "new(0) did not panic")?;
         ThreadPool::new(1).shutdown();
         Ok(())
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // execute returns before the job runs, even while the only worker is busy: the first job
         // waits until the main thread meets it at the barrier, and three more jobs are added
         // meanwhile. Dropping the pool waits for the jobs still in its queue. A pool of size 1
@@ -89,7 +89,7 @@ pub fn run() {
         check(worker != thread::current().id(), "a job ran on the thread that called execute")?;
         check(log.iter().all(|&(_, id)| id == worker), "a pool of size 1 ran jobs on two threads")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Two jobs wait at a barrier until both have arrived, so a pool of 2 must run them at the
         // same time. A short job comes between them: the free worker takes it, then the second
         // waiting job, while the other worker is busy. The last job is added by another thread.

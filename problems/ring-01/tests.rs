@@ -19,7 +19,7 @@ impl Drop for Noisy<'_> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut r: Ring<i32, 2> = Ring::new();
         check_eq(r.push(1), None)?;
         check_eq(r.push(2), None)?;
@@ -29,7 +29,7 @@ pub fn run() {
         check_eq(r.pop(), Some(2))?;
         check_eq(Ring::<i32, 3>::CAPACITY, 3)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Capacity 1: every push to the full ring evicts its only element.
         let mut r: Ring<char, 1> = Ring::new();
         check_eq((r.len(), r.is_full()), (0, false))?;
@@ -44,7 +44,7 @@ pub fn run() {
         check_eq(r.push('d'), None)?;
         check_eq(r.iter().collect::<Vec<_>>(), vec![&'d'])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Popping an empty ring returns None and leaves the ring usable.
         let mut r: Ring<u8, 3> = Ring::new();
         check_eq(r.pop(), None)?;
@@ -61,7 +61,7 @@ pub fn run() {
         check_eq(r.push(5), Some(2))?;
         check_eq(r.iter().collect::<Vec<_>>(), vec![&3, &4, &5])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Strings, with pops and pushes around the end of the array.
         let mut r: Ring<String, 3> = Ring::new();
         let evicted: Vec<Option<String>> =
@@ -81,7 +81,7 @@ pub fn run() {
         check_eq(r.push("h".to_string()), None)?;
         check_eq(r.iter().map(String::as_str).collect::<Vec<_>>(), vec!["g", "h"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Pushes and pops that wrap around the array several times. The values pushed are 0, 1,
         // 2, ..., so the ring always holds the values `oldest..next`.
         let mut r: Ring<u32, 5> = Ring::new();
@@ -111,7 +111,7 @@ pub fn run() {
         }
         Ok(())
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // An element type that implements none of Copy, Clone, Default, Debug and PartialEq.
         let mut r: Ring<Ticket, 4> = Ring::new();
         let evicted: Vec<Option<u32>> = (1..=6).map(|id| r.push(Ticket(id)).map(|t| t.0)).collect();
@@ -121,7 +121,7 @@ pub fn run() {
         check_eq(popped, vec![Some(3), Some(4), Some(5), Some(6), None, None])?;
         check_eq(r.len(), 0)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // An element type that borrows a local: the evicted element goes to the caller, and the
         // others are dropped with the ring.
         let log = RefCell::new(Vec::new());
@@ -139,7 +139,7 @@ pub fn run() {
         dropped.sort();
         check_eq(dropped, vec![1, 2, 3])
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // A larger ring, whose elements live in the struct itself.
         let mut r: Ring<u16, 40> = Ring::new();
         for x in 0..50u16 {

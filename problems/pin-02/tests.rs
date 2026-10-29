@@ -189,7 +189,7 @@ trait ViaAny {
 impl<T> ViaAny for &Probe<T> {}
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let stats = Stats::new();
         let mut fut = pin!(with_budget(ticks(&stats, 2, "done"), 3));
         let waker = Waker::noop();
@@ -199,7 +199,7 @@ pub fn run() {
         // (polls, drops) of the ticks future: dropped already, while the Budget still exists.
         check_eq(stats.get(), (3, 1))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let stats = Stats::new();
         let mut fut = pin!(with_budget(ticks(&stats, 5, "late"), 3));
         let waker = Waker::noop();
@@ -208,7 +208,7 @@ pub fn run() {
         check_eq(poll_budget(fut.as_mut(), waker), Poll::Ready(None))?;
         check_eq(stats.get(), (3, 1))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // A budget of 0: the first poll gives up without polling, and drops the inner future.
         let wakes = Arc::new(WakeCount::default());
         let waker = Waker::from(Arc::clone(&wakes));
@@ -225,7 +225,7 @@ pub fn run() {
         check_eq(stats.get(), (0, 2))?;
         check_eq(wakes.get(), 0)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Ready on the last allowed poll, or one poll short; a huge budget.
         let stats = Stats::new();
         check_eq(block_on(with_budget(ticks(&stats, 0, 'a'), 1)), (Some('a'), 1))?;
@@ -243,7 +243,7 @@ pub fn run() {
         check_eq(block_on(with_budget(ticks(&stats, 0, 'e'), 0)), (None, 1))?;
         check_eq(stats.get(), (0, 1))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Ready with budget to spare: the inner future is dropped in that poll all the same.
         let waker = Waker::noop();
         let stats = Stats::new();
@@ -265,7 +265,7 @@ pub fn run() {
         drop(fut);
         check_eq(stats.get(), (2, 1))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // The inner future gets the waker of the current poll; the Budget wakes nothing itself.
         let a = Arc::new(WakeCount::default());
         let b = Arc::new(WakeCount::default());
@@ -300,7 +300,7 @@ pub fn run() {
         slot.take().expect("the inner future was not polled").wake();
         check_eq((a.get(), b.get()), (3, 4))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Async blocks that borrow their own local variables across an `.await`, so they must not
         // move once polled, and that output a value that is not Unpin.
         let stats = Stats::new();
@@ -328,7 +328,7 @@ pub fn run() {
         check_eq(poll_budget(fut.as_mut(), waker), Poll::Ready(None))?;
         check_eq(stats.get(), (stats_before.0 + 6, stats_before.1 + 2))
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Budgets nest, and they can be awaited inside async blocks.
         let stats = Stats::new();
         check_eq(block_on(with_budget(with_budget(ticks(&stats, 5, 1), 2), 4)), (Some(None), 2))?;
@@ -351,7 +351,7 @@ pub fn run() {
         check_eq(block_on(fut), (20, 3))?;
         check_eq(stats.get(), (4, 2))
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // The inner future is stored inside the Budget, and `Budget<F>` is `Unpin` exactly when
         // `F` is.
         type Big = Ticks<[u64; 16]>;

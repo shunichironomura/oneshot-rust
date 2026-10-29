@@ -16,7 +16,7 @@ fn let_others_run() {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let q = BoundedQueue::new(2);
         check_eq(q.push(1), Ok(()))?;
         check_eq(q.push(2), Ok(()))?;
@@ -29,7 +29,7 @@ pub fn run() {
         check_eq(q.pop(), Some(3))?;
         check_eq(q.pop(), None)
     });
-    case("sample-2", || {
+    case("example-2", || {
         // The main thread and a producer thread push 5 items each, while two consumer threads
         // pop until `None`. The queue has room for 2 items.
         let q = &BoundedQueue::new(2);
@@ -73,7 +73,7 @@ pub fn run() {
         all.sort();
         check_eq(all, vec![100, 101, 102, 103, 104, 200, 201, 202, 203, 204])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // First in, first out, also when the queue fills up again after a pop.
         let q = BoundedQueue::new(3);
         check_eq(q.len(), 0)?;
@@ -96,7 +96,7 @@ pub fn run() {
         check_eq(one.pop(), Some(Job(2)))?;
         check_eq(one.len(), 0)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // A closed queue takes nothing, even with room left, and still hands out what it holds.
         let q = BoundedQueue::new(4);
         check_eq(q.push(Job(1)), Ok(()))?;
@@ -118,7 +118,7 @@ pub fn run() {
         check_eq(empty.push(Job(5)), Err(Job(5)))?;
         check_eq(empty.len(), 0)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Two threads pop until `None`, then wait in push on a full queue. The first queue has room
         // for 1 item. Twice, while both threads wait in pop, the main thread pushes two items
         // right away, so its second push often waits for room while the other thread still
@@ -159,7 +159,7 @@ pub fn run() {
         check_eq(full.pop(), Some(Job(0)))?;
         check_eq(full.pop(), None)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // A pop waits on an empty queue. The main thread pushes 1 and pops it again at once, often
         // before the waiting pop gets to it. Then the waiting pop must keep waiting: the queue is
         // still open, and 2 is pushed a little later.
@@ -186,7 +186,7 @@ pub fn run() {
         check_eq(got, [Some(1), Some(2)])?;
         check_eq(q.len(), 0)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // The same for push: a push of 2 waits on a full queue with room for 1 item. The main
         // thread pops 1 and pushes 3 at once, often before the waiting push gets the room. Then
         // the waiting push must keep waiting until the main thread pops again.

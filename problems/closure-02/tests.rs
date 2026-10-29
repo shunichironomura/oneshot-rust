@@ -6,7 +6,7 @@ fn seven() -> u32 {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut count = 0;
         apply_n(|| count += 2, 3);
         check_eq(count, 6)?;
@@ -14,7 +14,7 @@ pub fn run() {
         check_eq(consume(move || name), "Ferris")?;
         check_eq(consume(|| vec![1, 2]), [1, 2])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let shout = map_pair(|s: &str| format!("{s}!"), ("a", "b"));
         check_eq(shout, ("a!".to_string(), "b!".to_string()))?;
         check_eq(map_pair(|n: i32| n * n, (3, -4)), (9, 16))?;
@@ -22,12 +22,12 @@ pub fn run() {
         check_eq(call_shared(|| 2), 4)?;
         check_eq(call_shared(|| k + 1), 12)
     });
-    case("sample-3", || {
+    case("example-3", || {
         let mut digits = Vec::new();
         each_digit(4096, &mut |d| digits.push(d));
         check_eq(digits, [4, 0, 9, 6])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // n = 0 never calls `f`, and a `&mut` to an FnMut closure is an FnMut too.
         let mut log = Vec::new();
         apply_n(|| log.push(99), 0);
@@ -37,7 +37,7 @@ pub fn run() {
         apply_n(&mut push_len, 2);
         check_eq(log, [0, 1, 2, 3])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         let words = vec![String::from("b"), String::from("a")];
         let sorted = consume(move || {
             let mut words = words;
@@ -48,7 +48,7 @@ pub fn run() {
         check_eq(consume(|| (1u8, 'x', true)), (1u8, 'x', true))?;
         check_eq(consume(String::new), "")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // The closure may update captured state; the first element is mapped first.
         let mut next = 0;
         let numbered = map_pair(
@@ -64,13 +64,13 @@ pub fn run() {
         check_eq(map_pair(str::len, ("ab", "xyz")), (2, 3))?;
         check_eq(map_pair(|v: Vec<u8>| v.len(), (vec![1], Vec::new())), (1, 0))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         let word = String::from("closure");
         check_eq(call_shared(|| word.len() as u32), 14)?;
         check_eq(call_shared(seven), 14)?;
         check_eq(word, "closure")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // 0 has one digit, and zeros inside a number are digits too.
         let mut digits = Vec::new();
         each_digit(0, &mut |d| digits.push(d));
@@ -85,7 +85,7 @@ pub fn run() {
         each_digit(u64::MAX, &mut |d| digits.push(d));
         check_eq(digits.iter().fold(0, |n, &d| n * 10 + d), u64::MAX)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // The same closure can be passed again, and what it captured is usable afterwards.
         let mut sum = 0;
         let mut max = 0;

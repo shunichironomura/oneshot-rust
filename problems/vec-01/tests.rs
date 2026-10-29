@@ -14,7 +14,7 @@ fn titles(jobs: &[Job]) -> Vec<&str> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut jobs = vec![
             job(1, "a", 5, false),
             job(2, "b", 5, true),
@@ -24,12 +24,12 @@ pub fn run() {
         check_eq(take_done(&mut jobs), vec![job(2, "b", 5, true), job(4, "d", 5, true)])?;
         check_eq(jobs, vec![job(1, "a", 5, false), job(3, "c", 5, false)])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut jobs = vec![job(1, "a", 1, false), job(2, "b", 3, false), job(3, "c", 5, true)];
         check_eq(tick(&mut jobs), vec![1, 3])?;
         check_eq(jobs, vec![job(2, "b", 2, false)])
     });
-    case("sample-3", || {
+    case("example-3", || {
         let mut jobs = vec![
             job(1, "a", 1, false),
             job(2, "b", 1, false),
@@ -48,7 +48,7 @@ pub fn run() {
         check_eq(move_to_front(&mut jobs, 3), true)?;
         check_eq(ids(&jobs), vec![3, 1, 2, 4])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Every function works on an empty list.
         let mut jobs: Vec<Job> = Vec::new();
         check_eq(take_done(&mut jobs), Vec::<Job>::new())?;
@@ -57,7 +57,7 @@ pub fn run() {
         check_eq(move_to_front(&mut jobs, 0), false)?;
         check(jobs.is_empty(), "the list should stay empty")
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Nothing done: nothing changes.
         let mut jobs = vec![job(1, "a", 0, false), job(2, "b", 7, false)];
         check_eq(take_done(&mut jobs), Vec::<Job>::new())?;
@@ -81,7 +81,7 @@ pub fn run() {
         check_eq(take_done(&mut jobs), vec![job(1, "a", 1, true), job(2, "b", 2, true)])?;
         check(jobs.is_empty(), "every job should be taken")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // A ttl of 0 stays 0, and the job is removed. Ids come back in their original order.
         let mut jobs = vec![
             job(1, "a", 0, false),
@@ -94,7 +94,7 @@ pub fn run() {
         check_eq(tick(&mut jobs), vec![1, 3, 4, 6])?;
         check_eq(jobs, vec![job(2, "b", 1, false), job(5, "e", u32::MAX - 1, false)])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Ticking until everything is gone.
         let mut jobs = vec![job(1, "a", 2, false), job(2, "b", 3, false), job(3, "c", 2, false)];
         check_eq(tick(&mut jobs), Vec::<u32>::new())?;
@@ -104,7 +104,7 @@ pub fn run() {
         check_eq(tick(&mut jobs), vec![2])?;
         check(jobs.is_empty(), "every job should be removed")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // No duplicates: titles are compared exactly.
         let mut jobs = vec![
             job(1, "Build", 1, false),
@@ -134,7 +134,7 @@ pub fn run() {
         check_eq(dedup_titles(&mut jobs), 2)?;
         check_eq(ids(&jobs), vec![9])
     });
-    case("hidden-6", || {
+    case("case-6", || {
         let mut jobs = vec![
             job(1, "a", 1, false),
             job(2, "b", 2, true),
@@ -163,7 +163,7 @@ pub fn run() {
             ],
         )
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // Only the first job with the id moves.
         let mut jobs = vec![
             job(1, "a", 1, false),

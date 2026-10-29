@@ -8,21 +8,21 @@ fn close(got: Vec<f64>, expected: &[f64]) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         close(moving_average(&[1, 2, 3, 4, 5], 2), &[1.5, 2.5, 3.5, 4.5])
     });
-    case("sample-2", || close(moving_average(&[1, 2], 3), &[]));
-    case("hidden-1", || close(moving_average(&[4, -2, 7], 1), &[4.0, -2.0, 7.0]));
-    case("hidden-2", || close(moving_average(&[1, 2, 4], 3), &[7.0 / 3.0]));
-    case("hidden-3", || {
+    case("example-2", || close(moving_average(&[1, 2], 3), &[]));
+    case("case-1", || close(moving_average(&[4, -2, 7], 1), &[4.0, -2.0, 7.0]));
+    case("case-2", || close(moving_average(&[1, 2, 4], 3), &[7.0 / 3.0]));
+    case("case-3", || {
         close(moving_average(&[1, 2, 3], 0), &[])?;
         close(moving_average(&[], 1), &[])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         close(
             moving_average(&[i32::MAX, i32::MAX, i32::MIN, i32::MIN], 2),
             &[2147483647.0, -0.5, -2147483648.0],
         )
     });
-    case("hidden-5", || close(moving_average(&[-3, -4, 10, 0], 3), &[1.0, 2.0]));
+    case("case-5", || close(moving_average(&[-3, -4, 10, 0], 3), &[1.0, 2.0]));
 }

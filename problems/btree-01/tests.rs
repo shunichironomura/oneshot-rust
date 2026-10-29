@@ -13,7 +13,7 @@ fn day() -> Timeline {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut tl = day();
         check_eq(tl.len(), 3)?;
         check_eq(tl.between(6, 20), [(10, "work"), (20, "sleep")])?;
@@ -22,13 +22,13 @@ pub fn run() {
         check_eq(tl.add(10, "lunch"), Some("work".to_string()))?;
         check_eq(tl.len(), 3)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut tl = day();
         let later = tl.split_from(10);
         check_eq(tl.between(0, 100), [(5, "wake")])?;
         check_eq(later.between(0, 100), [(10, "work"), (20, "sleep")])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Both ends are included; `from > to` gives an empty result, not a panic.
         let mut tl = day();
         check_eq(tl.between(10, 10), [(10, "work")])?;
@@ -42,7 +42,7 @@ pub fn run() {
         )?;
         check_eq(tl.between(MAX, 0), NONE)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // last_before is strictly before t.
         let mut tl = day();
         check_eq(tl.last_before(0), None)?;
@@ -56,7 +56,7 @@ pub fn run() {
         check_eq(tl.last_before(1), Some((0, "start")))?;
         check_eq(tl.last_before(21), Some((20, "sleep")))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // An empty timeline, then adding to it.
         let mut tl = Timeline::new();
         check_eq(tl.len(), 0)?;
@@ -70,7 +70,7 @@ pub fn run() {
         check_eq(tl.len(), 2)?;
         check_eq(tl.between(0, 10), [(3, "b"), (7, "d")])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // split_from keeps times >= t in the new timeline and times < t in self.
         let mut tl = day();
         let mut all = tl.split_from(0);

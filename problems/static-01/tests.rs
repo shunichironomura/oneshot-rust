@@ -6,7 +6,7 @@ use crate::user::{intern, intern_calls, interned_count, resolve};
 // All cases share one global table and run in this order: `sample-1` starts with an empty table,
 // and the later cases intern fresh strings and compare the counts with their values before.
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(intern("apple"), 0)?;
         check_eq(intern("pear"), 1)?;
         check_eq(intern("apple"), 0)?;
@@ -14,7 +14,7 @@ pub fn run() {
         check_eq(resolve(2), None)?;
         check_eq((interned_count(), intern_calls()), (2, 3))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Exact comparison (case matters, nothing is trimmed); repeated strings still count as
         // calls, and resolve and interned_count do not.
         let n = interned_count() as u32;
@@ -29,7 +29,7 @@ pub fn run() {
         check_eq(interned_count() as u32, n + 4)?;
         check_eq(intern_calls(), calls + 5)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The empty string and non-ASCII strings; strings from earlier cases keep their ids.
         let n = interned_count() as u32;
         check_eq(intern(""), n)?;
@@ -40,7 +40,7 @@ pub fn run() {
         check_eq(intern("pear"), 1)?;
         check_eq(resolve(0).as_deref(), Some("apple"))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Two threads intern the same two fresh strings at the same time, in opposite orders.
         let n = interned_count() as u32;
         let calls = intern_calls();
@@ -58,7 +58,7 @@ pub fn run() {
         check_eq(interned_count() as u32, n + 2)?;
         check_eq(intern_calls(), calls + 4)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Ids that have not been handed out. (Last, so that a panic here cannot affect the others.)
         let n = interned_count() as u32;
         check_eq(resolve(n), None)?;

@@ -18,7 +18,7 @@ fn mismatch(declared: u32, actual: usize) -> PacketError {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let stream = [
             O, S, 1, 1, 0, 0, 0, 0, 0, // Ping, seq 1, empty payload
             O, S, 2, 2, 0, 0, 0, 0, 1, b'!', // Data, seq 2, payload "!"
@@ -31,7 +31,7 @@ pub fn run() {
             ]),
         )
     });
-    case("sample-2", || {
+    case("example-2", || {
         let stream = [
             O, S, 1, 1, 0, 0, 0, 0, 0, // Ping, seq 1, empty payload
             O, S, 2, 2, 0, 0, 0, 0, 3, b'!', // Data, seq 2, 3 bytes declared, only 1 left
@@ -39,7 +39,7 @@ pub fn run() {
         check_eq(decode_all(&stream), Err(mismatch(3, 1)))?;
         check_eq(decode_all(&stream[..12]), Err(PacketError::TooShort))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         check_eq(decode_all(&[]), Ok(vec![]))?;
         let mut stream = raw(3, 0x0102, 3, b"OS\x02");
         stream.extend(raw(1, 0, 0, &[]));
@@ -59,7 +59,7 @@ pub fn run() {
             Ok(vec![Packet { kind: Kind::Data, seq: 5, payload: b"ok" }]),
         )
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Fewer than 9 bytes left where a packet should start: TooShort.
         let good = raw(1, 5, 3, b"abc");
         for n in [1, 2, 5, 8] {
@@ -71,7 +71,7 @@ pub fn run() {
         // A declared length shorter than the rest just ends the packet early.
         check_eq(decode_all(&raw(1, 0, 1, b"abc")), Err(PacketError::TooShort))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Not enough bytes for the payload: actual counts the bytes after the header.
         let good = raw(1, 5, 3, b"abc");
         let mut stream = good.clone();
@@ -83,7 +83,7 @@ pub fn run() {
         stream.extend(raw(2, 0, u32::MAX, &[1, 2, 3]));
         check_eq(decode_all(&stream), Err(mismatch(u32::MAX, 3)))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // The first invalid packet decides the error.
         let good = raw(1, 5, 3, b"abc");
         let mut stream = good.clone();

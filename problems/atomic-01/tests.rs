@@ -80,7 +80,7 @@ fn check_threads(plans: &[&[Step]]) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let a = next_id();
         let r = reserve(3);
         let b = next_id();
@@ -88,8 +88,8 @@ pub fn run() {
         check(r.end.checked_sub(r.start) == Some(3), "r has 3 ids")?;
         check(r.end <= b, "r.end <= b")
     });
-    case("sample-2", || check_threads(&[&[NEXT_ID; 3], &[NEXT_ID; 3], &[NEXT_ID; 3]]));
-    case("hidden-1", || {
+    case("example-2", || check_threads(&[&[NEXT_ID; 3], &[NEXT_ID; 3], &[NEXT_ID; 3]]));
+    case("case-1", || {
         // reserve(0) is empty, and the ids around it still increase.
         let a = next_id();
         let empty = reserve(0);
@@ -101,7 +101,7 @@ pub fn run() {
         check(one.end.checked_sub(one.start) == Some(1), "reserve(1) does not have 1 id")?;
         check(b < one.start && one.end <= c, "b < one.start, one.end <= c")
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Consecutive reservations on one thread do not overlap.
         let r1 = reserve(5);
         let r2 = reserve(1000);
@@ -112,7 +112,7 @@ pub fn run() {
         check(r3.end.checked_sub(r3.start) == Some(2), "r3 has 2 ids")?;
         check(r1.end <= r2.start && r2.end <= x && x < r3.start, "ranges overlap")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Three threads at once, each mixing next_id with reserve(n) for n in 0..=4 and 50.
         let steps: Vec<Step> = (0..40)
             .map(|i| match i % 10 {

@@ -9,7 +9,7 @@ use crate::user::{count, distinct, register, total};
 // Every type is registered in one case only, apart from the repeated names in `hidden-1`, which
 // are different types.
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         struct Apple;
         struct Pear;
         struct Plum;
@@ -20,7 +20,7 @@ pub fn run() {
         check_eq(count::<Plum>(), 0)?;
         check_eq((total(), distinct()), (3, 2))
     });
-    case("sample-2", || {
+    case("example-2", || {
         type Bytes = Vec<u8>;
         let (t, d) = (total(), distinct());
         check_eq(register::<Vec<u8>>(), 1)?;
@@ -28,7 +28,7 @@ pub fn run() {
         check_eq(register::<Vec<u16>>(), 1)?;
         check_eq((total(), distinct()), (t + 3, d + 2))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Structs with the same name declared in different places are different types, although
         // `std::any::type_name` gives them the same name.
         struct Apple;
@@ -45,7 +45,7 @@ pub fn run() {
         check_eq((first, second, count_first()), (1, (0, 1), 1))?;
         check_eq((total(), distinct()), (t + 3, d + 3))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // `count` never registers a type, and does not change any counter.
         struct Ghost;
         struct Real;
@@ -56,7 +56,7 @@ pub fn run() {
         check_eq((count::<Real>(), count::<Ghost>()), (1, 0))?;
         check_eq((total(), distinct()), (t + 1, d + 1))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Another thread registers at the same time as this one, and the threads share the
         // counters.
         struct Shared;

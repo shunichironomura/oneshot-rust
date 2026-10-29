@@ -7,7 +7,7 @@ const ERROR: &str = "Error: You are over your quota!";
 const NOTHING: [&str; 0] = [];
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let recorder = Recorder::new();
         recorder.send("hello");
         let mut tracker = LimitTracker::new(&recorder, 100);
@@ -16,7 +16,7 @@ pub fn run() {
         tracker.set_value(10);
         check_eq(recorder.messages(), ["hello", WARNING, URGENT])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Repeated messages are all kept, in order.
         let recorder = Recorder::new();
         let mut tracker = LimitTracker::new(&recorder, 40);
@@ -25,7 +25,7 @@ pub fn run() {
         }
         check_eq(recorder.messages(), [WARNING, WARNING, WARNING, URGENT, URGENT, ERROR, ERROR, ERROR])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Two trackers share one recorder, and messages() is read while both still borrow it.
         let recorder = Recorder::new();
         let other = Recorder::new();
@@ -45,7 +45,7 @@ pub fn run() {
         check_eq(recorder.messages(), [WARNING, URGENT, ERROR, WARNING])?;
         check_eq(other.messages(), [URGENT])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // A recorder keeps any message, in order, including empty and repeated ones.
         let recorder = Recorder::new();
         check_eq(recorder.messages(), NOTHING)?;

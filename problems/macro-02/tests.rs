@@ -8,7 +8,7 @@ fn check_json(got: J, expected: J) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_json(
             crate::user::json!({ "a": 1, "b": [true, null, "s"], "c": {} }),
             J::Obj(vec![
@@ -18,7 +18,7 @@ pub fn run() {
             ]),
         )
     });
-    case("sample-2", || {
+    case("example-2", || {
         let x: i32 = 4;
         check_json(
             crate::user::json!([(x - 7), "x"]),
@@ -26,7 +26,7 @@ pub fn run() {
         )?;
         check_json(crate::user::json!(null), J::Null)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Literals at the top level. The string "null" is not `null`.
         check_json(crate::user::json!(true), J::Bool(true))?;
         check_json(crate::user::json!(false), J::Bool(false))?;
@@ -37,7 +37,7 @@ pub fn run() {
         check_json(crate::user::json!("null"), J::Str("null".into()))?;
         check_json(crate::user::json!("tab\t日本"), J::Str("tab\t日本".into()))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Empty arrays and objects, and trailing commas.
         check_json(crate::user::json!([]), J::Arr(vec![]))?;
         check_json(crate::user::json!({}), J::Obj(vec![]))?;
@@ -53,7 +53,7 @@ pub fn run() {
             ]),
         )
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Deep nesting, and arrays and objects with a single element.
         check_json(
             crate::user::json!([[[[[null]]]]]),
@@ -73,7 +73,7 @@ pub fn run() {
             )]),
         )
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Expressions in parentheses, of every supported type.
         let x: i32 = 4;
         let f = 1.25;
@@ -116,7 +116,7 @@ pub fn run() {
             ]),
         )
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Keys keep their written order, and repeated keys are all kept.
         check_json(
             crate::user::json!({ "z": 1, "a": 2, "m n": 3, "z": [4], "": "" }),
@@ -129,7 +129,7 @@ pub fn run() {
             ]),
         )
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Every expression is evaluated exactly once, in the order it is written.
         let mut log = Vec::new();
         let mut next = |n: i32| {

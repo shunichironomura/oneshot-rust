@@ -8,15 +8,15 @@ describe("parseStdout", () => {
   test("parses a complete run", () => {
     const out =
       line("START") +
-      line("CASE:sample-1:PASS") +
-      line("CASE:hidden-1:FAIL:expected 1, got 2") +
+      line("CASE:example-1:PASS") +
+      line("CASE:case-1:FAIL:expected 1, got 2") +
       line("END");
     expect(parseStdout(out, N)).toEqual({
       started: true,
       ended: true,
       cases: [
-        { id: "sample-1", pass: true },
-        { id: "hidden-1", pass: false, message: "expected 1, got 2" },
+        { id: "example-1", pass: true },
+        { id: "case-1", pass: false, message: "expected 1, got 2" },
       ],
       userOutput: "",
     });

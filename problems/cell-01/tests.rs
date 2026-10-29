@@ -6,7 +6,7 @@ use crate::user::Lookup;
 const NO_KEYS: [&str; 0] = [];
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let lookup = Lookup::new(&[("b", 2), ("a", 1)]);
         check_eq(lookup.get("a"), Some(1))?;
         check_eq(lookup.get("z"), None)?;
@@ -14,7 +14,7 @@ pub fn run() {
         check_eq(lookup.keys(), ["a", "b"])?;
         check_eq((lookup.hits(), lookup.misses(), lookup.sorts()), (1, 1, 1))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut lookup = Lookup::new(&[("b", 2), ("a", 1)]);
         check_eq(lookup.get("a"), Some(1))?;
         check_eq(lookup.get("z"), None)?;
@@ -24,7 +24,7 @@ pub fn run() {
         check_eq(lookup.keys(), ["a", "b", "c"])?;
         check_eq((lookup.hits(), lookup.misses(), lookup.sorts()), (1, 1, 2))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Two shared references to the same table, used in turn, while a slice returned by
         // `keys` is still in use.
         let lookup = Lookup::new(&[("x", 10), ("Y", 20), ("z", 30), ("10", 1), ("9", 2)]);
@@ -47,7 +47,7 @@ pub fn run() {
         check_eq((b.hits(), a.misses()), (4, 3))?;
         check_eq((a.sorts(), b.sorts()), (1, 1))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The keys are sorted lazily, and get and keys do not affect each other's counters.
         let lookup = Lookup::new(&[("m", 8), ("k", 7)]);
         check_eq(lookup.sorts(), 0)?;
@@ -60,7 +60,7 @@ pub fn run() {
         check_eq(lookup.keys(), ["k", "m"])?;
         check_eq((lookup.hits(), lookup.misses(), lookup.sorts()), (2, 1, 1))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // An empty list is cached like any other list, and a value of 0 is still a hit.
         let empty = Lookup::new(&[]);
         check_eq(empty.get("a"), None)?;
@@ -74,7 +74,7 @@ pub fn run() {
         check_eq(zero.keys(), ["zero"])?;
         check_eq((zero.hits(), zero.misses(), zero.sorts()), (1, 0, 1))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // One table shared through an Rc by two closures.
         let shared = Rc::new(Lookup::new(&[("red", 3), ("green", 4), ("blue", 5)]));
         let find = {
@@ -94,7 +94,7 @@ pub fn run() {
         check_eq(keys, ["blue", "green", "red"])?;
         check_eq((shared.hits(), shared.misses(), shared.sorts()), (2, 1, 1))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // insert replaces values and discards the cached list, even when the keys stay the same;
         // it does not sort anything itself.
         let mut lookup = Lookup::new(&[("b", 1), ("a", 2)]);

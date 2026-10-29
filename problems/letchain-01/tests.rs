@@ -14,15 +14,15 @@ fn word(tok: &str) -> Token {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(classify("'a:b'"), quoted("a:b"))?;
         check_eq(classify("'it's'"), word("'it's'"))
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_eq(classify("a:b:c"), pair("a", "b:c"))?;
         check_eq(classify("hello"), word("hello"))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // A lone quote is not a pair of quotes, and a run of quotes has one inside.
         check_eq(classify("'"), word("'"))?;
         check_eq(classify("''"), quoted(""))?;
@@ -31,7 +31,7 @@ pub fn run() {
         check_eq(classify("'x"), word("'x"))?;
         check_eq(classify("x'"), word("x'"))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The text between the quotes is kept as it is, whatever it contains.
         check_eq(classify("'hello'"), quoted("hello"))?;
         check_eq(classify("'7'"), quoted("7"))?;
@@ -40,7 +40,7 @@ pub fn run() {
         check_eq(classify("':'"), quoted(":"))?;
         check_eq(classify("\"hi\""), word("\"hi\""))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Split at the first ':'; both parts must be non-empty.
         check_eq(classify("a::b"), pair("a", ":b"))?;
         check_eq(classify("12:30"), pair("12", "30"))?;
@@ -54,7 +54,7 @@ pub fn run() {
         check_eq(classify(":"), word(":"))?;
         check_eq(classify("::b"), word("::b"))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Everything else is a word, including the empty string and tokens that start with a
         // multi-byte character.
         check_eq(classify(""), word(""))?;

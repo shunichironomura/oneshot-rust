@@ -20,18 +20,18 @@ fn parse(s: &str) -> Result<Weekday, DayError> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(Weekday::Thu.number(), 4)?;
         check_eq(Weekday::Fri.next(), Weekday::Sat)?;
         check_eq(Weekday::try_from(7), Ok(Weekday::Sun))?;
         let r: Result<Weekday, _> = 0u8.try_into();
         check_eq(r, Err(DayError::OutOfRange(0)))
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_eq("fri".parse::<Weekday>(), Ok(Weekday::Fri))?;
         check_eq("Funday".parse::<Weekday>(), Err(unknown("Funday")))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Every number in 1..=7 maps to its day and back.
         for (i, day) in ALL.into_iter().enumerate() {
             let n = i as u8 + 1;
@@ -42,14 +42,14 @@ pub fn run() {
         }
         Ok(())
     });
-    case("hidden-2", || {
+    case("case-2", || {
         check_eq(Weekday::try_from(0), Err(DayError::OutOfRange(0)))?;
         check_eq(Weekday::try_from(8), Err(DayError::OutOfRange(8)))?;
         check_eq(Weekday::try_from(255), Err(DayError::OutOfRange(255)))?;
         let r: Result<Weekday, DayError> = 100u8.try_into();
         check_eq(r, Err(DayError::OutOfRange(100)))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // next() goes around the week, and Sun wraps to Mon.
         let got: Vec<Weekday> = ALL.into_iter().map(Weekday::next).collect();
         let expected = [
@@ -63,7 +63,7 @@ pub fn run() {
         ];
         check_eq(got, expected)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // ASCII case-insensitive.
         check_eq(parse("MON"), Ok(Weekday::Mon))?;
         check_eq(parse("mOn"), Ok(Weekday::Mon))?;
@@ -74,7 +74,7 @@ pub fn run() {
         check_eq(parse("Sat"), Ok(Weekday::Sat))?;
         check_eq(parse("sUn"), Ok(Weekday::Sun))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // No trimming, no full names, and the error keeps the input unchanged.
         check_eq(parse(" mon"), Err(unknown(" mon")))?;
         check_eq(parse("sun\n"), Err(unknown("sun\n")))?;

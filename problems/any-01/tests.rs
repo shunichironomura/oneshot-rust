@@ -42,7 +42,7 @@ fn name(s: &str) -> Name {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut w = World::new();
         w.add(Pos(1));
         w.add(Vel(2));
@@ -52,7 +52,7 @@ pub fn run() {
         check_eq(w.take_all::<Pos>(), vec![Pos(1), Pos(3)])?;
         check_eq(w.labels(), vec!["vel"])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut w = World::new();
         w.add(Vel(5));
         w.add(Tag);
@@ -65,7 +65,7 @@ pub fn run() {
         check_eq(w.get::<Pos>(), None)?;
         check_eq(w.labels(), vec!["vel", "tag", "vel"])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // An empty world.
         let mut w = World::new();
         check_eq(w.labels(), Vec::<String>::new())?;
@@ -75,7 +75,7 @@ pub fn run() {
         check_eq(w.take_all::<Vel>(), Vec::new())?;
         check_eq(w.labels(), Vec::<String>::new())
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // get and get_mut return the first match, and get_mut changes the stored item.
         let mut w = World::new();
         w.add(Vel(9));
@@ -91,7 +91,7 @@ pub fn run() {
         check_eq(w.take_all::<Pos>(), vec![Pos(10), Pos(2)])?;
         check_eq(w.get::<Vel>(), Some(&Vel(9)))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // A zero-sized component.
         let mut w = World::new();
         w.add(Tag);
@@ -105,7 +105,7 @@ pub fn run() {
         check_eq(w.count::<Tag>(), 0)?;
         check_eq(w.labels(), vec!["pos"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // take_all keeps the order of both the taken and the remaining items.
         let mut w = World::new();
         w.add(Pos(1));
@@ -124,7 +124,7 @@ pub fn run() {
         check_eq(w.take_all::<Vel>(), vec![Vel(3), Vel(5)])?;
         check_eq(w.labels(), vec!["tag"])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Types are told apart by type, not by label.
         let mut w = World::new();
         w.add(name("pos"));
@@ -139,7 +139,7 @@ pub fn run() {
         check_eq(w.labels(), vec!["pos"])?;
         check_eq(w.get::<Name>(), None)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Items added after take_all go to the end; owned data moves out intact.
         let mut w = World::new();
         w.add(name("a"));

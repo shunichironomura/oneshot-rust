@@ -83,7 +83,7 @@ macro_rules! send_sync {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let a = MyArc::new(String::from("hello"));
         let b = MyArc::clone(&a);
         check_eq((b.as_str(), a.len()), ("hello", 5))?;
@@ -94,7 +94,7 @@ pub fn run() {
         let c = MyArc::new(String::from("hello"));
         check(!MyArc::ptr_eq(&b, &c), "ptr_eq(&b, &c) should be false")
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut v = MyArc::new(vec![1, 2]);
         MyArc::get_mut(&mut v).ok_or("get_mut returned None")?.push(3);
         let w = MyArc::clone(&v);
@@ -103,7 +103,7 @@ pub fn run() {
         MyArc::get_mut(&mut v).ok_or("get_mut returned None after drop(w)")?.push(4);
         check_eq(v.as_slice(), [1, 2, 3, 4])
     });
-    case("sample-3", || {
+    case("example-3", || {
         let words = MyArc::new(vec!["a", "bb", "ccc"]);
         let (n, joined) = thread::scope(|s| {
             let mine = MyArc::clone(&words);
@@ -114,7 +114,7 @@ pub fn run() {
         check_eq((n, joined.as_str()), (3, "abbccc"))?;
         check_eq(MyArc::strong_count(&words), 1)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // The value is dropped exactly once, with the last handle. `Counted` is not `Clone`.
         let drops = AtomicUsize::new(0);
         let dropped = || drops.load(Ordering::Relaxed);
@@ -142,7 +142,7 @@ pub fn run() {
             (false, true, true),
         )
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // `MyArc<T>` is `Send` and `Sync` exactly when `T` is both.
         check_eq(send_sync!(MyArc<u8>), (true, true))?;
         check_eq(send_sync!(MyArc<Mutex<Cell<u8>>>), (true, true))?;
@@ -150,7 +150,7 @@ pub fn run() {
         check_eq(send_sync!(MyArc<MutexGuard<'static, u8>>), (false, false))?;
         check_eq(send_sync!(MyArc<Rc<u8>>), (false, false))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Covariance: handles to `&'static str` mix with handles to shorter-lived `&str`.
         let greeting: MyArc<&'static str> = MyArc::new("hello");
         let local = String::from("local");
@@ -162,7 +162,7 @@ pub fn run() {
         check(MyArc::ptr_eq(&all[1], &greeting), "a shortened handle is still the same value")?;
         check_eq(MyArc::strong_count(&greeting), 3)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Two threads use the value and drop their handles at the same time. Whichever is last
         // drops the value, and its destructor sees the entries added through the other handle.
         let reports = Mutex::new(Vec::new());
@@ -189,7 +189,7 @@ pub fn run() {
         check(named, "both threads should read the name")?;
         check_eq(reports.into_inner().unwrap_or_default(), [6])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // get_mut succeeds once the other thread has finished with its handle.
         let mut a = MyArc::new(vec![1u32, 2, 3]);
         let sum = thread::scope(|s| {
@@ -207,7 +207,7 @@ pub fn run() {
         check_eq(sum, 6)?;
         check_eq((a.as_slice(), MyArc::strong_count(&a)), (&[1, 2, 3, 4][..], 1))
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Handles cloned on two threads at the same time, and sent back from the other thread.
         let drops = AtomicUsize::new(0);
         let a = MyArc::new(Counted { id: 7, drops: &drops });
@@ -232,7 +232,7 @@ pub fn run() {
         drop(all);
         check_eq(drops.load(Ordering::Relaxed), 1)
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // Two threads drop the last two handles of many values, taking turns. Exactly one of the
         // two drops each value.
         let drops = AtomicUsize::new(0);

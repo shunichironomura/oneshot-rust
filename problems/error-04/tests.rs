@@ -75,11 +75,11 @@ fn expect_parse_err(got: Loaded, want: ParseIntError) -> Result<Box<dyn Error>, 
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         expect_ok(load(&[("host", "h"), ("port", "8080")]), "h", 8080, 30)?;
         check_eq(parse_port("70000"), Err(bad_port("70000")))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let e = expect_config_err(load(&[("host", "h"), ("port", "x1")]), bad_port("x1"))?;
         check_eq(e.to_string(), "bad port 'x1'")?;
         let Some(cause) = e.source() else {
@@ -89,14 +89,14 @@ pub fn run() {
         check_eq(cause.to_string(), "invalid digit found in string")?;
         check_eq(report(&*e), "bad port 'x1': invalid digit found in string")
     });
-    case("sample-3", || {
+    case("example-3", || {
         let e = expect_parse_err(
             load(&[("host", "h"), ("port", "80"), ("timeout", "-1")]),
             u64_err("-1"),
         )?;
         check_eq(report(&*e), "invalid digit found in string")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Valid ports.
         check_eq(parse_port("1"), Ok(1))?;
         check_eq(parse_port("0"), Ok(0))?;
@@ -104,7 +104,7 @@ pub fn run() {
         check_eq(parse_port("+80"), Ok(80))?;
         check_eq(parse_port("0080"), Ok(80))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Not a u16: no trimming, empty, negative, too large.
         check_eq(parse_port(" 80"), Err(bad_port(" 80")))?;
         check_eq(parse_port("80\n"), Err(bad_port("80\n")))?;
@@ -112,7 +112,7 @@ pub fn run() {
         check_eq(parse_port("-1"), Err(bad_port("-1")))?;
         check_eq(parse_port("65536"), Err(bad_port("65536")))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Display and source() of each variant.
         let missing = ConfigError::Missing("port");
         check_eq(missing.to_string(), "missing key: port")?;
@@ -124,7 +124,7 @@ pub fn run() {
         };
         check_eq(cause.downcast_ref::<ParseIntError>(), Some(&u16_err("")))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Missing keys, checked in the order host, port, timeout.
         expect_config_err(load(&[]), ConfigError::Missing("host"))?;
         expect_config_err(load(&[("port", "80")]), ConfigError::Missing("host"))?;
@@ -137,7 +137,7 @@ pub fn run() {
         check_eq(e.to_string(), "missing key: port")?;
         check_eq(report(&*e), "missing key: port")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Port errors are boxed ConfigErrors, and they come before timeout errors.
         expect_config_err(
             load(&[("host", "h"), ("timeout", "x"), ("port", "99999")]),
@@ -148,7 +148,7 @@ pub fn run() {
         check_eq(report(&*e), "bad port '': cannot parse integer from empty string")?;
         expect_ok(load(&[("timeout", "5"), ("host", "a b"), ("port", "65535")]), "a b", 65535, 5)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // A bad timeout is the ParseIntError of the u64 itself.
         let pairs = |t| [("host", "h"), ("port", "80"), ("timeout", t)];
         expect_parse_err(load(&pairs(" 5")), u64_err(" 5"))?;
@@ -157,7 +157,7 @@ pub fn run() {
         expect_parse_err(load(&pairs(huge)), u64_err(huge))?;
         expect_ok(load(&pairs("18446744073709551615")), "h", 80, u64::MAX)
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // Chains longer than two errors, made of other error types.
         let inner = load(&[("host", "h"), ("port", "x1")]).unwrap_err();
         let outer = Context {

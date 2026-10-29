@@ -6,7 +6,7 @@ const files = {
   templateRs: "pub fn f() -> u32 {\n    todo!()\n}\n\npub fn g() -> u32 {\n    todo!()\n}\n",
   solutionRs:
     "pub fn f() -> u32 {\n    1 + 1\n}\n\npub fn g() -> u32 {\n    let x = 2;\n    x * 2\n}\n",
-  testsRs: 'case("sample-1", || Ok(()));\ncase("hidden-1", || Ok(()));\n',
+  testsRs: 'case("example-1", || Ok(()));\ncase("case-1", || Ok(()));\n',
 };
 
 test.each([

@@ -31,14 +31,14 @@ fn twins<T>(h: &Handle<T>) -> (Handle<T>, Handle<T>) {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let h = Handle::new(Counter { n: 0 });
         let v = fan_out(&h, 2);
         v[0].update(|c| c.n += 5);
         check_eq(h.read(|c| c.n), 5)?;
         check_eq(h.handles(), 3)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let a = Handle::new(Counter { n: 1 });
         let b = a.clone();
         b.update(|c| c.n *= 10);
@@ -47,7 +47,7 @@ pub fn run() {
         drop(b);
         check_eq(a.handles(), 1)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // `share` and `clone` (also from generic code) give handles to the same value,
         // which outlives the original handle.
         let h = Handle::new(Counter { n: 2 });
@@ -62,7 +62,7 @@ pub fn run() {
         check_eq(s.handles(), 2)?;
         check_eq(b.read(|c| c.n), 20)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // `fan_out` with 0 and with several handles; dropping them lowers the count again.
         let h = Handle::new(Counter { n: 0 });
         let none = fan_out(&h, 0);
@@ -78,7 +78,7 @@ pub fn run() {
         drop(v);
         check_eq(h.handles(), 1)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // `Default` makes a new, independent value. Even when `T` is `Clone`, cloning a handle
         // shares the value instead of copying it. `Default` must not require `T: Clone`.
         let a: Handle<Vec<u32>> = Handle::default();
@@ -93,7 +93,7 @@ pub fn run() {
         t.clone().update(|x| x.n += 1);
         check_eq((t.read(|x| x.n), t.handles()), (1, 1))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // The value is dropped together with its last handle, not before.
         let dropped = Cell::new(false);
         let h = Handle::new(Probe { dropped: &dropped });

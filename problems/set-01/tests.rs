@@ -19,24 +19,24 @@ fn check_overlap(got: Overlap, want: [&[&str]; 5]) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_overlap(
             overlap(&["b", "a", "c", "a"], &["d", "c", "b"]),
             [&["b", "c"], &["a"], &["d"], &["a", "d"], &["a", "b", "c", "d"]],
         )
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Empty lists, and a word repeated within a list counts once.
         check_overlap(overlap(&[], &[]), [&[], &[], &[], &[], &[]])?;
         let ab: &[&str] = &["a", "b"];
         check_overlap(overlap(&["b", "a", "a"], &[]), [&[], ab, &[], ab, ab])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The same words with different counts and orders.
         let xy: &[&str] = &["x", "y"];
         check_overlap(overlap(&["y", "x"], &["x", "y", "x"]), [xy, &[], &[], &[], xy])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Words are case-sensitive and sorted by bytes. "Z" is repeated only in `right`.
         check_overlap(
             overlap(&["b", "é", "a", "apple"], &["Z", "a", "app", "B", "Z"]),

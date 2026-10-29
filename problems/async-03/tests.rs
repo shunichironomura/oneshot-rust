@@ -71,30 +71,30 @@ impl Store for SlowStore {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let store = MemStore::new(&[("a", 1), ("b", 2)]);
         check_eq(total_on_worker(&store, &["a", "b", "zz"]), 3)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let store = Fallback {
             first: MemStore::new(&[("a", 1)]),
             second: MemStore::new(&[("a", 100), ("b", 20)]),
         };
         check_eq(total_on_worker(&store, &["a", "b"]), 21)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // No keys: the sum is 0 and nothing is looked up.
         let slow = SlowStore::new(&[("x", 5)]);
         check_eq(total_on_worker(&slow, &[]), 0)?;
         check_eq(slow.keys_asked(), Vec::<String>::new())
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // One lookup per key, in order; a repeated key is looked up again.
         let slow = SlowStore::new(&[("x", 5), ("y", 7)]);
         check_eq(total_on_worker(&slow, &["y", "x", "nope", "y"]), 19)?;
         check_eq(slow.keys_asked(), vec!["y", "x", "nope", "y"])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // `second` is asked only when `first` does not have the key, even if `first` has 0.
         let store = Fallback {
             first: SlowStore::new(&[("a", 1)]),

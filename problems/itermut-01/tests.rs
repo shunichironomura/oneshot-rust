@@ -15,7 +15,7 @@ fn back_lens<T: PartialEq>(v: &mut [T]) -> Vec<usize> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut v = [1, 1, 2, 3, 3, 3];
         let runs: Vec<&mut [i32]> = runs_mut(&mut v).take(7).collect();
         check_eq(&runs, &[&[1, 1][..], &[2], &[3, 3, 3]])?;
@@ -25,12 +25,12 @@ pub fn run() {
         }
         check_eq(v, [2, 2, 1, 3, 3, 3])
     });
-    case("sample-2", || {
+    case("example-2", || {
         let mut v = [1, 1, 2, 3, 3, 3];
         let rev: Vec<&mut [i32]> = runs_mut(&mut v).rev().take(7).collect();
         check_eq(rev, [&[3, 3, 3][..], &[2], &[1, 1]])
     });
-    case("sample-3", || {
+    case("example-3", || {
         let mut v = [1, 1, 2, 3, 3, 3];
         let mut it = runs_mut(&mut v);
         check_eq(it.next().as_deref(), Some(&[1, 1][..]))?;
@@ -39,7 +39,7 @@ pub fn run() {
         check_eq(it.next().as_deref(), None)?;
         check_eq(it.next_back().as_deref(), None)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // An empty slice has no runs, whichever end is asked first.
         let mut v: [i32; 0] = [];
         let mut it = runs_mut(&mut v);
@@ -62,7 +62,7 @@ pub fn run() {
         check_eq(front_lens(&mut apart), vec![1, 1, 2, 1])?;
         check_eq(back_lens(&mut apart), vec![1, 2, 1, 1])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Elements that are not Copy, written through every run.
         let mut v: Vec<String> = ["a", "a", "b", "a"].map(String::from).to_vec();
         let runs: Vec<&mut [String]> = runs_mut(&mut v).take(5).collect();
@@ -76,7 +76,7 @@ pub fn run() {
         let rev: Vec<&mut [String]> = runs_mut(&mut v).rev().take(5).collect();
         check_eq(rev, [&["a2"][..], &["b1"], &["a0", "a0"]])
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // All runs are collected first, then read and written in any order.
         let mut v = [5, 5, 4, 4, 4, 3, 2, 2, 1, 1, 1, 1, 0];
         let mut runs: Vec<&mut [i32]> = runs_mut(&mut v).take(14).collect();
@@ -98,7 +98,7 @@ pub fn run() {
         }
         check_eq(w, [1, 1, 1, 0, 0, 3, 3, 3])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // next and next_back strictly alternate until both ends meet.
         let mut v = [5, 5, 4, 4, 4, 3, 2, 2, 1, 1, 1, 1, 0];
         let mut it = runs_mut(&mut v);
@@ -123,7 +123,7 @@ pub fn run() {
         middle.fill(2);
         check_eq(w, [1, 2, 2, 3])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // NaN is not equal to itself, so every NaN is a run of its own.
         let nan = f64::NAN;
         let mut v = [nan, nan, 1.0, 1.0, nan];

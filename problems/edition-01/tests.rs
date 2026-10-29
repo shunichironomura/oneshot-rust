@@ -10,19 +10,19 @@ fn token(kind: Kind, text: &str) -> Token {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(draws(&mut Rng::new(0), 3), vec![167951807, 218396424, 1299921937])
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_eq(classify("gen"), token(Kind::Keyword, "gen"))?;
         check_eq(classify("gene").r#type, Kind::Ident)
     });
-    case("sample-3", || check_eq(score(vec![3, 4].into_boxed_slice()), 9));
-    case("hidden-1", || {
+    case("example-3", || check_eq(score(vec![3, 4].into_boxed_slice()), 9));
+    case("case-1", || {
         check_eq(draws(&mut Rng::new(1), 3), vec![908834774, 1093944153, 1392341196])?;
         check_eq(draws(&mut Rng::new(u64::MAX), 3), vec![1574552488, 1490332343, 1207502677])
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // gen_below draws one number with gen and reduces it modulo bound.
         let mut a = Rng::new(2024);
         let mut b = Rng::new(2024);
@@ -36,20 +36,20 @@ pub fn run() {
         }
         Ok(())
     });
-    case("hidden-3", || {
+    case("case-3", || {
         for word in ["fn", "let", "match", "async", "try"] {
             check_eq(classify(word), token(Kind::Keyword, word))?;
         }
         Ok(())
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Only exact, case-sensitive matches are keywords.
         for word in ["Fn", "GEN", "", "fn ", "r#gen", "lets", "mat"] {
             check_eq(classify(word), token(Kind::Ident, word))?;
         }
         Ok(())
     });
-    case("hidden-5", || {
+    case("case-5", || {
         check_eq(score(Vec::new().into_boxed_slice()), 0)?;
         check_eq(score(vec![0].into_boxed_slice()), 1)?;
         check_eq(score(vec![10, 0, 25, 4, 1].into_boxed_slice()), 45)

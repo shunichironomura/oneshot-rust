@@ -50,8 +50,8 @@ export interface Content {
 }
 
 /** Test cases whose id starts with this prefix are public. */
-export const SAMPLE_CASE_PREFIX = "sample-";
+export const EXAMPLE_CASE_PREFIX = "example-";
 
-export function isSampleCase(id: string): boolean {
-  return id.startsWith(SAMPLE_CASE_PREFIX);
+export function isExampleCase(id: string): boolean {
+  return id.startsWith(EXAMPLE_CASE_PREFIX);
 }

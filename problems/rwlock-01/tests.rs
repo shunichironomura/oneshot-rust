@@ -19,7 +19,7 @@ fn try_and_see(store: &Store) -> Result<(Option<u64>, bool), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let store = Store::new(settings("dark", 12));
         let a = store.read();
         let b = store.read();
@@ -30,14 +30,14 @@ pub fn run() {
         drop(b);
         check_eq(store.try_update(|s| s.font_size = 14), Some(2))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let store = Store::new(settings("dark", 12));
         check_eq(store.try_update(|s| s.font_size = 14), Some(2))?;
         check_eq(store.update(|s| s.theme = "light".to_string()), 3)?;
         check_eq(store.version(), 3)?;
         check_eq(store.snapshot(), settings("light", 14))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Views show the settings as they are when they are taken; snapshots do not change.
         let store = Store::new(settings("solarized", 10));
         check_eq(store.version(), 1)?;
@@ -54,7 +54,7 @@ pub fn run() {
         check_eq(store.version(), 4)?;
         check_eq(store.snapshot(), settings("solarized-dark", 30))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // A failed try_update calls nothing and changes nothing, not even the version.
         let store = Store::new(settings("dark", 12));
         let called = Cell::new(false);
@@ -80,7 +80,7 @@ pub fn run() {
         check_eq(store.try_update(|s| s.theme = "high contrast".to_string()), Some(3))?;
         check_eq(store.snapshot(), settings("high contrast", 13))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // try_update fails as long as at least one of several views is alive.
         let store = Store::new(settings("dark", 12));
         let mut views: Vec<_> = (0..3).map(|_| store.read()).collect();
@@ -93,7 +93,7 @@ pub fn run() {
         check_eq(store.try_update(|s| s.font_size = 1), Some(2))?;
         check_eq(store.read().font_size, 1)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Another thread holds a view, then runs an update. try_update fails both times.
         let store = Store::new(settings("dark", 12));
         let barrier = Barrier::new(2);
@@ -127,7 +127,7 @@ pub fn run() {
         check_eq(store.version(), 2)?;
         check_eq(store.snapshot(), settings("dark", 30))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Three threads (main included) read and update at the same time; no update is lost.
         let store = Store::new(settings("dark", 12));
         let work = || -> Result<Vec<u64>, String> {
@@ -167,7 +167,7 @@ pub fn run() {
         check_eq(store.version(), 25)?;
         check_eq(store.snapshot(), settings("dark", 36))
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Only updates, on three threads at the same time: each version is returned exactly once.
         let store = Store::new(settings("dark", 0));
         let work = || (0..10).map(|_| store.update(|s| s.font_size += 1)).collect::<Vec<u64>>();

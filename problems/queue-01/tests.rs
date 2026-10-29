@@ -36,7 +36,7 @@ fn queue_of(items: &[&str]) -> Queue<String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let mut q = Queue::new();
         q.push(s("a"));
         q.push(s("b"));
@@ -51,7 +51,7 @@ pub fn run() {
         check_eq(q.pop(), None)?;
         check_eq(ends(&q), (None, None, 0))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let item = Rc::new(7);
         let mut q = Queue::new();
         for _ in 0..3 {
@@ -63,7 +63,7 @@ pub fn run() {
         drop(q);
         check_eq(Rc::strong_count(&item), 2)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Empty queues, and a queue that is emptied and then used again.
         let q: Queue<String> = Queue::new();
         check_eq(ends(&q), (None, None, 0))?;
@@ -84,7 +84,7 @@ pub fn run() {
         q.push(s("w"));
         check_eq(ends(&q), (Some("w"), Some("w"), 1))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // The last node becomes the first one, then the queue grows again.
         let mut q = Queue::new();
         q.push(1);
@@ -106,7 +106,7 @@ pub fn run() {
         }
         check_eq((q.peek(), q.peek_back(), q.len()), (Some(&10), Some(&11), 2))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Interleaved pushes and pops, compared with VecDeque.
         let mut q = Queue::new();
         let mut model = VecDeque::new();
@@ -127,7 +127,7 @@ pub fn run() {
         }
         check_eq((q.pop(), q.len()), (None, 0))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Each element is dropped exactly once: by the caller after `pop`, or by the queue.
         let drops = Cell::new(0);
         let mut q = Queue::new();
@@ -153,7 +153,7 @@ pub fn run() {
         drop(q);
         check_eq(drops.get(), 7)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Queues are moved around: returned from functions and stored in other queues.
         let mut a = queue_of(&["a"]);
         check_eq(ends(&a), (Some("a"), Some("a"), 1))?;

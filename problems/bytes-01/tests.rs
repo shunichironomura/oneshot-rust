@@ -22,7 +22,7 @@ fn mismatch(declared: u32, actual: usize) -> PacketError {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let bytes = [O, S, 2, 0x34, 0x12, 0, 0, 0, 2, 0xAA, 0xBB];
         check_eq(
             Packet::try_from(&bytes[..]),
@@ -31,11 +31,11 @@ pub fn run() {
         check_eq(Packet::try_from(&bytes[..10]), Err(mismatch(2, 1)))?;
         check_eq(Packet::try_from(&bytes[..5]), Err(PacketError::TooShort))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let packet = Packet { kind: Kind::Ack, seq: 7, payload: b"hi" };
         check_eq(packet.encode(), vec![O, S, 3, 7, 0, 0, 0, 0, 2, b'h', b'i'])
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // seq is little-endian, the length big-endian.
         check_eq(
             decode(&[O, S, 1, 0xFF, 0x00, 0, 0, 0, 0]),
@@ -54,7 +54,7 @@ pub fn run() {
         let via_into: Result<Packet<'_>, PacketError> = bytes.as_slice().try_into();
         check_eq(via_into.map(|p| p.payload.len()), Ok(256))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Fewer than 9 bytes is TooShort, whatever the bytes are.
         let header = [O, S, 1, 0, 0, 0, 0, 0, 0];
         for n in 0..9 {
@@ -64,7 +64,7 @@ pub fn run() {
         check_eq(decode(&[0xFF; 8]), Err(PacketError::TooShort))?;
         check_eq(decode(&[O, S, 9, 0, 0, 0, 0, 9]), Err(PacketError::TooShort))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // The magic is checked before the kind, and the kind before the length.
         check_eq(decode(&[b'o', b's', 1, 0, 0, 0, 0, 0, 0]), Err(PacketError::BadMagic))?;
         check_eq(decode(&[S, O, 1, 0, 0, 0, 0, 0, 0]), Err(PacketError::BadMagic))?;
@@ -77,7 +77,7 @@ pub fn run() {
             Err(PacketError::UnknownKind(0xFF)),
         )
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // The payload must be exactly as long as declared.
         check_eq(decode(&raw(2, 0, 1, &[1, 2, 3])), Err(mismatch(1, 3)))?;
         check_eq(decode(&raw(1, 0, 0, &[9])), Err(mismatch(0, 1)))?;
@@ -87,7 +87,7 @@ pub fn run() {
         check_eq(decode(&raw(3, 0, u32::MAX, &[1, 2])), Err(mismatch(u32::MAX, 2)))?;
         check_eq(decode(&raw(3, 0, u32::MAX - 8, &[])), Err(mismatch(u32::MAX - 8, 0)))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         let empty = Packet { kind: Kind::Ping, seq: 0xABCD, payload: &[] };
         check_eq(empty.encode(), vec![O, S, 1, 0xCD, 0xAB, 0, 0, 0, 0])?;
         // 300 = 0x012C

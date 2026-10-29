@@ -57,7 +57,7 @@ fn record_in_buckets() -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let stats = Stats::new();
         check_eq(summary(&stats), (0, 0.0, None, None))?;
         stats.record(2.5);
@@ -65,7 +65,7 @@ pub fn run() {
         stats.record(4.0);
         check_eq(summary(&stats), (3, 5.5, Some(4.0), Some(-1.0)))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let stats = Stats::new();
         thread::scope(|s| {
             for t in 0..4 {
@@ -79,12 +79,12 @@ pub fn run() {
         });
         check_eq(summary(&stats), (40, 205.0, Some(10.0), Some(0.25)))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // No samples: a new Stats, and GLOBAL, which the cases above did not touch.
         check_eq(summary(&Stats::new()), (0, 0.0, None, None))?;
         check_eq(summary(&GLOBAL), (0, 0.0, None, None))
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // 0.0 is a sample like any other.
         let stats = Stats::new();
         stats.record(0.0);
@@ -93,7 +93,7 @@ pub fn run() {
         stats.record(0.0);
         check_eq(summary(&stats), (3, 0.0, Some(0.0), Some(0.0)))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Only negative samples: the largest one is below 0.
         let stats = Stats::new();
         stats.record(-3.5);
@@ -101,7 +101,7 @@ pub fn run() {
         stats.record(-8.0);
         check_eq(summary(&stats), (3, -12.75, Some(-1.25), Some(-8.0)))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // One sample is both the largest and the smallest; then the extreme values and a mix of
         // signs.
         SHARED.record(42.5);
@@ -116,7 +116,7 @@ pub fn run() {
         check_eq(summary(&other), (1, 500.25, Some(500.25), Some(500.25)))?;
         check_eq(summary(&SHARED), (4, 41.75, Some(1_000_000.0), Some(-1_000_000.0)))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Four threads recording at the same time, into many buckets, GLOBAL included.
         record_in_buckets()
     });

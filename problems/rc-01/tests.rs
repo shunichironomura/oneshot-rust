@@ -13,7 +13,7 @@ fn open_pair() -> (Ledger, Account, Account) {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let ledger = Ledger::new();
         let mut ann = ledger.open("ann");
         let mut bob = ledger.open("bob");
@@ -24,7 +24,7 @@ pub fn run() {
         check_eq((ann.balance(), bob.balance()), (30, 10))?;
         check_eq(ledger.log(), strs(&["ann +50", "bob +10", "ann -20"]))
     });
-    case("sample-2", || {
+    case("example-2", || {
         let ledger = Ledger::new();
         let _ann = ledger.open("ann");
         {
@@ -33,12 +33,12 @@ pub fn run() {
         }
         check_eq(ledger.open_accounts(), 1)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         let ledger = Ledger::new();
         check_eq(ledger.log(), Vec::<String>::new())?;
         check_eq(ledger.open_accounts(), 0)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Accounts can be returned together with the ledger they came from.
         let (ledger, mut a, mut b) = open_pair();
         a.deposit(5);
@@ -47,7 +47,7 @@ pub fn run() {
         check_eq(b.balance(), 0)?;
         check_eq(ledger.log(), strs(&["ann +5", "bob +7", "bob -7"]))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // An account keeps working after the ledger is gone, and the log is not reset.
         let ledger = Ledger::new();
         let mut a = ledger.open("ann");
@@ -58,7 +58,7 @@ pub fn run() {
         check_eq(a.balance(), 3)?;
         check_eq(snapshot, strs(&["ann +1"]))
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Two accounts with the same name are still separate accounts.
         let ledger = Ledger::new();
         let mut x = ledger.open("sam");
@@ -73,7 +73,7 @@ pub fn run() {
         check_eq(ledger.open_accounts(), 1)?;
         check_eq(ledger.log(), strs(&["sam +4"]))
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Separate ledgers do not share anything.
         let l1 = Ledger::new();
         let l2 = Ledger::new();

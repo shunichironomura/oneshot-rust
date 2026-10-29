@@ -10,14 +10,14 @@ fn fib_step(m: &Memo, n: u64) -> u64 {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let m = Memo::new();
         check_eq(fib(&m, 10), 55)?;
         check_eq(m.misses(), 11)?;
         check_eq(fib(&m, 10), 55)?;
         check_eq(m.misses(), 11)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let m = Memo::new();
         m.schedule(12);
         m.schedule(5);
@@ -27,7 +27,7 @@ pub fn run() {
         )?;
         check_eq(m.misses(), 6)
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // f gets the key; a hit does not call f; 0 is a value like any other.
         let m = Memo::new();
         check_eq(m.get_or_compute(7, |_, k| k * 3), 21)?;
@@ -40,7 +40,7 @@ pub fn run() {
         check(!called.get(), "f was called for a cached key")?;
         check_eq(m.misses(), 2)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // f receives the memo itself and may use it while it runs.
         let m = Memo::new();
         let v = m.get_or_compute(1000, |m, k| m.get_or_compute(2000, |_, _| 40) + k / 500);
@@ -48,7 +48,7 @@ pub fn run() {
         check_eq(m.get_or_compute(2000, |_, _| 0), 40)?;
         check_eq(m.misses(), 2)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // An empty queue; run_all leaves the queue empty.
         let m = Memo::new();
         let calls = Cell::new(0);
@@ -59,7 +59,7 @@ pub fn run() {
         check_eq(calls.get(), 2)?;
         check_eq(m.misses(), 2)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // f schedules a key while run_all is running.
         let m = Memo::new();
         m.schedule(4);
@@ -72,7 +72,7 @@ pub fn run() {
         check_eq(got, vec![(4, 104), (2, 102), (1, 101), (9, 109), (4, 104), (2, 102), (1, 101)])?;
         check_eq(m.misses(), 4)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // A key scheduled by f is processed before the keys that were already waiting.
         let m = Memo::new();
         m.schedule(3);
@@ -99,7 +99,7 @@ pub fn run() {
         )?;
         check_eq(m.misses(), 5)
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // f uses the cache while run_all is running; the cache is shared with fib.
         let m = Memo::new();
         m.schedule(5);
@@ -108,7 +108,7 @@ pub fn run() {
         check_eq(fib(&m, 4), 3)?;
         check_eq(m.misses(), 6)
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // Several threads use one memo at the same time; one of them runs the queue.
         let m = Memo::new();
         let (queued, a, b) = thread::scope(|s| {

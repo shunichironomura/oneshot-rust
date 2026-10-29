@@ -19,7 +19,7 @@ fn try_many(lock: &SpinLock<u32>, attempts: u32) -> u32 {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let counter = SpinLock::new(0);
         thread::scope(|s| {
             for _ in 0..3 {
@@ -32,7 +32,7 @@ pub fn run() {
         });
         check_eq(counter.into_inner(), 15)
     });
-    case("sample-2", || {
+    case("example-2", || {
         let lock = SpinLock::new(String::from("spin"));
         let mut guard = lock.lock();
         guard.push_str("lock");
@@ -40,7 +40,7 @@ pub fn run() {
         drop(guard);
         check_eq(lock.try_lock().map(|g| g.len()), Some(8))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // A lock in a static, built with the const `new`, filled by two threads.
         let push_all = |t: u32| {
             for i in 0..6 {
@@ -60,7 +60,7 @@ pub fn run() {
         }
         Ok(())
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // try_lock on a free lock always succeeds; on a held lock it always fails.
         let lock = SpinLock::new(7u8);
         for _ in 0..20 {
@@ -78,7 +78,7 @@ pub fn run() {
         *lock.lock() += 1;
         check_eq(lock.into_inner(), 28)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Two threads calling try_lock at the same time.
         let lock = SpinLock::new(0);
         let wins = thread::scope(|s| {
@@ -87,7 +87,7 @@ pub fn run() {
         });
         check_eq(lock.into_inner(), wins)
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // One thread calling lock while another calls try_lock.
         let lock = SpinLock::new(0);
         let wins = thread::scope(|s| {
@@ -100,7 +100,7 @@ pub fn run() {
         });
         check_eq(lock.into_inner(), wins + 40)
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Replacing and changing a String through the guard.
         let lock = SpinLock::new(String::from("old"));
         {

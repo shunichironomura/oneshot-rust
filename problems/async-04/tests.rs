@@ -65,14 +65,14 @@ fn join<A: Future, B: Future>(a: A, b: B) -> (A::Output, B::Output) {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         let log = shared(&[]);
         let (len, polls) = block_on(record_all(&log, strings(&["a", "b"])));
         check_eq(len, 2)?;
         check_eq(contents(&log), ["a", "b"])?;
         check(polls == 3, "record_all should return Pending once after each push")
     });
-    case("sample-2", || {
+    case("example-2", || {
         let inbox = shared(&["x", "y"]);
         let log = shared(&["start"]);
         let (len, _) = block_on(forward_all(&inbox, &log));
@@ -80,7 +80,7 @@ pub fn run() {
         check_eq(contents(&log), ["start", "x", "y"])?;
         check(contents(&inbox).is_empty(), "the inbox should be empty")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // Nothing to push: the current length, without yielding. Otherwise one yield per item.
         let log = shared(&["p", "q", "r"]);
         check_eq(block_on(record_all(&log, Vec::new())), (3, 1))?;
@@ -93,7 +93,7 @@ pub fn run() {
         check_eq(contents(&log), ["p", "q", "r", "", "é", "b", "c", "d"])?;
         check(contents(&inbox).is_empty(), "the inbox should be empty")
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Each item is pushed before the yield, and the log is unlocked while the future waits.
         let log = shared(&["p"]);
         let mut fut = pin!(record_all(&log, strings(&["q1", "q2"])));
@@ -105,7 +105,7 @@ pub fn run() {
         check_eq(contents(&log), ["p", "q1", "h", "q2"])?;
         check_eq(fut.as_mut().poll(&mut cx), Poll::Ready(4))
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Two calls take turns; each resolves to the length after its own last push.
         let log = shared(&[]);
         let got = join(
@@ -115,7 +115,7 @@ pub fn run() {
         check_eq(got, (3, 5))?;
         check_eq(contents(&log), ["a1", "b1", "a2", "b2", "b3"])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // forward_all takes the messages all at once and does not keep the inbox locked:
         // a message pushed while it is recording stays in the inbox.
         let inbox = shared(&["m1", "m2"]);
@@ -125,7 +125,7 @@ pub fn run() {
         check_eq(contents(&log), ["s", "m1", "m2"])?;
         check_eq(contents(&inbox), ["late"])
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Two futures created here run on another thread, taking turns.
         let inbox = shared(&["m1", "m2"]);
         let log = shared(&[]);

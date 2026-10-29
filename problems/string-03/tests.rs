@@ -43,26 +43,26 @@ fn ell(text: &str, max: usize, expected: &str) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         first("héllo", 2, "hé")?;
         last("日本語です", 2, "です")
     });
-    case("sample-2", || {
+    case("example-2", || {
         trunc("héllo", 2, "h")?;
         trunc("héllo", 3, "hé")
     });
-    case("sample-3", || {
+    case("example-3", || {
         ell("こんにちは", 10, "こん…")?;
         ell("hello!", 5, "he…")?;
         ell("hello", 5, "hello")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // n = 0: an empty prefix at the start, an empty suffix at the end.
         first("héllo", 0, "")?;
         last("héllo", 0, "")?;
         last("日本", 0, "")
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // n is at least the number of chars, and empty inputs.
         first("héllo", 5, "héllo")?;
         first("héllo", 10, "héllo")?;
@@ -73,7 +73,7 @@ pub fn run() {
         last("", 0, "")?;
         last("", 3, "")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // 4-byte chars, and a combining accent that is a char of its own.
         first("e\u{301}cole", 1, "e")?;
         last("cafe\u{301}", 1, "\u{301}")?;
@@ -82,7 +82,7 @@ pub fn run() {
         last("🦀a🦀b", 3, "a🦀b")?;
         last("héllo", 4, "éllo")
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // A char that does not fit is left out entirely; the result may be empty.
         trunc("🦀🦀", 5, "🦀")?;
         trunc("🦀🦀", 7, "🦀")?;
@@ -92,7 +92,7 @@ pub fn run() {
         trunc("日本語", 6, "日本")?;
         trunc("日本語", 8, "日本")
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // max at or beyond the length.
         trunc("abc", 3, "abc")?;
         trunc("abc", 10, "abc")?;
@@ -103,7 +103,7 @@ pub fn run() {
         ell("🦀🦀", 8, "🦀🦀")?;
         ell("héllo", 100, "héllo")
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // Only the ellipsis fits, or the cut falls inside a char.
         ell("abcdef", 3, "…")?;
         ell("abcd", 3, "…")?;

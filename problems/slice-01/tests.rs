@@ -22,22 +22,22 @@ fn check_pairs(v: &[i32], expected: &[(i32, i32)], rest: Option<i32>) -> Result<
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_runs(&[1, 1, 2, 3, 3, 3], &[(1, 2), (2, 1), (3, 3)])?;
         check_rising(&[1, 2, 2, 3, 1], &[&[1, 2], &[2, 3], &[1]])
     });
-    case("sample-2", || {
+    case("example-2", || {
         check_peaks(&[1, 3, 2, 5, 1], &[1, 3])?;
         check_pairs(&[1, 2, 3, 4, 5], &[(1, 2), (3, 4)], Some(5))
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // An empty slice gives empty results, without panicking.
         check_runs(&[], &[])?;
         check_rising(&[], &[])?;
         check_peaks(&[], &[])?;
         check_pairs(&[], &[], None)
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // One and two elements: no peaks yet, and the pairs either fill up or leave one over.
         check_runs(&[7], &[(7, 1)])?;
         check_runs(&[4, 4], &[(4, 2)])?;
@@ -50,13 +50,13 @@ pub fn run() {
         check_pairs(&[7], &[], Some(7))?;
         check_pairs(&[1, 2], &[(1, 2)], None)
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // Only neighbors are grouped: equal values further apart start new groups.
         check_runs(&[5, 5, 5, 5, 5], &[(5, 5)])?;
         check_runs(&[1, 2, 1, 1, 2], &[(1, 1), (2, 1), (1, 2), (2, 1)])?;
         check_runs(&[0, -3, -3, 0, 0, 0, 9], &[(0, 1), (-3, 2), (0, 3), (9, 1)])
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // Equal neighbors split a rising run, and so does any decrease.
         check_rising(&[5, 5, 5], &[&[5], &[5], &[5]])?;
         check_rising(&[5, 4, 3, 2], &[&[5], &[4], &[3], &[2]])?;
@@ -70,7 +70,7 @@ pub fn run() {
             "the runs should be subslices of v",
         )
     });
-    case("hidden-5", || {
+    case("case-5", || {
         // Flat tops and valleys are not peaks; peaks can sit right next to either end.
         check_peaks(&[1, 4, 4, 1], &[])?;
         check_peaks(&[5, 5, 5, 5], &[])?;
@@ -79,13 +79,13 @@ pub fn run() {
         check_peaks(&[9, 1, 2, 1], &[2])?;
         check_peaks(&[-5, -1, -3, -2, -4, -4, 0, -1], &[1, 3, 6])
     });
-    case("hidden-6", || {
+    case("case-6", || {
         // An even length leaves nothing over; a leftover 0 is still `Some(0)`.
         check_pairs(&[1, 2, 3, 4, 5, 6], &[(1, 2), (3, 4), (5, 6)], None)?;
         check_pairs(&[0, 0, 0], &[(0, 0)], Some(0))?;
         check_pairs(&[9, 8, 7, 6, 5, 4, 3], &[(9, 8), (7, 6), (5, 4)], Some(3))
     });
-    case("hidden-7", || {
+    case("case-7", || {
         // The extreme values of `i32`, next to each other.
         check_runs(&[MIN, MIN, MAX, MAX, MAX, 0], &[(MIN, 2), (MAX, 3), (0, 1)])?;
         check_rising(&[MIN, MAX, MIN, 0, MAX], &[&[MIN, MAX], &[MIN, 0, MAX]])?;

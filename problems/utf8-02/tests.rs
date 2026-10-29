@@ -11,11 +11,11 @@ fn stream(steps: &[(&[u8], &str)], tail: &str) -> Result<(), String> {
 }
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         stream(&[(b"caf\xC3", "caf"), (b"\xA9 \xE2", "é "), (b"\x82\xAC!\xFF", "€!?")], "")?;
         stream(&[(&[b'x', 0xF0, 0x9F], "x")], "?")
     });
-    case("hidden-1", || {
+    case("case-1", || {
         // A byte that cannot be completed is replaced at once, not held back.
         stream(&[(b"a\xFF", "a?"), (b"\xC0", "?"), (b"b\xF5", "b?")], "")?;
         // Held-back bytes that turn out to be invalid.
@@ -34,14 +34,14 @@ pub fn run() {
             "",
         )
     });
-    case("hidden-2", || {
+    case("case-2", || {
         // Empty chunks, and bytes still held back at the end.
         stream(&[(b"", ""), (&[0xF0, 0x9F], ""), (b"", ""), (&[0x98, 0x80], "😀")], "")?;
         stream(&[(b"x\xE2\x82", "x")], "?")?;
         stream(&[(b"\xFF\xE2", "?")], "?")?;
         stream(&[], "")
     });
-    case("hidden-3", || {
+    case("case-3", || {
         // One byte at a time, the joined text is the same as decoding everything at once.
         let bytes: &[u8] = b"\xC3\xA9\xFF\xF0\x9F\x98\x80\xE2\x82?\xF0\x9F";
         let mut s = Utf8Stream::new();

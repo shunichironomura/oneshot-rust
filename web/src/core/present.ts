@@ -1,6 +1,7 @@
 // Turns a judgement into what the player gets to see. Everyone sees the same: the
 // compiler's errors with their code and notes, but not rustc's help and suggested fixes
 // (they would work like an IDE's quick fixes), and failure messages of public cases only.
+// A visible harness makes every case public, since its code shows each case anyway.
 import type { CaseResult, CaseStatus, Judgement, VerdictKind } from "./classify.ts";
 import { type Diagnostic, type DiagnosticSpan, primarySpan } from "./diagnostics.ts";
 import { SRC_DIR } from "./harness.ts";
@@ -123,11 +124,11 @@ export function renderDiagnostic(d: Diagnostic, ctx: PresentContext): string {
 }
 
 /** Failure messages of hidden cases would give the hidden tests away. */
-function presentCases(cases: CaseResult[]): CaseView[] {
-  return cases.map((c) => ({
-    ...c,
-    message: c.visible && c.message ? cleanPaths(c.message) : undefined,
-  }));
+function presentCases(cases: CaseResult[], ctx: PresentContext): CaseView[] {
+  return cases.map((c) => {
+    const visible = c.visible || ctx.harnessVisible;
+    return { ...c, visible, message: visible && c.message ? cleanPaths(c.message) : undefined };
+  });
 }
 
 function markers(diagnostics: Diagnostic[]): EditorMarker[] {
@@ -156,12 +157,12 @@ export function present(judgement: Judgement, ctx: PresentContext): Presentation
       return { ...base, diagnostics: rendered(v.diagnostics), markers: markers(v.diagnostics) };
     case "AC":
     case "WA":
-      return { ...base, cases: presentCases(v.cases) };
+      return { ...base, cases: presentCases(v.cases, ctx) };
     case "UB":
       return {
         ...base,
         diagnostics: rendered(v.diagnostics),
-        cases: presentCases(v.cases),
+        cases: presentCases(v.cases, ctx),
         markers: markers(v.diagnostics),
       };
     case "RE":
@@ -169,13 +170,13 @@ export function present(judgement: Judgement, ctx: PresentContext): Presentation
         ...base,
         summary: cleanPaths(messages.runtimeError(v.reason)),
         diagnostics: rendered(v.diagnostics),
-        cases: presentCases(v.cases),
+        cases: presentCases(v.cases, ctx),
       };
     case "TLE":
       return {
         ...base,
         summary: v.runningCase === undefined ? undefined : messages.tleSummary(v.runningCase),
-        cases: presentCases(v.cases),
+        cases: presentCases(v.cases, ctx),
       };
     case "IE":
       return { ...base, summary: messages.internalError(v.reason) };

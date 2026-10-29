@@ -6,10 +6,10 @@ fn expect(xs: &[(&str, usize)]) -> Vec<(String, usize)> {
 }
 
 pub fn run() {
-    case("sample-1", || check_eq(word_count("b a B c a b"), expect(&[("b", 3), ("a", 2), ("c", 1)])));
-    case("hidden-1", || check_eq(word_count(""), expect(&[])));
-    case("hidden-2", || check_eq(word_count("  Rust  rust\nRUST "), expect(&[("rust", 3)])));
-    case("hidden-3", || {
+    case("example-1", || check_eq(word_count("b a B c a b"), expect(&[("b", 3), ("a", 2), ("c", 1)])));
+    case("case-1", || check_eq(word_count(""), expect(&[])));
+    case("case-2", || check_eq(word_count("  Rust  rust\nRUST "), expect(&[("rust", 3)])));
+    case("case-3", || {
         check_eq(word_count("z y x"), expect(&[("x", 1), ("y", 1), ("z", 1)]))
     });
 }

@@ -4,12 +4,12 @@ use crate::judge::{case, check_eq};
 use crate::user::{Tracer, trace};
 
 pub fn run() {
-    case("sample-1", || {
+    case("example-1", || {
         check_eq(trace(&["a", "b"]), vec!["begin a", "begin b", "run", "end a", "end b"])
     });
-    case("hidden-1", || check_eq(trace(&[]), vec!["run"]));
-    case("hidden-2", || check_eq(trace(&["solo"]), vec!["begin solo", "run", "end solo"]));
-    case("hidden-3", || {
+    case("case-1", || check_eq(trace(&[]), vec!["run"]));
+    case("case-2", || check_eq(trace(&["solo"]), vec!["begin solo", "run", "end solo"]));
+    case("case-3", || {
         // The tracers end in creation order, and a repeated name gets its own tracer.
         check_eq(
             trace(&["parse", "check", "lower", "check", "emit"]),
@@ -28,7 +28,7 @@ pub fn run() {
             ],
         )
     });
-    case("hidden-4", || {
+    case("case-4", || {
         // `Tracer` is unchanged: `new` writes the "begin" line and dropping writes the "end" line.
         let sink = RefCell::new(Vec::new());
         let first = Tracer::new(&sink, "first");
