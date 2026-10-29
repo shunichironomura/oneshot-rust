@@ -1,0 +1,12 @@
+id = "async-06"
+title = { en = "Async tree depth", ja = "非同期で木の深さ" }
+difficulty = 2
+concepts = ["recursive async fn needs boxing (Box::pin)", "the future of an async fn stores the futures it awaits", "Box<F> is a Future only when F: Unpin"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false

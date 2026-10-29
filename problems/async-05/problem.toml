@@ -1,0 +1,12 @@
+id = "async-05"
+title = { en = "One future at a time", ja = "Future を 1 つずつ" }
+difficulty = 2
+concepts = ["await only directly inside async fns and blocks", "closures inside an async fn are not async", "for loops await in order"]
+kind = "repair"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = false
