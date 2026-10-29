@@ -10,14 +10,3 @@ pub fn fizz_label(n: u32) -> String {
     };
     label
 }
-
-pub fn first_multiple_above(step: u64, limit: u64) -> u64 {
-    let mut x = 0;
-    let found = loop {
-        x += step;
-        if x > limit {
-            break;
-        }
-    };
-    found
-}

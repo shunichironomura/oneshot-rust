@@ -9,13 +9,3 @@ pub fn fizz_label(n: u32) -> String {
         n.to_string()
     }
 }
-
-pub fn first_multiple_above(step: u64, limit: u64) -> u64 {
-    let mut x = 0;
-    loop {
-        x += step;
-        if x > limit {
-            break x;
-        }
-    }
-}
