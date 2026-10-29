@@ -1,5 +1,5 @@
 use crate::judge::{case, check, check_eq};
-use crate::user::{Packet, checksum, describe, label, make};
+use crate::user::{Packet, checksum, make};
 
 pub fn run() {
     case("example-1", || {
@@ -11,10 +11,6 @@ pub fn run() {
         let ps = vec![make(1, [1, 2, 3]), make(2, [9; 5]), make(3, [])];
         let sums: Vec<u32> = ps.iter().map(|p| checksum(p)).collect();
         check_eq(sums, [7, 47, 3])
-    });
-    case("example-3", || {
-        let ls = vec![label(1, 5), label(2, "x")];
-        check_eq(describe(&ls), ["#1: 5", "#2: x"])
     });
     case("case-1", || {
         // The fields of packets made by `make`, including an empty payload.
@@ -42,27 +38,5 @@ pub fn run() {
         ps[0].payload[0] = 200;
         let sums: Vec<u32> = ps.iter().map(|p| checksum(p)).collect();
         check_eq(sums, [201, 8, 39, 4])
-    });
-    case("case-4", || {
-        // Payloads of many types in one `Vec`, and an empty part of it.
-        let owned = String::from("héllo");
-        let ls = vec![
-            label(1, 1.5),
-            label(2, 'z'),
-            label(3, owned),
-            label(4, -7),
-            label(5, true),
-            label(6, ""),
-        ];
-        check_eq(describe(&ls), ["#1: 1.5", "#2: z", "#3: héllo", "#4: -7", "#5: true", "#6: "])?;
-        check_eq(describe(&ls[..0]), Vec::<String>::new())
-    });
-    case("case-5", || {
-        // The fields of a packet made by `label`, and a packet that the harness boxes itself.
-        let p = label(9, 12u8);
-        check_eq(p.id, 9)?;
-        check_eq(p.payload.to_string(), "12")?;
-        let mixed = vec![p, Box::new(Packet { id: 3, payload: 'q' })];
-        check_eq(describe(&mixed[1..]), ["#3: q"])
     });
 }

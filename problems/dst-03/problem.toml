@@ -1,0 +1,18 @@
+id = "dst-03"
+title = { en = "Packets of anything", ja = "何でも入るパケット" }
+difficulty = 3
+concepts = [
+    "custom dynamically sized types with a trait object field (Packet<dyn Display>)",
+    "T: ?Sized on a struct's last field",
+    "unsizing coercion Box<Packet<T>> -> Box<Packet<dyn Display>> at the return site",
+    "the 'static default object lifetime",
+    "slice elements must be Sized: &[Box<Packet<dyn Display>>]",
+]
+kind = "signature"
+
+[judge]
+forbid_unsafe = true
+miri_checks = "full"
+time_limit_ms = 15000
+stdout_limit_bytes = 65536
+harness_visible = true

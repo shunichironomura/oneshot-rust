@@ -1,12 +1,10 @@
 A `Packet` is an id followed by a payload. In the code below, a packet made by `make` keeps its
-bytes in a separate `Vec<u8>`, and a packet made by `label` can only hold a `String`. The test
-harness (the `tests.rs` tab) expects a new design: `make` moves a byte array into the packet itself,
-so that the id and the bytes share one allocation, and `label` accepts any value that implements
-`Display`.
+bytes in a separate `Vec<u8>`. The test harness (the `tests.rs` tab) expects a new design: `make`
+moves a byte array into the packet itself, so that the id and the bytes share one allocation.
 
-All the bodies are already written for the new design, but the signatures are left over from the
-old one, so the harness does not compile. Change **only the signatures** (the `struct` line and the
-`fn` lines) so that the harness compiles and passes. Do not change the bodies or the fields.
+The bodies are already written for the new design, but the signatures are left over from the old
+one, so the harness does not compile. Change **only the signatures** (the `struct` line and the `fn`
+lines) so that the harness compiles and passes. Do not change the bodies or the fields.
 
 ```rust
 pub struct Packet<T> {
@@ -16,8 +14,6 @@ pub struct Packet<T> {
 
 pub fn make(id: u32, bytes: Vec<u8>) -> Box<Packet<Vec<u8>>>
 pub fn checksum(p: &Packet<Vec<u8>>) -> u32
-pub fn label(id: u32, payload: String) -> Box<Packet<String>>
-pub fn describe(ps: &[Box<Packet<String>>]) -> Vec<String>
 ```
 
 - `make(id, bytes)` moves a byte array of any length, including `[]`, into a new boxed packet.
@@ -26,13 +22,6 @@ pub fn describe(ps: &[Box<Packet<String>>]) -> Vec<String>
 - `checksum(p)` returns the id plus the sum of the payload bytes. The harness passes packets made by
   `make`, and also packets with a byte array as payload that it creates itself, such as
   `&Packet { id: 7, payload: [5u8, 6] }`.
-- `label(id, payload)` moves a value into a new boxed packet. The harness passes integers,
-  floating-point numbers, characters, `bool`s, string literals and `String`s. Packets made by
-  `label` all have the same type, whatever the type of their payload.
-- `describe(ps)` formats each packet as `#<id>: <payload>`, with the payload formatted by `{}`
-  (`Display`). The harness passes a `Vec` of packets made by `label`, or a part of one, such as
-  `&ls[1..]`. The `Vec` may also contain a packet that the harness boxes itself, such as
-  `Box::new(Packet { id: 3, payload: 'q' })`.
 
 The harness also reads the fields `id` and `payload` of the packets.
 
@@ -45,7 +34,4 @@ checksum(&Packet { id: 7, payload: [5u8, 6] })  // 18
 
 let ps = vec![make(1, [1, 2, 3]), make(2, [9; 5]), make(3, [])];
 ps.iter().map(|p| checksum(p)).collect::<Vec<_>>()  // [7, 47, 3]
-
-let ls = vec![label(1, 5), label(2, "x")];
-describe(&ls)                                   // ["#1: 5", "#2: x"]
 ```

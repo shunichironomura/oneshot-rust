@@ -6,9 +6,7 @@ concepts = [
     "T: ?Sized on a struct's last field",
     "unsizing coercion Box<Packet<[u8; N]>> -> Box<Packet<[u8]>> at the return site",
     "&Packet<[u8; N]> -> &Packet<[u8]> and deref coercion at call sites",
-    "Packet<dyn Display> and the 'static default object lifetime",
     "const generic array parameter",
-    "slice elements must be Sized: &[Box<Packet<dyn Display>>]",
 ]
 kind = "signature"
 
