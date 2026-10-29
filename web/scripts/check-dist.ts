@@ -1,9 +1,11 @@
 // Fails if the build output exceeds the limits of Cloudflare Workers static assets
-// (https://developers.cloudflare.com/workers/platform/limits/).
+// (https://developers.cloudflare.com/workers/platform/limits/), or lacks the third-party
+// license texts.
 //
 // Usage: node scripts/check-dist.ts [dist-dir]
 import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
+import { LICENSES_FILE } from "./third-party-licenses.ts";
 
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
 const MAX_FILES = 20_000;
@@ -18,7 +20,10 @@ const tooLarge = sizes.filter(({ size }) => size > MAX_FILE_BYTES);
 for (const { f, size } of tooLarge) {
   console.error(`too large (${(size / 1024 / 1024).toFixed(1)} MiB): ${path.relative(dist, f)}`);
 }
+// Deploys must ship the license texts of the bundled npm packages.
+const noLicenses = !files.includes(path.join(dist, LICENSES_FILE));
+if (noLicenses) console.error(`missing: ${LICENSES_FILE}`);
 if (files.length > MAX_FILES) console.error(`too many files: ${files.length} > ${MAX_FILES}`);
 const total = sizes.reduce((n, { size }) => n + size, 0);
 console.log(`${files.length} files, ${(total / 1024 / 1024).toFixed(1)} MiB in ${dist}`);
-process.exitCode = tooLarge.length > 0 || files.length > MAX_FILES ? 1 : 0;
+process.exitCode = tooLarge.length > 0 || files.length > MAX_FILES || noLicenses ? 1 : 0;
