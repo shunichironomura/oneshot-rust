@@ -13,7 +13,7 @@ impl Light {
             Light::Red => Light::Green,
             Light::Green => Light::Yellow,
             Light::Yellow => Light::Red,
-            Light::Flashing(0) => Light::Red,
+            Light::Flashing(0) => Light::Yellow,
             Light::Flashing(n) => Light::Flashing(n - 1),
         }
     }

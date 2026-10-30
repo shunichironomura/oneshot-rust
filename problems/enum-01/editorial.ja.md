@@ -18,7 +18,7 @@ pub fn next(self) -> Light {
         Light::Green => Light::Yellow,
         Light::Yellow => Light::Red,
         Light::Flashing(n) if n > 0 => Light::Flashing(n - 1),
-        Light::Flashing(_) => Light::Red,
+        Light::Flashing(_) => Light::Yellow,
     }
 }
 ```
