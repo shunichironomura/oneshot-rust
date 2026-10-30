@@ -1,39 +1,42 @@
 # OneShot Rust
 
+English | [日本語](README.ja.md)
+
 Write Rust that compiles in one shot — no LSP, as few compiles as possible.
 
 Play at <https://oneshotrust.dev>.
 
-OneShot Rust は、指定された処理を Rust で実装し、**できるだけ少ない提出（＝コンパイル）回数で全テストを通す**ことを競う
-ブラウザゲームです。補完も LSP もありません。判定は Wasm 化した [Miri](https://github.com/rust-lang/miri) が
-ブラウザ内で行うので、型検査・借用検査は本物の rustc と同じで、未定義動作（UB）も検出されます。
-UI と問題文は英語が既定で、日本語にも切り替えられます。
+OneShot Rust is a browser game where you implement a given task in Rust and compete to **pass all the tests with as
+few submissions (= compiles) as possible**. There is no completion and no LSP. Judging is done in the browser by
+[Miri](https://github.com/rust-lang/miri) compiled to Wasm, so type checking and borrow checking are the same as the
+real rustc, and undefined behavior (UB) is detected too.
+The UI and problem statements default to English and can be switched to Japanese.
 
-## 構成
+## Layout
 
 ```text
-toolchain/   Miri を wasm32-wasip1 向けにビルドするスクリプトとパッチ
-judge/       判定ライブラリ（judge.rs）と固定テンプレート（main.rs）
-problems/    問題（1 問 1 ディレクトリ）
-web/         フロントエンド（Vite+ / Preact / CodeMirror 6）
+toolchain/   Scripts and patches that build Miri for wasm32-wasip1
+judge/       Judge library (judge.rs) and fixed template (main.rs)
+problems/    Problems (one directory per problem)
+web/         Frontend (Vite+ / Preact / CodeMirror 6)
 ```
 
-## ローカルで遊ぶ
+## Playing locally
 
-必要なもの：[Nushell](https://www.nushell.sh/)、Python 3、git、Node.js 24 以降、
-[Vite+](https://viteplus.dev/)（`vp`）。
+Requirements: [Nushell](https://www.nushell.sh/), Python 3, git, Node.js 24 or later,
+[Vite+](https://viteplus.dev/) (`vp`).
 
-1. ツールチェーン（`miri.wasm` と sysroot）を `web/public/toolchain/` に配置します。公開済みのものを
-   ダウンロードする（`gh` が必要）か、自分でビルドします（初回は 20〜30 分）。詳しくは
-   [toolchain/README.md](toolchain/README.md) を参照してください。
+1. Place the toolchain (`miri.wasm` and the sysroot) in `web/public/toolchain/`. Either download the published one
+   or build it yourself (the first build takes 20–30 minutes). See [toolchain/README.md](toolchain/README.md)
+   for details.
 
    ```sh
-   cd web && vp run fetch-toolchain   # toolchain/RELEASE の版をダウンロード（gh のログインが必要）
-   # または
-   ./toolchain/build.nu               # ソースからビルド
+   cd web && vp run fetch-toolchain   # download the version in toolchain/RELEASE
+   # or
+   ./toolchain/build.nu               # build from source
    ```
 
-2. 開発サーバーを起動します。
+2. Start the dev server.
 
    ```sh
    cd web
@@ -41,97 +44,100 @@ web/         フロントエンド（Vite+ / Preact / CodeMirror 6）
    vp dev
    ```
 
-   初回アクセス時にツールチェーン（圧縮して約 55 MB）をダウンロードし、Cache Storage に保存します。
-   2 回目以降はキャッシュから読み込みます。
+   On first access, the app downloads the toolchain (about 55 MB compressed) and stores it in Cache Storage.
+   Later visits load it from the cache.
 
-## デプロイ（Cloudflare Workers Builds）
+## Deployment (Cloudflare Workers Builds)
 
-Cloudflare の Git 連携（Workers Builds）が、リポジトリへの push を検知してビルドとデプロイを行います。
-`main` は本番に、それ以外のブランチとプルリクエストはプレビュー URL にデプロイされます（URL は Cloudflare が PR にコメントします）。
-GitHub 側に Cloudflare の認証情報は置きません。配信は Workers の静的アセットで、設定は `web/wrangler.jsonc` にあります。
+Cloudflare's Git integration (Workers Builds) detects pushes to the repository and builds and deploys them.
+`main` is deployed to production; other branches and pull requests are deployed to preview URLs (Cloudflare posts
+the URL as a comment on the PR). No Cloudflare credentials are stored on the GitHub side. The site is served as
+Workers static assets, configured in `web/wrangler.jsonc`.
 
-GitHub Actions（`.github/workflows/ci.yml`）は、チェック・テスト・全問題の検証・ビルドだけを行います。
+GitHub Actions (`.github/workflows/ci.yml`) only runs checks, tests, verification of all problems, and the build.
 
-ツールチェーンはどちらでもビルドしません（20〜30 分かかり、ディスクも 30 GB ほど使うため）。手元でビルドしたものを
-GitHub Release として公開し、`toolchain/RELEASE` に記録した版をダウンロードして使います。
+Neither builds the toolchain (it takes 20–30 minutes and about 30 GB of disk). Instead, a locally built toolchain is
+published as a GitHub Release, and the version recorded in `toolchain/RELEASE` is downloaded and used.
 
-### 初回のセットアップ
+### Initial setup
 
-1. ツールチェーンを GitHub Release として公開します（次の節）。
-2. Cloudflare のダッシュボードで **Workers & Pages → Create → Import a repository** から、このリポジトリを接続します。
-   - プロジェクト名：`oneshot-rust`（`wrangler.jsonc` の `name` と一致させる）
-   - Root directory：`web`
-   - Build command：`pnpm run build:deploy`（ツールチェーンの取得 → ビルド → サイズの確認）
-   - Deploy command：既定（`npx wrangler deploy`）のまま
-   - 本番以外のブランチのビルドを有効にする（プレビュー URL を出すため）
-   - プレビュー URL（Settings → Domains & Routes の Preview / Version URLs）を有効にする
-   - ビルド変数やシークレットは要りません（ツールチェーンは Release の公開ダウンロード URL から取得します）
-3. 独自ドメイン（oneshotrust.dev）を使う場合は、Worker の **Settings → Domains & Routes** で追加します。
+1. Publish the toolchain as a GitHub Release (see the next section).
+2. In the Cloudflare dashboard, connect this repository via **Workers & Pages → Create → Import a repository**.
+   - Project name: `oneshot-rust` (must match `name` in `wrangler.jsonc`)
+   - Root directory: `web`
+   - Build command: `pnpm run build:deploy` (fetch the toolchain → build → check sizes)
+   - Deploy command: leave the default (`npx wrangler deploy`)
+   - Enable builds for non-production branches (to get preview URLs)
+   - Enable preview URLs (Preview / Version URLs under Settings → Domains & Routes)
+   - No build variables or secrets are needed (the toolchain is fetched from the Release's public download URLs)
+3. To use the custom domain (oneshotrust.dev), add it under the Worker's **Settings → Domains & Routes**.
 
-pnpm のバージョンは `package.json` の `packageManager` で固定しています。Node.js はビルド環境の既定（24 系）を使います。
+The pnpm version is pinned by `packageManager` in `package.json`. Node.js uses the build environment's default (24.x).
 
-### Web アプリの依存パッケージ
+### Web app dependencies
 
-Web アプリに同梱している npm パッケージ（Preact、CodeMirror、フォントなど）の名前・バージョン・ライセンス・ライセンス文は、
-ビルド時に `web/dist/third-party-licenses.txt` にまとめられ、サイトの `/third-party-licenses.txt` で公開しています
-（トップページのフッターからリンクしています）。フォント（Barlow Condensed、Caveat）は SIL Open Font License 1.1 です。
+The names, versions, licenses, and license texts of the npm packages bundled in the web app (Preact, CodeMirror,
+fonts, etc.) are collected into `web/dist/third-party-licenses.txt` at build time and published at
+`/third-party-licenses.txt` on the site (linked from the footer of the home page). The fonts (Barlow Condensed,
+Caveat) are licensed under the SIL Open Font License 1.1.
 
-### ツールチェーンを更新したとき
+### Updating the toolchain
 
 ```sh
-./toolchain/build.nu     # ビルド（web/public/toolchain/ に配置）
-./toolchain/publish.nu   # GitHub Release（toolchain-<id>）を作成し、toolchain/RELEASE を更新
+./toolchain/build.nu     # build (placed in web/public/toolchain/)
+./toolchain/publish.nu   # create a GitHub Release (toolchain-<id>) and update toolchain/RELEASE
 ```
 
-更新された `toolchain/RELEASE` をコミットします。
+Commit the updated `toolchain/RELEASE`.
 
-### 手元で確認・デプロイする場合
+### Checking and deploying locally
 
-`web/` で次のスクリプトを使います。
+Use the following scripts in `web/`.
 
-| コマンド | 内容 |
+| Command | Description |
 | --- | --- |
-| `vp run serve:dist` | ビルドしたものを Cloudflare と同じ配信（`public/_headers` を含む）で `http://localhost:8787` に出す |
-| `vp run deploy` | ツールチェーンの取得 → ビルド → サイズ確認 → `wrangler deploy`（本番。要 `wrangler login`） |
+| `vp run serve:dist` | Serve the build at `http://localhost:8787` the same way Cloudflare does (including `public/_headers`) |
+| `vp run deploy` | Fetch the toolchain → build → check sizes → `wrangler deploy` (production; requires `wrangler login`) |
 
-サイズの確認（`scripts/check-dist.ts`）は、1 ファイル 25 MiB・20,000 ファイルの制限を超えるとビルドを失敗させます。
+The size check (`scripts/check-dist.ts`) fails the build if it exceeds the limits of 25 MiB per file or 20,000 files.
 
-## 開発
+## Development
 
-`web/` ディレクトリで実行します。
+Run these in the `web/` directory.
 
-| コマンド | 内容 |
+| Command | Description |
 | --- | --- |
-| `vp check` | フォーマット、lint、型検査 |
-| `vp test` | ユニットテスト（判定ロジックなどの純粋関数） |
-| `node scripts/verify-problems.ts [id...]` | 全問題の検証（模範解答が AC になるかなど） |
-| `node scripts/judge.ts <id> <file.rs>` | 任意のコードを判定し、プレイヤーに見える内容を表示 |
-| `node scripts/record-fixtures.ts` | `classify` のテスト用に、Miri の実際の出力を記録し直す |
+| `vp check` | Formatting, lint, and type checking |
+| `vp test` | Unit tests (pure functions such as the judging logic) |
+| `node scripts/verify-problems.ts [id...]` | Verify all problems (e.g. that the reference solution gets AC) |
+| `node scripts/judge.ts <id> <file.rs>` | Judge arbitrary code and show what the player would see |
+| `node scripts/record-fixtures.ts` | Re-record Miri's actual output for the `classify` tests |
 
-問題の書き方は [problems/README.md](problems/README.md) を参照してください。
+See [problems/README.md](problems/README.md) for how to write problems.
 
-## ライセンス
+## License
 
-- コード（`problems/` 以外）：[MIT](LICENSE-MIT) または [Apache-2.0](LICENSE-APACHE) のいずれかを選択できます。
-- 問題（`problems/` の問題文・解説・テンプレート・テスト・模範解答）：[CC BY 4.0](problems/LICENSE)。
-  ただし、下記の出典に由来する部分は、その元のライセンスに従います。
+- Code (everything outside `problems/`): your choice of [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE).
+- Problems (statements, explanations, templates, tests, and reference solutions in `problems/`):
+  [CC BY 4.0](problems/LICENSE). Parts derived from the sources below remain under their original licenses.
 
-プルリクエストなどで送られた変更は、同じライセンスで提供されたものとして扱います。
+Contributions submitted via pull requests or otherwise are treated as provided under the same licenses.
 
-### 出典
+### Sources
 
-次の問題は、[The Rust Programming Language](https://github.com/rust-lang/book)（The Book）または
-[The Rustonomicon](https://github.com/rust-lang/nomicon) の例やコードを元にしています。
-どちらも Copyright (c) 2010 The Rust Project Developers で、MIT または Apache-2.0 のもとで提供されています。
+The following problems are based on examples or code from
+[The Rust Programming Language](https://github.com/rust-lang/book) (The Book) or
+[The Rustonomicon](https://github.com/rust-lang/nomicon). Both are Copyright (c) 2010 The Rust Project Developers
+and are provided under MIT or Apache-2.0.
 
-| 出典 | 問題 |
+| Source | Problems |
 | --- | --- |
-| The Book | `bufread-01`、`bufread-02`、`generics-01`、`guard-01`、`minigrep-01`、`pool-01`、`refcell-01`、`signature-01`、`state-02`、`string-02`、`string-05` |
-| The Rustonomicon | `arc-01`、`itermut-01`、`rawvec-01` |
+| The Book | `bufread-01`, `bufread-02`, `generics-01`, `guard-01`, `minigrep-01`, `pool-01`, `refcell-01`, `signature-01`, `state-02`, `string-02`, `string-05` |
+| The Rustonomicon | `arc-01`, `itermut-01`, `rawvec-01` |
 
-### ツールチェーン
+### Toolchain
 
-配信しているツールチェーン（`miri.wasm` と sysroot）は、[rust-lang/rust](https://github.com/rust-lang/rust)
-（MIT または Apache-2.0）とその依存クレート、[wasi-sdk](https://github.com/WebAssembly/wasi-sdk) の wasi-libc と
-compiler-rt から作られています。各ライセンス文は、ツールチェーンと一緒に `licenses/` として配布しています
-（[toolchain/README.md](toolchain/README.md#ライセンス) を参照）。
+The distributed toolchain (`miri.wasm` and the sysroot) is built from [rust-lang/rust](https://github.com/rust-lang/rust)
+(MIT or Apache-2.0) and its dependency crates, plus wasi-libc and compiler-rt from
+[wasi-sdk](https://github.com/WebAssembly/wasi-sdk). The license texts are distributed with the toolchain as
+`licenses/` (see [toolchain/README.md](toolchain/README.md#license)).

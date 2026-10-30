@@ -1,5 +1,5 @@
 // Measures the size of every problem against the limits of the sizing guideline
-// (problems/README.md, "規模の基準") and lists the ones over a limit. Advisory only:
+// (problems/README.md, "Size guidelines") and lists the ones over a limit. Advisory only:
 // the exit code is always 0.
 //
 // Usage: node scripts/problem-size.ts [problem-id ...]

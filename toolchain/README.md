@@ -1,107 +1,113 @@
-# ツールチェーン
+# Toolchain
 
-`build.nu` は、ブラウザで動かす Miri（`miri.wasm`）と、それが読み込む sysroot をビルドします。
+English | [日本語](README.ja.md)
 
-## 使い方
+`build.nu` builds Miri for the browser (`miri.wasm`) and the sysroot it loads.
+
+## Usage
 
 ```sh
 ./toolchain/build.nu
 ```
 
-成果物は `web/public/toolchain/` に配置されます。
+The output is placed in `web/public/toolchain/`.
 
 ```text
 web/public/toolchain/
-  manifest.json                    ツールチェーン ID とファイル一覧（フロントエンドが最初に読む）
-  <toolchainId>/miri.wasm.gz.<n>   wasm32-wasip1 向けの Miri（gzip 圧縮して分割）
-  <toolchainId>/sysroot.tar.gz.<n> x86_64-unknown-linux-gnu 向けの std など（MIR 付き rlib、同上）
-  <toolchainId>/licenses/          上の 2 つに含まれるコンポーネントのライセンス文（圧縮なし）
+  manifest.json                    Toolchain ID and file list (the frontend reads it first)
+  <toolchainId>/miri.wasm.gz.<n>   Miri for wasm32-wasip1 (gzip-compressed and split)
+  <toolchainId>/sysroot.tar.gz.<n> std etc. for x86_64-unknown-linux-gnu (rlibs with MIR; same as above)
+  <toolchainId>/licenses/          License texts of the components in the two above (uncompressed)
 ```
 
-- `toolchainId` は 2 つのファイルの内容ハッシュです。ブラウザは展開後のファイルを、この ID を含むキーで Cache Storage に
-  保存するため、ツールチェーンを更新したときだけ再ダウンロードされます。
-- Cloudflare（Workers の静的アセット）の 1 ファイル 25 MiB の上限に収めるため、各ファイルは gzip で圧縮したうえで 20 MiB ごとに分割しています。
-  ブラウザは断片を並列にダウンロードし、`DecompressionStream` で展開します（転送量は合計で約 55 MiB）。
+- `toolchainId` is a content hash of the two files. The browser stores the decompressed files in Cache Storage under
+  keys that include this ID, so they are downloaded again only when the toolchain changes.
+- To fit within the 25 MiB per-file limit of Cloudflare (Workers static assets), each file is gzip-compressed and
+  then split into 20 MiB chunks. The browser downloads the chunks in parallel and decompresses them with
+  `DecompressionStream` (about 55 MiB transferred in total).
 
-作業ディレクトリは `toolchain/work/`（git 管理外）です。2 回目以降は差分だけがビルドされます。
+The working directory is `toolchain/work/` (not tracked by git). Later builds rebuild only what changed.
 
-## 公開と取得
+## Publishing and fetching
 
-ビルドには時間がかかるので、成果物は GitHub Release で共有します。
+Building takes a long time, so the output is shared through GitHub Releases.
 
-- `./toolchain/publish.nu`：`web/public/toolchain/` の中身を Release `toolchain-<toolchainId>` としてアップロードし、
-  そのタグを `toolchain/RELEASE` に書き込みます。`RELEASE` はコミットしてください。
-- `web/` で `vp run fetch-toolchain`（`scripts/fetch-toolchain.ts`）：`toolchain/RELEASE` の Release をダウンロードし、
-  `web/public/toolchain/` に配置します。CI と Cloudflare のビルドもこれを使います。同じ版が配置済みなら何もしません。
-  Release の公開ダウンロード URL から取得するので、トークンは要りません。
+- `./toolchain/publish.nu`: uploads the contents of `web/public/toolchain/` as the Release
+  `toolchain-<toolchainId>` and writes its tag to `toolchain/RELEASE`. Commit `RELEASE`.
+- `vp run fetch-toolchain` in `web/` (`scripts/fetch-toolchain.ts`): downloads the Release in `toolchain/RELEASE` and
+  places it in `web/public/toolchain/`. CI and the Cloudflare build use this too. It does nothing if the same version
+  is already in place. It fetches from the Release's public download URLs, so no token is needed.
 
-## 必要なもの
+## Requirements
 
-- Nushell、git、Python 3（`x.py` 用）
-- macOS（aarch64）で動作を確認しています。Linux でも動く想定ですが、未検証です。
-- 初回ビルドには 20〜30 分ほどかかります（16 コアのマシンでの目安）。ディスクは 30 GB 程度使います。
+- Nushell, git, Python 3 (for `x.py`)
+- Tested on macOS (aarch64). It is expected to work on Linux too, but this is untested.
+- The first build takes about 20–30 minutes (on a 16-core machine) and uses about 30 GB of disk.
 
-## 処理の流れ
+## How it works
 
-1. `rust-lang/rust` を `RUST_COMMIT` でチェックアウトし、`patches/*.patch` を適用します。
-2. wasi-sdk をダウンロードします。
-3. `bootstrap.toml` を展開し、`x.py` で Miri を wasm32-wasip1 ホスト向けにビルドします（stage 2）。
-4. 同じソースツリーからネイティブ版の Miri と cargo-miri をビルドします。それを使い、
-   `cargo miri setup` で解釈対象ターゲット（x86_64-unknown-linux-gnu）の sysroot を作ります。
-   同じコミットからビルドするので、メタデータの互換性が保たれます。
-5. ライセンス文を集めます（下の「ライセンス」を参照）。
-6. `miri.wasm` と sysroot の `.rlib`、ライセンス文をまとめて配置します。
+1. Check out `rust-lang/rust` at `RUST_COMMIT` and apply `patches/*.patch`.
+2. Download wasi-sdk.
+3. Expand `bootstrap.toml` and build Miri for a wasm32-wasip1 host with `x.py` (stage 2).
+4. Build native Miri and cargo-miri from the same source tree, and use them to create the sysroot for the
+   interpreted target (x86_64-unknown-linux-gnu) with `cargo miri setup`.
+   Building from the same commit keeps the metadata compatible.
+5. Collect the license texts (see "License" below).
+6. Place `miri.wasm`, the sysroot's `.rlib` files, and the license texts together.
 
-## パッチ
+## Patches
 
-`patches/miri-wasm32-wasip1-host.patch` は、Miri を wasm32-wasip1（スレッドなし）で動かすための最小限の変更です。
+`patches/miri-wasm32-wasip1-host.patch` is the minimal change needed to run Miri on wasm32-wasip1 (no threads).
 
-- rustc：コンパイラスレッドを作らない、dylib をロードしない、`--sysroot` の明示を前提にする。
-- bootstrap：Wasm ホストでは rustc の各クレートの rlib を残す（Miri を静的リンクするため）。
-- Miri：ホストのソケットとファイルアクセスを、unix/windows 以外では未サポートにする
-  （isolation を有効にして動かすので、どちらも使われません）。
+- rustc: don't spawn compiler threads, don't load dylibs, and assume `--sysroot` is given explicitly.
+- bootstrap: keep the rlibs of rustc's crates on Wasm hosts (to link Miri statically).
+- Miri: make host socket and file access unsupported on targets other than unix/windows
+  (neither is used, since Miri runs with isolation enabled).
 
-[bjorn3 氏の rustc の Wasm 化の取り組み](https://github.com/rust-lang/miri/issues/722)を参考にしています。
+It is based on [bjorn3's work on compiling rustc to Wasm](https://github.com/rust-lang/miri/issues/722).
 
-## ライセンス
+## License
 
-配信するバイナリには、次のライセンス文を `licenses/` として同梱します。`build.nu` が `toolchain/work/licenses/` に集め、
-`manifest.json` の `licenses` に列挙します。`publish.nu` はそれらを Release のアセットにも含めます。
+The distributed binaries ship with the following license texts as `licenses/`. `build.nu` collects them into
+`toolchain/work/licenses/` and lists them under `licenses` in `manifest.json`. `publish.nu` also includes them in
+the Release assets.
 
-| ファイル | 内容 |
+| File | Contents |
 | --- | --- |
-| `README.txt` | 各ファイルの説明 |
-| `rust-COPYRIGHT`、`rust-LICENSE-MIT`、`rust-LICENSE-APACHE` | Rust 本体のライセンス（MIT または Apache-2.0） |
-| `rust-COPYRIGHT.html` | rustc・Miri・標準ライブラリと、その依存クレートすべてのライセンス（`miri.wasm` 用） |
-| `rust-COPYRIGHT-library.html` | 標準ライブラリとその依存クレートだけのライセンス（sysroot 用） |
-| `wasi-libc-*` | `miri.wasm` にリンクされる wasi-libc（musl、cloudlibc、musl-fts を含む）のライセンス |
-| `compiler-rt-LICENSE.TXT` | `miri.wasm` にリンクされる compiler-rt builtins のライセンス |
+| `README.txt` | Description of each file |
+| `rust-COPYRIGHT`, `rust-LICENSE-MIT`, `rust-LICENSE-APACHE` | License of Rust itself (MIT or Apache-2.0) |
+| `rust-COPYRIGHT.html` | Licenses of rustc, Miri, the standard library, and all their dependency crates (for `miri.wasm`) |
+| `rust-COPYRIGHT-library.html` | Licenses of the standard library and its dependency crates only (for the sysroot) |
+| `wasi-libc-*` | Licenses of wasi-libc (including musl, cloudlibc, and musl-fts), linked into `miri.wasm` |
+| `compiler-rt-LICENSE.TXT` | License of the compiler-rt builtins, linked into `miri.wasm` |
 
-- `rust-COPYRIGHT*.html` は、Rust の公式リリースに同梱されるものと同じく、rust-lang/rust の
-  `./x.py run src/tools/generate-copyright` で生成します。依存クレートを `cargo vendor` するため、ネットワークが必要です。
-- wasi-libc と compiler-rt のライセンス文は、wasi-sdk の `VERSION` に書かれたコミット（LLVM はバージョンのタグ）から
-  ダウンロードします。
+- `rust-COPYRIGHT*.html` is generated with `./x.py run src/tools/generate-copyright` in rust-lang/rust, the same as
+  the files shipped with official Rust releases. It runs `cargo vendor` on the dependency crates, so it needs network
+  access.
+- The license texts of wasi-libc and compiler-rt are downloaded from the commit listed in wasi-sdk's `VERSION`
+  (for LLVM, the version tag).
 
-Release は公開後に変更できない（immutable）ため、`publish.nu` は同じ ID の Release がすでにあれば何もしません。
+Releases cannot be changed after publishing (they are immutable), so `publish.nu` does nothing if a Release with the
+same ID already exists.
 
-## `RUST_COMMIT` を更新するとき
+## Updating `RUST_COMMIT`
 
-1. `RUST_COMMIT` を新しい upstream のマージコミットに変更します。
-2. `./toolchain/build.nu` を実行します。パッチが当たらない場合は、`toolchain/work/rust` で手直ししてから、
-   次のコマンドでパッチを作り直します。
+1. Change `RUST_COMMIT` to a newer upstream merge commit.
+2. Run `./toolchain/build.nu`. If the patch doesn't apply, fix it up in `toolchain/work/rust` and regenerate the
+   patch with:
 
    ```sh
    git -C toolchain/work/rust diff > toolchain/patches/miri-wasm32-wasip1-host.patch
    ```
 
-3. `web/` で `node scripts/verify-problems.ts` を実行し、全問題が通ることを確認します。
+3. Run `node scripts/verify-problems.ts` in `web/` and confirm that all problems pass.
 
-`download-ci-llvm = true` は、CI の LLVM アーティファクトが残っている（数か月以内の）コミットでしか使えません。
-古いコミットをビルドし直す場合は、`bootstrap.toml` で `download-ci-llvm = false` にしてください
-（LLVM を自前でビルドするため ninja が必要で、時間もかかります）。
+`download-ci-llvm = true` works only for commits whose CI LLVM artifacts are still available (within a few months).
+To rebuild an older commit, set `download-ci-llvm = false` in `bootstrap.toml`
+(LLVM is then built locally, which needs ninja and takes longer).
 
-## 既知の制約
+## Known limitations
 
-- WASI 上の rustc は panic=abort なので、コンパイルエラー時は終了コード 1 ではなく Wasm の trap で終わります。
-  判定側（`web/src/core/classify.ts`）で考慮しています。
-- 展開後のサイズは miri.wasm が約 119 MB、sysroot が約 113 MB です。ブラウザのメモリにはこのサイズで載ります。
+- rustc on WASI is panic=abort, so a compile error ends in a Wasm trap rather than exit code 1.
+  The judge (`web/src/core/classify.ts`) accounts for this.
+- When decompressed, miri.wasm is about 119 MB and the sysroot about 113 MB. They occupy that much browser memory.
