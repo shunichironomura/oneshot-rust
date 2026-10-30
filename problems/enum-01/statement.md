@@ -18,10 +18,10 @@ impl Light {
 ```
 
 Normally the light cycles `Green` → `Yellow` → `Red` → `Green`. At times, such as late at night with
-little traffic, it is switched to flashing yellow. That switch is made from outside, so no state turns
-into `Flashing` through `next`. The flashing stops after a set number of flashes and the light returns
-to its normal cycle. It does not jump from flashing straight to red: it shows a steady `Yellow` first,
-then `Red`.
+little traffic, it is switched to flashing yellow. That switch is made from outside, so none of `Red`,
+`Yellow` and `Green` turns into `Flashing` through `next`. The flashing stops after a set number of
+flashes and the light returns to its normal cycle. It does not jump from flashing straight to red: it
+shows a steady `Yellow` first, then `Red`.
 
 `Flashing(n)` is one flash of yellow, with `n` more flashes to go after the current one. `n` can be any
 value. For example, `Flashing(2)` flashes three times, counting the current one.
