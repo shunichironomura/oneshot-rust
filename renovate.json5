@@ -9,14 +9,21 @@
   },
   packageRules: [
     {
+      description: "Override the 3-day npm age from security:minimumReleaseAgeNpm (in config:best-practices), keeping its exemptions for other update types",
+      matchDatasources: ["npm"],
+      matchUpdateTypes: ["major", "minor", "patch"],
+      minimumReleaseAge: "7 days",
+    },
+    {
       matchUpdateTypes: ["lockFileMaintenance"],
       minimumReleaseAge: null,
     },
     {
-      description: "Update Vite+ and the Vite it provides together",
+      description: "Update Vite+ and the Vite it provides (both pnpm catalog entries) together",
       matchDepNames: ["vite", "vite-plus", "@voidzero-dev/vite-plus-core"],
       groupName: "Vite+",
       groupSlug: "vite-plus",
+      minimumGroupSize: 2,
     },
   ],
 }
