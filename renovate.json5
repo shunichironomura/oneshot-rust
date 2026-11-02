@@ -7,6 +7,11 @@
   lockFileMaintenance: {
     enabled: true,
   },
+  vulnerabilityAlerts: {
+    // Security fixes get their own ungrouped branch per dependency; don't let a group's
+    // minimumGroupSize (e.g. Vite+) hold such a single-update branch back.
+    minimumGroupSize: 1,
+  },
   packageRules: [
     {
       description: "Override the 3-day npm age from security:minimumReleaseAgeNpm (in config:best-practices), keeping its exemptions for other update types",
