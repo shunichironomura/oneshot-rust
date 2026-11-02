@@ -54,7 +54,7 @@ Cloudflare's Git integration (Workers Builds) detects pushes to the repository a
 the URL as a comment on the PR). No Cloudflare credentials are stored on the GitHub side. The site is served as
 Workers static assets, configured in `web/wrangler.jsonc`.
 
-GitHub Actions (`.github/workflows/ci.yml`) only runs checks, tests, verification of all problems, and the build.
+GitHub Actions (`.github/workflows/ci.yaml`) only runs checks, tests, verification of all problems, and the build.
 
 Neither builds the toolchain (it takes 20–30 minutes and about 30 GB of disk). Instead, a locally built toolchain is
 published as a GitHub Release, and the version recorded in `toolchain/RELEASE` is downloaded and used.
