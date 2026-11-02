@@ -52,7 +52,7 @@ Cloudflare の Git 連携（Workers Builds）が、リポジトリへの push �
 `main` は本番に、それ以外のブランチとプルリクエストはプレビュー URL にデプロイされます（URL は Cloudflare が PR にコメントします）。
 GitHub 側に Cloudflare の認証情報は置きません。配信は Workers の静的アセットで、設定は `web/wrangler.jsonc` にあります。
 
-GitHub Actions（`.github/workflows/ci.yml`）は、チェック・テスト・全問題の検証・ビルドだけを行います。
+GitHub Actions（`.github/workflows/ci.yaml`）は、チェック・テスト・全問題の検証・ビルドだけを行います。
 
 ツールチェーンはどちらでもビルドしません（20〜30 分かかり、ディスクも 30 GB ほど使うため）。手元でビルドしたものを
 GitHub Release として公開し、`toolchain/RELEASE` に記録した版をダウンロードして使います。
