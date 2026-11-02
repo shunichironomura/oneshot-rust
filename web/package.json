@@ -30,7 +30,7 @@
     "diff": "^9.0.0",
     "idb": "^8.0.4",
     "lucide-preact": "^1.54.0",
-    "preact": "^10.29.8"
+    "preact": "^11.0.0"
   },
   "devDependencies": {
     "@preact/preset-vite": "2.10.6",
