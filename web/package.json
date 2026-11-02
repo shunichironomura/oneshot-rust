@@ -35,7 +35,7 @@
   "devDependencies": {
     "@preact/preset-vite": "2.10.6",
     "@types/node": "26.6.5",
-    "marked": "18.1.1",
+    "marked": "18.1.2",
     "smol-toml": "1.9.1",
     "typescript": "6.0.3",
     "vite": "catalog:",
