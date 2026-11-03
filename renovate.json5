@@ -1,6 +1,6 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  extends: ["config:best-practices", "helpers:pinGitHubActionDigestsToSemver"],
+  extends: ["config:best-practices"],
   minimumReleaseAge: "7 days",
   // Keep transitive deps (e.g. @codemirror/state) from resolving to a stale duplicate after an update.
   postUpdateOptions: ["pnpmDedupe"],
@@ -13,6 +13,12 @@
     minimumGroupSize: 1,
   },
   packageRules: [
+    {
+      // .github/workflows/actions.lock pins action commits; gh actions-lock strips inline digests.
+      description: "Use the actions lockfile instead of inline digest pins",
+      matchManagers: ["github-actions"],
+      pinDigests: false,
+    },
     {
       description: "Override the 3-day npm age from security:minimumReleaseAgeNpm (in config:best-practices), keeping its exemptions for other update types",
       matchDatasources: ["npm"],
@@ -29,6 +35,16 @@
       groupName: "Vite+",
       groupSlug: "vite-plus",
       minimumGroupSize: 2,
+    },
+  ],
+  customManagers: [
+    {
+      customType: "regex",
+      description: "Track the gh-actions-lock version used to verify the actions lockfile",
+      managerFilePatterns: ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      matchStrings: ["gh extension install github/gh-actions-lock --pin (?<currentValue>v[^\\s]+)"],
+      depNameTemplate: "github/gh-actions-lock",
+      datasourceTemplate: "github-releases",
     },
   ],
 }
